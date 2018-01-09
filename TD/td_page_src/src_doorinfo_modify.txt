@@ -1,0 +1,48 @@
+*** Settings ***
+Library           Selenium2Library
+Resource          src_doorinfo_option.txt
+
+*** Variables ***
+${save_path}      xpath=//li[@title='Save']
+${save_close_path}    xpath=//li[@title='Save & Close']
+${Confirmation_X_button_path}    xpath=//li[@title='Close']
+${Confirmation_X_Yes_path}    xpath=//td/button
+${Confirmation_X_No_path}    xpath=//td[3]/button
+${Confirmation_X_Cancel_path}    xpath=//td[5]/button
+${zsBox_close}    //div[@class='z-window-icon z-window-close']
+${zsBox_ok_button}    xpath=//button[@class='z-messagebox-button z-button']
+${Show_sheets_path}    xpath=//a[@title='Show sheets']
+${Show_one_more_column_path}    xpath=//a[@title='Show one more column']
+${Show_one_more_row_path}    xpath=//a[@title='Show one more row']
+${Confirmation_txt}    xpath=//div[@class='z-window-header z-window-header-move']
+${doorInfo_visible_columns}    var a = new Array(); var n=0;$(".zstopblock").children("div:visible").each(function(){a[n]= $(this).text();n++;})
+${DI_head_attrs}    xpath=//textarea[@class='zsfocus']/following-sibling::div[@zs.t='STopPanel']//div[@zs.t='SRow']
+${DI_edit}        xpath=//div[@class='zsedit-real']
+${DI_scroll}      xpath=//span[@class='zsscrollinfoinner']
+${select_stus}    xpath=//div//div[@zs.t='STopPanel']//div[@zs.t='SSelect']
+${scroll_head_attrs}    xpath=//div[@class='zsblock']/div[1]
+${top_head_attrs}    xpath=//div[@class='zstopblock']
+${leftFz_head_attrs}    xpath=//div[@class='zsleftblock']/div[1]
+${leftSecondRow_path}    xpath=//div[@class='zslefthead']/div[3]/div
+${leftThirdRow_path}    xpath=//div[@class='zslefthead']/div[5]/div
+${corner_head_attrs}    xpath=//div[@class='zscornerblock']
+${protected_cell_msg}    xpath=//span[@class='zsinfoinner']
+${col_head_path}    //div[@class='zslefthead']//div[@zs.t='SLheader']
+${zErrorMsgBox}    xpath=//div[contains(@class,'z-messagebox-window')]
+${getValueInCursor}    document.getElementsByClassName('zsfocus')[0].value
+${queryOfAccount}    select ACC.*, CD.DOOR_NAME, \ CD.DOOR_NUM, ASTT.ACCOUNT_SOLD_TO_TYPE_CODE, C.CORPORATE_DIVISION from \ account acc join account_door_relation adr on acc.account_id = adr.account_id \ left join company_door cd on adr.company_door_id = cd.company_door_id \ join account_sold_to_type astt on astt.account_sold_to_type_id = acc.account_type_id join company c on c.company_id = acc.created_company_id where acc.company_id = 100440 and acc.available = 1 order by \ C.CORPORATE_DIVISION ;
+${textarea_focus}    xpath=//textarea[@class='zsfocus']
+${titles_in_scroll_path}    xpath=//div[@class='zsscroll']//div[@class='zsblock']/div[1]
+${editCellpath}    xpath=//div[@class='zsedit-real']
+${scrollSelectedCellPath}    xpath=//div[@class='zsscroll']//div[@class='zsselecti']
+${fzSelectedCellPath}    xpath=//div[@class='zslefti']//div[@class='zsselecti']
+${title_notes_open_path}    //li[contains(@class,'opened') and @title='Notes']
+${title_options_open_path}    //li[contains(@class,'opened') and @title='Options']
+
+*** Keywords ***
+check zk licence
+    page should not contain    Your ZK Spreadsheet Uptime has exceeded the limit.
+    click element    ${options_path}
+    wait until keyword succeeds    10 seconds    2 seconds    wait until page contains    Select Columns to Display
+    click element    ${options_path}
+    wait until page does not contain    Processing...    5 minutes    Please check the ZK licence. Restart tomcat if it's ZK problem.

@@ -1,0 +1,18 @@
+*** Settings ***
+Resource          ../td_company_res.txt
+Resource          Collaborative_Assortments/collaborative_assortments_res.txt
+Resource          Collaborative_Assortments/copy_assortments_res.txt
+Resource          Collaborative_Assortments/view_criteria_res.txt
+
+*** Keywords ***
+Select A Vendor In Buyer Company
+    [Arguments]    ${vendor}
+    Click Link
+    Select The ${vendor} To Work With
+
+Select The ${vendor} To Work With
+    [Documentation]    //All Vendors can be used for every company.
+    ${if_select_vendor}    run keyword and return status    page should not contain element    //td[b[text()='${vendor}']]/span[contains(text(),'[Selected Vendor]') and @class='red']
+    return from keyword if    ${if_select_vendor}==${False}
+    run keyword if    ${if_select_vendor}    Click Link    //a[b[text()='${vendor}']]
+    Wait until page contains element    //td[b[text()='${vendor}']]/span[contains(text(),'[Selected Vendor]') and @class='red']    #    //td[b[text()='Calvin Klein Asia']]/span[contains(text(),'[Selected Vendor]') and @class='red']

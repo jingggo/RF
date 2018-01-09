@@ -1,0 +1,6 @@
+*** Settings ***
+Resource          upload_actions_res.txt
+
+*** Keywords ***
+Get File Type Value By Label
+    \    get element attribute    ${file_uploads_file_type_sel_id}@value

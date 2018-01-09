@@ -1,0 +1,2 @@
+*** Settings ***
+Resource          accounts_compare_datas_res.txt

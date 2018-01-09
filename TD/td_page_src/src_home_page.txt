@@ -1,0 +1,21 @@
+*** Settings ***
+Library           Selenium2Library
+Library           Collections
+
+*** Variables ***
+${map_check_path}    id=mapcheck
+${username_path}    id=login1
+${psd_path}       id=password
+${log_in_button_path}    xpath=//input[@value='Log In']
+${Yes_button}     xpath=//input[@name='answeryes']
+${No_button}      xpath=//input[@name='answerNo']
+${timeout}        50
+${password}       wuhan02
+${fuserPath}      ${EXECDIR}${/}comprehensive_setting.xlsx
+${DoorInfoSheet}    TD
+${IagreeBtnPath}    xpath=//input[@value='I Agree']
+${pathOfDownload}    E:\\RFScripts\\TD_comprehensive\\downloadFile
+${scuritySheet}    TD_security
+@{TD_PCOMPANY_IDS}    100440    100240    100000    100100
+
+*** Keywords ***

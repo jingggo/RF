@@ -1,0 +1,2 @@
+*** Variables ***
+${big_title_contains_path}    //big[contains(@class,'title')]

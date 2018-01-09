@@ -1,0 +1,24 @@
+*** Settings ***
+Library           Selenium2Library
+
+*** Variables ***
+${Process}        xpath=//div[@class='z-apply-loading']
+${scrollInfo}     xpath=//span[@class='zsscrollinfo']
+${processInWholePage}    xpath=//div[@class='z-apply-loading-indicator']
+${zsscroll}       xpath=//span[@class='zsscrollinfoinner']
+${deleteBtn_path}    //li[@title='Delete Selected']
+${zErrorBox_title}    xpath=//div[@class='z-window-header z-window-header-move']
+${zsBox_confirm}    Confirmation Needed
+${zsBox_error_msg}    xpath=//div[@class='z-messagebox z-div']/span[@class='z-label']
+${zsBox_okBtn_path}    xpath=//table[@class='z-hbox']//button[@class='z-messagebox-button z-button']
+${zsBox_title}    xpath=//div[@class='z-window-header z-window-header-move']
+${zs_close_btn_path}    xpath=//li[@class='MenuImage IconClose z-menuitem']
+${zs_confirm_no_path}    xpath=//button[@class='z-messagebox-button z-button' and contains(text(),'No')]
+${zs_confirm_yes_path}    xpath=//button[@class='z-messagebox-button z-button' and contains(text(),'Yes')]
+${zs_confirm_cancel_path}    xpath=//button[@class='z-messagebox-button z-button' and contains(text(),'Cancel')]
+${zs_confirm_close_path}    //div[@class='z-window-icon z-window-close' and @title='Close']
+
+*** Keywords ***
+waitUntilScrollBeDone
+    run keyword and ignore error    wait until element is visible    ${scrollInfo}    20
+    run keyword and ignore error    wait until element is not visible    ${scrollInfo}    20

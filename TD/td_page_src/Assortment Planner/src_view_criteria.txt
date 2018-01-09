@@ -1,0 +1,5 @@
+*** Variables ***
+${view_selected1_path}    //form/table[1]//input[@name='viewselected']
+${view_selected2_path}    //form/table[1]//input[@name='viewselected']
+${style_numbers_path}    //input[@name='stylenumbers']
+${po_numbers_path}    //input[@name='ponumbers']

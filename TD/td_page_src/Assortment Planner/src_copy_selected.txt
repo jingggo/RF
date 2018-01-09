@@ -1,0 +1,3 @@
+*** Variables ***
+${input_buyer_company_path}    //input[@name='searchstring']
+${search_btn_path}    //input[@value='Search']

@@ -1,0 +1,2 @@
+*** Variables ***
+${lockBtnPath}    xpath=//li[@class='MenuImage IconMPLock-OC \ z-menuitem']

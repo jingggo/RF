@@ -1,0 +1,135 @@
+*** Settings ***
+Resource          ap_actions_res.txt
+
+*** Keywords ***
+Compare seasonal notes
+    [Arguments]    ${wsid}
+    go to seasonal notes page all envs    ${wsid}
+    Compare HTML Content htmls    seasonal notes
+    Go Back All Envs
+
+Compare ws view pages
+    [Arguments]    ${wsid}
+    Go view page all envs    ${wsid}
+    ${view_seasonal_compare_status}    ${view_seasonal_compare_status_info}    Compare seasonal view page    View
+    return from keyword if    '${view_seasonal_compare_status_info}'=='MonthViewError'    ${False}
+    Compare monthly view pages    View
+
+Compare ws history pages
+    ${compare_status}    Compare ws history version page
+    #run keyword and continue on failure    should be true    ${compare_status}    WS: '${wsid}' history version page compare failed.
+    return from keyword if    ${compare_status}==${False}    ${False}    #If Worksheet History page compare failed, then would stop compare worksheet history view page.
+    ${compare_links_count}    get matching xpath count    ${compare_to_cur_version_paths}    #//table[@class='table1']/tbody/tr    Get Versions
+    ${compare_links_count}    convert to integer    ${compare_links_count}
+    : FOR    ${version}    IN RANGE    2    ${compare_links_count + 1}    #This loop is to verify all the versions.Compare Version from high to low
+    \    ${version_number}    get text    ${compare_to_cur_version_paths}[${version}]/td[1]    #get version number
+    \    ${history_view_loaded}    Go to history view page in both envs    ${compare_to_cur_version_paths}[${version}]//a
+    \    exit for loop if    ${history_view_loaded}==${False}
+    \    ${h_seasonal_compare_status}    ${compare_status_info}    Compare seasonal view page    History    ${version_number}    #If Failed then other pages would be failed too.
+    \    exit for loop if    '${compare_status_info}'=='MonthViewError'
+    \    Compare monthly view pages    History
+    \    Navigation Collaborative Assortments Module all envs
+    \    Go history page in both envs    ${wsid}
+
+Compare Set Viewing Criteria
+    Go to set viewing criteira page all envs
+    Compare HTML Content htmls    Set viewing criteria
+    Go Back All Envs
+
+Compare monthly view pages
+    [Arguments]    ${tag}
+    [Documentation]    For a ws, compare its monthly view pages.
+    ...
+    ...    tag should be View or History.
+    ${ws_season_months}    get list items    ${view_page_months_list_path}    #get ws months from view dropdown
+    ${ws_months}    get slice from list    ${ws_season_months}    1    #remove season
+    ${groupby_option_exist_true}    run keyword and return status    variable should exist    ${GROUPBY_OPTION}
+    run keyword if    ${groupby_option_exist_true}    Select from dropdown all envs    ${view_page_groupby_list_path}    ${GROUPBY_OPTION}
+    ${ws_view_groups}    get text    //select[@name="groupby"]/option[@selected]    #selected group
+    : FOR    ${month}    IN    @{ws_months}
+    \    Select View Month On View Page All Envs    ${month}
+    \    ${compare_status}    Compare HTML Content htmls    CA-${user}-${wsid}-${tag}-${month}-${ws_view_groups}
+    \    #run keyword and continue on failure    should be true    ${compare_status}    Data on monthly ${tag} page of wsid: ${wsid} for version: ${version_number} is different.
+
+Compare seasonal view page
+    [Arguments]    ${tag}    ${version_number}=0
+    [Documentation]    Verison_number only for History view page. For view page, default is 0
+    #Compare Group By Firstly
+    switch browser    ${PROD_BROWSER_INDEX}
+    ${prod_url}    get location    #/bin-java/vendorap.do_seasonalWorksheetDisplayByGroup?worksheetid=20028048&vslice=102783
+    ${p_display_group}    get regexp matches    ${prod_url}    do_seasonalWorksheetDisplay(.*?)\?worksheetid    1
+    ${p_display_group}    get from list    ${p_display_group}    0
+    ${p_display_group}    fetch from left    ${p_display_group}    ?
+    switch browser    ${STAGE_BROWSER_INDEX}
+    ${stag_url}    get location
+    ${s_display_group}    get regexp matches    ${stag_url}    do_seasonalWorksheetDisplay(.*?)\?worksheetid    1
+    ${s_display_group}    get from list    ${s_display_group}    0
+    ${s_display_group}    fetch from left    ${s_display_group}    ?
+    ${groupby_true}    Should be equal as html    ${p_display_group}    ${s_display_group}
+    run keyword and continue on failure    should be true    ${groupby_true}    Default Group on seasonal ${tag} page of wsid: ${wsid} for version: ${version_number} is different.
+    #Stag change to the same group with Prod If default are different
+    run keyword unless    ${groupby_true}    Select Groupby On View Page    ${p_display_group}
+    ${ws_time}    get text    //select[@name="worksheetid"]/option[@selected]
+    ${compare_status}    Compare HTML Content htmls    CA-${user}-${wsid}-${tag}-${version_number}-${ws_time}-${p_display_group}
+    #run keyword and continue on failure    should be true    ${compare_status}    Data on seasonal ${tag} page of wsid: ${wsid} for version: ${version_number} is different.
+    return from keyword if    ${compare_status}==${False}    ${False}    MonthViewError
+    return from keyword if    ${groupby_true}==${False}    ${False}    DefaultGroupError
+    [Return]    ${True}    PASS
+
+Compare ws infos at seasonal level
+    [Arguments]    ${compare_part}
+    Expand Worksheet In Both Envs    ${wsid}
+    Go to ws special part both envs    ${compare_part}
+    ${page_tag}    catenate    ${module_tag}    ${compare_part}
+    Compare HTML Content htmls    ${page_tag}
+    Go Back All Envs
+
+Compare ws history version page
+    [Documentation]    bin-java/efsnPackage.do_orderWorksheetRevisionList?worksheetid=20028048&vendoruserid=102783
+    Go history page in both envs    ${wsid}
+    ${compare_status}    Compare HTML Content htmls    CA-${user}-${wsid}-History version page
+    [Return]    ${compare_status}
+
+Compare ws monthly view page
+    [Arguments]    ${ws_month}    ${page_tag}=monthly_view
+    Select View Month On View Page All Envs    ${ws_month}
+    ${time}    get time    epoch
+    ${page_tag}    catenate    ${module_tag}    ${page_tag}    ${ws_month}_${time}
+    Compare HTML Content htmls    ${page_tag}
+
+Compare ws monthly view pages
+    [Arguments]    ${ws_months}    ${page_tag}=monthly_view
+    ${ws_months}    get slice from list    ${ws_months}    1
+    : FOR    ${ws_month}    IN    @{ws_months}
+    \    Compare ws monthly view page    ${ws_month}    ${page_tag}
+
+Compare ws info page
+    [Arguments]    ${wsid}
+    ${page_tag}    set variable    ws info
+    Expand Worksheet In Both Envs    ${wsid}
+    Go to ws info page in both envs    ${wsid}
+    Compare HTML Content htmls    ${page_tag}
+    Go Back All Envs
+
+Compare worksheet
+    [Arguments]    ${wsid}
+    set test variable    ${wsid}
+    Compare ws history pages
+    Navigation Collaborative Assortments Module all envs
+    Compare ws view pages    ${wsid}
+    Navigation Collaborative Assortments Module all envs
+    Comment    Compare ws infos at seasonal level    All Clusters
+    Comment    Compare ws infos at seasonal level    Edit PO
+    Comment    Compare ws infos at seasonal level    Edit Store Group
+    Comment    Compare ws infos at seasonal level    Add Remove Styles
+    Comment    Compare ws infos at seasonal level    Change Prices
+    Comment    Compare ws infos at seasonal level    Edit Info
+    Comment    Collapse Worksheet In Both Envs    ${wsid}
+
+Compare worksheets
+    [Documentation]    Compare worksheets in CA Page.
+    ${prod_ws_ids}    ${stag_ws_ids}    Get wsids in both envs
+    lists should be equal    ${prod_ws_ids}    ${stag_ws_ids}    Worksheets on CA page are not the same, so failed to compare worksheets.
+    : FOR    ${wsid}    IN    @{prod_ws_ids}
+    \    Compare Worksheet    ${wsid}
+    Compare seasonal notes    ${prod_ws_ids[0]}

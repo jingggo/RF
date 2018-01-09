@@ -1,0 +1,86 @@
+*** Settings ***
+Resource          ap_actions_res.txt
+
+*** Keywords ***
+Get Div Content Html
+    [Arguments]    ${tag1}    ${tag2}
+    [Documentation]    return dict. keys are prod and stag
+    ${content}    create dictionary
+    : FOR    ${tag}    IN    ${tag1}    ${tag2}
+    \    ${browser_index}    set variable if    '${tag}' == 'prod'    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    sleep    0.5
+    \    ${logical_wf_exist}    run keyword and return status    page should contain element    //div[@id='wftab']    #means Logical Workflow    currently pat and ck exist, oak unexist
+    \    ${content_mark}    set variable if    ${logical_wf_exist}    content    notabcontent
+    \    ${id_attr_exist}    run keyword and return status    page should contain element    //div[@id='${content_mark}']
+    \    ${selector_content}    set variable if    ${id_attr_exist}    \#${content_mark}    .${content_mark}
+    \    ${p_content_html_jquery}    set variable    $(document).ready(function(){});htm=$("${selector_content}").html();return htm;
+    \    #${content_selector}    Get Div content selector
+    \    log    ${p_content_html_jquery}
+    \    ${notabcontent}    execute javascript    ${p_content_html_jquery}
+    \    set to dictionary    ${content}    ${tag}=${notabcontent}
+    #set test variable    ${content}
+    [Return]    ${content}
+
+Get Div Content Txt
+    [Arguments]    ${tag1}    ${tag2}
+    ${content}    create dictionary
+    : FOR    ${tag}    IN    ${tag1}    ${tag2}
+    \    ${browser_index}    set variable if    '${tag}' == 'prod'    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    sleep    0.5
+    \    ${maincontent_selector}    Get Div maincontent selector
+    \    ${notabcontent}    execute javascript    $(document).ready(function(){});htm=${maincontent_selector}.text();return htm;
+    \    set to dictionary    ${content}    ${tag}=${notabcontent}
+    [Return]    ${content}
+
+Get Assortment Profile Links
+    ${links_count}    get matching xpath count    //form/div[1]//a
+    ${links_mk}    execute javascript    return $("form div[style='padding-bottom:10px']").html();
+    log many    ${links_mk}
+    ${links}    get regexp matches    ${links_mk}    <a.*class="random".*>(.*?)</a>    1
+    : FOR    ${link}    IN    @{links}
+    \    ${enabled}    run keyword and return status    element should be enabled    //a[text()='${link}']
+    \    run keyword if    ${enabled}==${False}    remove values from list    ${links}    ${link}
+    log many    @{links}
+    [Return]    ${links}
+
+Delte sth in html
+    ${file}    set variable    E:${/}CompareFiles${/}analysis${/}div_diffs2.htm
+    ${contents}    get file    ${file}
+    ${matches}    get regexp matches    ${contents}    <div class="diff">\n</div>
+    ${new_contents}    replace string using regexp    ${contents}    <div class="diff">\n</div>    ${EMPTY}
+    log many    ${matches}
+    create file    E:${/}CompareFiles${/}analysis${/}div_diffs3.htm    ${new_contents}
+
+Get HTML Text All Envs
+    [Arguments]    ${tag1}    ${tag2}    ${jquery}
+    ${content}    create dictionary
+    ${class_content_html_jquery}    replace string    ${jquery}    \#    .
+    log    ${class_content_html_jquery}
+    : FOR    ${tag}    IN    ${tag1}    ${tag2}
+    \    ${browser_index}    set variable if    '${tag}' == 'prod'    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    sleep    0.5
+    \    ${maincontent_id_true}    run keyword and return status    page should contain element    //div[@id='maincontent']    #in ck is id, but in td is class atribute
+    \    ${content_real_html_jquery}    set variable if    ${maincontent_id_true}    ${jquery}    ${class_content_html_jquery}
+    \    ${notabcontent}    execute javascript    ${content_real_html_jquery}
+    \    set to dictionary    ${content}    ${tag}=${notabcontent}
+    [Return]    ${content}
+
+Get Div maincontent selector
+    ${id_maincontent_true}    run keyword and return status    page should contain element    //div[@id='maincontent']
+    return from keyword if    ${id_maincontent_true}    $("#maincontent")
+    ${class_maincontent_true}    run keyword and return status    page should contain element    //div[@class='maincontent']
+    return from keyword if    ${class_maincontent_true}    $(".maincontent")
+    [Return]    $(".maincontent")
+
+Get Div content selector
+    ${id_content_true}    run keyword and return status    page should contain element    //div[@id='content']
+    return from keyword if    ${id_content_true}    $("#content")
+    ${class_content_true}    run keyword and return status    page should contain element    //div[@class='content']
+    return from keyword if    ${class_content_true}    $(".content")
+    ${id_notabcontent_true}    run keyword and return status    page should contain element    //div[@id='notabcontent']
+    return from keyword if    ${id_notabcontent_true}    $("#notabcontent")
+    ${class_notabcontent_true}    run keyword and return status    page should contain element    //div[@class='notabcontent']
+    return from keyword if    ${class_notabcontent_true}    $(".notabcontent")

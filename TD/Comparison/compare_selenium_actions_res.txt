@@ -1,0 +1,26 @@
+*** Settings ***
+Library           Selenium2Library
+
+*** Keywords ***
+click link all envs
+    [Arguments]    ${locator}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    wait until page contains    ${locator}
+    \    click link    ${locator}
+
+Go Back All Envs
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    go back
+
+get selected list label all envs
+    [Arguments]    ${locator}
+    [Documentation]    return the selected item's label from the select-option tag
+    switch browser    ${PROD_BROWSER_INDEX}
+    wait until page contains element    ${locator}    20
+    ${prod_select_label}    get selected list label    ${locator}
+    switch browser    ${STAGE_BROWSER_INDEX}
+    wait until page contains element    ${locator}    20
+    ${stag_select_label}    get selected list label    ${locator}
+    [Return]    ${prod_select_label}    ${stag_select_label}

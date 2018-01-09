@@ -1,0 +1,38 @@
+*** Settings ***
+Resource          upload_actions_res.txt
+
+*** Keywords ***
+Get Scenario Styles From Scenario Files
+    [Arguments]    ${upload_file}
+    [Documentation]    file with absolute path
+    ${file_content}    Get File    ${upload_file}
+    ${file_content}    Strip String    ${file_content}
+    ${file_content_rows}    Split To Lines    ${file_content}
+    ${scenario_styles}    Create list
+    :FOR    ${file_content_row}    IN    @{file_content_rows}
+    \    ${row_values}    Split String    ${file_content_row}    \t
+    \    ${style}    get from list    ${row_values}    0
+    \    log    ${style}
+    \    Append to list    ${scenario_styles}    ${style}
+    [Return]    ${scenario_styles}
+
+Get Scenario UPC Page Infos From Scenario Files
+    [Arguments]    ${upload_file}
+    [Documentation]    file with absolute path
+    ${file_content}    Get File    ${upload_file}
+    ${file_content}    Strip String    ${file_content}
+    ${file_content_rows}    Split To Lines    ${file_content}
+    ${scenario_styles_upcs}    Create list
+    :FOR    ${file_content_row}    IN    @{file_content_rows}
+    \    ${row_values}    Split String    ${file_content_row}    \t
+    \    ${style}    get from list    ${row_values}    0
+    \    ${color_des}    get from list    ${row_values}    7
+    \    ${color_code}    get from list    ${row_values}    6
+    \    ${size_des}    get from list    ${row_values}    9
+    \    ${size_code}    get from list    ${row_values}    8
+    \    ${upc}    get from list    ${row_values}    1
+    \    ${scenario_style_upc}    Create List    ${style}    ${color_des}    ${color_code}    ${size_des}
+    \    ...    ${size_code}    ${upc}
+    \    ${scenario_style_upc}    Evaluate    [s.upper() for s in ${scenario_style_upc}]
+    \    Append to list    ${scenario_styles_upcs}    ${scenario_style_upc}
+    [Return]    ${scenario_styles_upcs}

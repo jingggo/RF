@@ -1,0 +1,2 @@
+*** Settings ***
+Resource          ../../td_company_res.txt

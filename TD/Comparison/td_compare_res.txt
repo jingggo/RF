@@ -1,0 +1,28 @@
+*** Settings ***
+Resource          ap_actions_res.txt
+Resource          compare_setting.txt
+
+*** Keywords ***
+Login compare envs
+    [Arguments]    ${fpath}    ${sheet}    ${userx}
+    set library search order    td_company_res    1__login_page
+    Comment    ${prod_url}    set variable    https://10.125.2.172    #https://10.125.2.175:85    superivy    Patagonia
+    ...    # Calvin Klein Asia    # superliv    superduperjason    OAKLEY - AFA
+    Comment    ${stag_url}    set variable    https://10.125.2.172    #https://10.125.2.175:85    jyoung    Patagonia
+    ...    # Calvin Klein Asia    # superlisa    superduperjoanne    OAKLEY - AFA
+    ${prod_url}    excelCustomLibrary.get cell value    ${fpath}    Index    0    1
+    ${stag_url}    excelCustomLibrary.get cell value    ${fpath}    Index    1    1
+    ${user}    excelCustomLibrary.get cell value    ${fpath}    ${sheet}    ${userx}    0
+    Comment    ${stag_user}    excelCustomLibrary.get cell value    ${fpath}    ${sheet}    ${userx + 1}    0
+    set global variable    ${user}
+    ${compare_company}    excelCustomLibrary.get cell value    ${fpath}    ${sheet}    ${userx}    1
+    ${PROD_BROWSER_INDEX}    td_company_res.login7thonline    ${prod_url}    ff    ${user}    ${compare_company}    ${browser_profile_ff_1}
+    ${STAGE_BROWSER_INDEX}    td_company_res.login7thonline    ${stag_url}    ff    ${user}    ${compare_company}    ${browser_profile_ff_2}
+    set global variable    ${PROD_BROWSER_INDEX}
+    set global variable    ${STAGE_BROWSER_INDEX}
+    set global variable    ${compare_company}
+
+Navigation ${menu} Module all envs
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    td_company_res.entry page via navimenu    //a[contains(text(),'${menu}')]    ${set_criteria1_path}    #//a[text()='${menu}']

@@ -1,0 +1,18 @@
+*** Variables ***
+${options_path}    xpath=//li[@title='Options']
+${options_checkbox_all}    //span[@class='z-listitem-checkable z-listitem-checkbox']
+${options_attr_with_checkbox}    ${options_checkbox_all}/ancestor::div[contains(@style,'padding-right')]//tbody[contains(@id,'-rows')]
+${options_attr_with_checkbox_checked}    ${options_checkbox_all}/ancestor::div[contains(@style,'padding-right')]//tr[contains(@class,'z-listitem-selected')]
+${options_attr_with_checkbox_unchecked}    ${options_checkbox_all}/ancestor::div[contains(@style,'padding-right')]//tr[@class='nohover z-listitem' or @class='nohover z-listitem none']
+${options_attr_right}    xpath=//div[@class='z-window-header' and contains(text(),'Set Order')]/following-sibling::div
+${options_attr_right_count}    //div[@class='z-window-header']/following-sibling::div//tbody[@id]
+${options_specialAttr_right}    xpath=//div[@class='z-window-header']/following-sibling::div//tr[@style='background:;']
+${options_search_path}    xpath=//input[@placeholder='Search']
+${Move_to_Top_path}    xpath=//button[@title='Move to Top']
+${Move_Up_path}    xpath=//button[@title='Move Up']
+${Move_Down_path}    xpath=//button[@title='Move Down']
+${Move_to_Bottom_path}    xpath=//button[@title='Move to Bottom']
+${options_leftUnchecked}    //div[@class='z-listbox-header-border']//following-sibling::div//table/tbody[1]//tr[not(contains(@class,'selected'))]
+${options_leftChecked}    //div[@class='z-listbox-header-border']//following-sibling::div//table/tbody[1]//tr[contains(@class,'selected')]
+${remove_selected_path}    xpath=//button[@title='Remove Selected']
+${options_left_attrs}    //div[@class='z-listbox-header-border']//following-sibling::div

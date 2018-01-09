@@ -1,0 +1,6 @@
+*** Settings ***
+Resource          upload_actions_res.txt
+
+*** Variables ***
+${UPLOAD_LINESHEET_PNGS_DIR}    E:${/}RFScripts${/}linesheet upload ef pngs
+${UPLOAD_LINESHEET_EF_DATA_DIR}    E:\RFScripts${/}linesheet_upload_data_ef_tmp

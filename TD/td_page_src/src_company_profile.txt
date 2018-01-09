@@ -1,0 +1,4 @@
+*** variables ***
+${cp_dd_path}     id=dd
+${cp_go_btn_path}    name=goButton
+${cp_delivery_button_path}    //input[@name='moredelivery']

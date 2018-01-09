@@ -1,0 +1,127 @@
+*** Settings ***
+Resource          ../assortment_planner_res.txt
+
+*** Keywords ***
+Copy Assortment
+    [Arguments]    ${src_wsid}    ${created_ws_name}    &{create_criterias}
+    click link    //a[@href='/bin-java/efsnPackage.do_orderWorksheetChooseBuyer?action=assortmentcopy&worksheetid=${src_wsid}']
+    Comment    //a[contains(@herf,'worksheetid=${wsid}') and text()='Copy Assortment']
+    Choose Planningstage Vendor Buyer    ${create_criterias.planningstage}    ${create_criterias.vendorowner}    ${create_criterias.buyer}
+    Copy to style color level Worksheet
+    Copy to Size Level Worksheet
+    click element    //form/input[last()]
+    Copy Assortment Page    ${created_ws_name}
+
+Copy to style color level Worksheet
+    [Arguments]    ${checked}=N
+    [Documentation]    Default is not check.
+    return from keyword if    '${checked}'=='N'
+    select checkbox    id=scws
+
+Copy to Size Level Worksheet
+    [Arguments]    ${checked}=N
+    [Documentation]    Default is not check.
+    return from keyword if    '${checked}'=='N'
+    select checkbox    id=scws
+
+Copy Assortment Page
+    [Arguments]    ${created_ws_name}    &{create_criterias}
+    select from list by label    name=planningstage    ${create_criterias.planningstage}
+    select from list by label    name=season    ${create_criterias.season}
+    select from list by label    name=seasonyear    ${create_criterias.seasonyear}
+    select from list by label    name=month    ${create_criterias.month}
+    select from list by label    name=startingyear    ${create_criterias.startingyear}
+    select from list by label    name=totalmonth    ${create_criterias.totalmonth}
+    select from list by label    name=dept    ${create_criterias.dept}
+    select from list by label    name=division    ${create_criterias.division}
+    Copy as Order worksheet
+    Enable ws copy month exact match
+    input text    ${assortment_name_path}    ${created_ws_name}
+    click element    //input[@value='Submit']    #    ${submit_btn}
+
+Copy as Order worksheet
+    [Arguments]    ${orderworksheet}=Y
+    [Documentation]    Default is Order worksheet
+    return from keyword if    '${orderworksheet}'=='Y'
+    click element    //input[@value='plan']    #Plan worksheet
+
+Enable ws copy month exact match
+    [Arguments]    ${enable}=Y
+    return from keyword if    '${enable}'=='Y'
+    unselect checkbox    //input[@name='enableWSCopyMonthExactMatch']
+
+Copy Selected
+    [Arguments]    ${planning_stage}    ${vendor_owner}    @{buyers}
+    Select From CA List and Submit    2. Copy Selected
+    Choose Planningstage Vendor Buyers    ${planning_stage}    ${vendor_owner}    @{buyers}
+    Are You Sure When Copy Selected
+    Processing
+    Thank You When Copy Selected
+
+Choose Planningstage Vendor Buyers
+    [Arguments]    ${plannng_stage}    ${vendor_owner}    @{buyers}
+    Comment    wait until keyword succeeds    20 sec    3 sec    page should contain    ${plannng_stage}
+    Choose Buyers    @{buyers}
+    click element    //td[contains(text(),'${plannng_stage}')]//preceding-sibling::td/input[@name='planningstagename']    #    choose planning stage
+    select from list by label    //select[@name='vendorowner_name']    ${vendor_owner}    #    choose owner
+    click element    //form/input[last()]    #Submit
+
+Are You Sure When Copy Selected
+    [Arguments]    ${ws_type}=Order Worksheet
+    [Documentation]    Order Worksheet/Plan Worksheet
+    ${ws_type}    set variable if    '${ws_type}'=='Order Worksheet'    Order Worksheet    Plan Worksheet
+    run keyword if    '${ws_type}'=='Plan Worksheet'    Click Element    //input[@value='plan']
+    Click Element    //input[@value='Yes']
+
+Thank You When Copy Selected
+    [Arguments]    ${viewing_criteria}=${False}
+    Click Element    //input[@value='Finished']
+    Run Keyword If    ${viewing_criteria}    Click Link    click here
+
+Processing
+    Sleep    5 sec
+
+Copy All Masters
+    Go To Copy All From Navi Menu
+    ${filter_master_criterias}    Create Dictionary    planningstages=1-F0    #    vendorowners    seasons    years
+    ...    # dept    divisions    multiselectholder
+    Choose Buyers    ARG Inline Buyer
+    Select Master Assortments To Copy    &{filter_master_criterias}
+
+Select Master Assortments To Copy
+    [Arguments]    &{filter_master_criterias}
+    #Planning Stage    Require
+    ${planning_stage_path}    Catenate    //td[contains(text(),'    ${filter_master_criterias.planningstages}    ')]//preceding-sibling::td/input
+    Click Element    ${planning_stage_path}
+    ${filter_full_keys}    create list    multiselectholder    seasons    years    dept    divisions
+    #Master Assortment Owner
+    ${contain}    run keyword and return status    dictionary should contain key    seasons
+    ${contain}    run keyword and return status    Select From Hierarchyvalues    //tr[@class='filtertablerow multiselectholder filtertable dhl']    All Selected
+    #Vendor Owner
+    Select From List By Label    name=vendorowner_name
+    #Seasons
+    ${contain}    run keyword and return status    dictionary should contain key    seasons
+    run keyword if    ${contain}    Select ${filter_master_criterias.seasons} On Copy All Page
+    #Years
+    ${contain}    run keyword and return status    dictionary should contain key    years
+    run keyword if    ${contain}    Select ${filter_master_criterias.years} On Copy All Page
+    #Department
+    ${contain}    run keyword and return status    dictionary should contain key    dept
+    run keyword if    ${contain}    Select ${filter_master_criterias.dept} On Copy All Page
+    #Division
+    ${contain}    run keyword and return status    dictionary should contain key    divisions
+    run keyword if    ${contain}    Select ${filter_master_criterias.divisions} On Copy All Page
+
+Select Checkboxes
+    [Arguments]    @{locators}
+    : FOR    ${locator}    IN    @{locators}
+    \    Select Checkbox    ${locator}
+
+Select ${Seasons} On Copy All Page
+    [Documentation]    The Texts should be split by comma
+    @{texts}    split string    ${Seasons}    ,
+    ${locators}    Create List
+    : FOR    ${text}    IN    @{texts}
+    \    ${locator}    set variable    //td[contains(text(),'${text}')]//preceding-sibling::td/input
+    \    append to list    ${locators}    ${locator}
+    Select Checkboxes    @{locators}

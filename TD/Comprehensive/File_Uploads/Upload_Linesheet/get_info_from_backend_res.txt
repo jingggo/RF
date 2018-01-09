@@ -1,0 +1,82 @@
+*** Settings ***
+Resource          upload_actions_res.txt
+
+*** Keywords ***
+Get Styles UPC Page Infos After Upload Linesheet
+    [Documentation]    return list of color des, color code, size, size code, upc per row.
+    ...    [[u'RED', u'001', u'SMALL', u'S', u''],[u'RED', u'001', u'Large', u'L', u'']]
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank    #Navigate Into Style Bank
+    ${scenario_styles}    Get Scenario Styles From Scenario Files    ${upload_file}
+    ${scenario_styles}    remove duplicates    ${scenario_styles}
+    Comment    ${styles}    Create List    EFES002A    EFES002A    EFES002B    EFES002C
+    ...    EFES002D
+    Comment    ${style}    get from list    ${scenario_styles}    0
+    Advanced Search On Style Bank By Style    ${scenario_styles}    #    EFES001A
+    ${styles_upc_page_infos}    Create list
+    : FOR    ${style}    IN    @{scenario_styles}
+    \    Go To UPC Page    ${style}
+    \    Capture Page Screenshot    ${UPLOAD_LINESHEET_PNGS_DIR}${/}${style}-UPC.png
+    \    ${style_upc_page_infos}    Get Style UPC Page Infos After Upload Linesheet    ${style}
+    \    ${styles_upc_page_infos}    Combine Lists    ${styles_upc_page_infos}    ${style_upc_page_infos}
+    [Teardown]
+    [Return]    ${styles_upc_page_infos}
+
+Get Style UPC Page Infos After Upload Linesheet
+    [Arguments]    ${style}
+    ${style_upc_infos}    Get Sorted UPC Infos Of a Style
+    #    color des    color code    size    size code    upc
+    ${style_upc_infos}    strip list    ${style_upc_infos}
+    ${style_upc_page_infos}    Create list
+    : FOR    ${upc_info}    IN    @{style_upc_infos}
+    \    ${upc_infos_per_row}    Split to lines    ${upc_info}
+    \    log many    ${upc_infos_per_row}
+    \    ${upc_infos_len_per_row}    get length    ${upc_infos_per_row}
+    \    ${upc_check_info}    get slice from list    ${upc_infos_per_row}    0    5
+    \    log many    ${upc_check_info}
+    \    ${upc_check_info}    strip list    ${upc_check_info}
+    \    log many    ${upc_check_info}
+    \    Insert Into List    ${upc_check_info}    0    ${style}
+    \    Append to list    ${style_upc_page_infos}    ${upc_check_info}
+    [Teardown]    Go back
+    [Return]    ${style_upc_page_infos}
+
+Get Styles Short Colors After Upload Linesheet
+
+Get Style Short Colors After Upload Linesheet
+    Click element    \    #Colors
+
+Get Styles Patterns After Upload Linesheet
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank    #Navigate Into Style Bank
+    ${scenario_styles}    Get Scenario Styles From Scenario Files    ${upload_file}
+    ${scenario_styles}    remove duplicates    ${scenario_styles}
+    Advanced Search On Style Bank By Style    ${scenario_styles}    #    EFES001A
+    ${styles_colors_patterns}    Create list
+    :FOR    ${style}    IN    @{scenario_styles}
+    \    ${style_colors_patterns}    Get Style Patterns After Upload Linesheet    ${style}
+    \    ${styles_colors_patterns}    Combine lists    ${styles_colors_patterns}    ${style_colors_patterns}
+    Log many    ${styles_colors_patterns}
+    [Return]    ${styles_colors_patterns}
+
+Get Style Patterns After Upload Linesheet
+    [Arguments]    ${style}
+    ${sb_style_colors_xpath}    Replace string    ${sb_style_colors_path}    {style}    ${style}
+    Wait until keyword succeeds    60 sec    3 sec    Page should contain element    ${sb_style_colors_xpath}
+    Click element    ${sb_style_colors_xpath}    #Colors    Pattern is the eighth column
+    ${color_name_pxpath}    Set variable    //div[@class='DTFC_LeftBodyWrapper']//tbody[@role='alert']/tr/td/input[@name='color_name']
+    ${pattern_number_pxpath}    Set variable    //div[@class='dataTables_scrollBody']//tbody[@role='alert']/tr/td/input[@name='pattern_number']
+    ${ncolor_name}    Get matching xpath count    ${color_name_pxpath}
+    ${ncolor_name}    Convert to integer    ${ncolor_name}
+    ${style_colors_patterns}    Create list
+    :FOR    ${ncolor_name_xindex}    IN RANGE    1    ${ncolor_name + 1}
+    \    ${color_name_xpath}    Replace string    ${color_name_pxpath}    /tr    /tr[${ncolor_name_xindex}]
+    \    ${color_code_xpath}    Replace string    ${color_name_xpath}    @name='color_name'    @name='color_code'
+    \    ${pattern_number_xpath}    Replace string    ${pattern_number_pxpath}    /tr    /tr[${ncolor_name_xindex}]
+    \    ${color_desc}    Get element attribute    ${color_name_xpath}@value
+    \    Exit for loop if    '${color_desc}'==''    # color desc is blank if no more color for the style
+    \    ${color_code}    Get element attribute    ${color_code_xpath}@value
+    \    ${pattern_number}    Get element attribute    ${pattern_number_xpath}@value
+    \    ${style_color_patterns}    Create List    ${style}    ${color_desc}    ${color_code}    ${pattern_number}
+    \    Append to list    ${style_colors_patterns}    ${style_color_patterns}
+    log many    ${style_colors_patterns}
+    [Teardown]    go back
+    [Return]    ${style_colors_patterns}

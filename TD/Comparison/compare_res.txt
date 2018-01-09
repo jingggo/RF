@@ -1,0 +1,11 @@
+*** Settings ***
+Resource          ap_actions_res.txt
+
+*** Keywords ***
+Compare Local Dir Excels
+    [Arguments]    ${dira}    ${dirb}    # \ E:${/}CompareFiles${/}doorinfo_download_excels${/}prod
+    ${items_prod}    List Files In Directory    ${dira}    absolute=${True}
+    ${items_stag}    List Files In Directory    ${dirb}    absolute=${True}
+    :FOR    ${item_prod}    ${item_stag}    IN ZIP    ${items_prod}    ${items_stag}
+    \    run keyword and continue on failure    Compare Excel    ${item_prod}    ${item_stag}    ${item_prod}
+    #    E:${/}CompareFiles${/}doorinfo_download_excels${/}prod    E:${/}CompareFiles${/}doorinfo_download_excels${/}stag

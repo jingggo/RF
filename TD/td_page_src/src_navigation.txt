@@ -1,0 +1,36 @@
+*** Settings ***
+Library           Selenium2Library
+Library           String
+
+*** Variables ***
+${homeIcon}       id=mlogo
+${navigation_menu_path}    xpath=//a[@id='menuTrigger']    # the locator of navigation menu bar
+${DoonInfoLink_path}    /bin-java/zk/doorinfo    # /bin-java/efsnPackage.do_doorInfoEntry
+${logout_path}    /bin-java/efsnPackage.do_userLogoff
+${company_info_path}    //th[contains(text(),'Company Information')]
+${top_menu}       xpath=//*[@id='menuContent']
+${admin_fileupload}    //li[@class='navtitle' and span[text()='Administration']]//following-sibling::li//a[contains(@href,'fileUploads')]
+${admin_fileupload_confirmEle}    id=theSelect
+${corporateTxtPath}    xpath=//div[@id='corporate-text']
+${accessDisplayPath}    xpath=//select[contains(@style,'display')]
+${childCpPath}    //optgroup[@label='Business Unit']//option
+${navi_accounts_door_info_path}    //li[@id='tdaccounts']//following-sibling::li[3]/a
+${navi_style_bank_path}    //li[@class='navtitle' and span[text()='eShowroom']]//following-sibling::li//a[contains(@href,'StyleBank')]
+
+*** Keywords ***
+change company level
+    [Arguments]    ${CpIndex}
+    click element    ${corporateTxtPath}
+    wait until page contains element    ${accessDisplayPath}
+    sleep    1
+    ${currentCompany}    execute JavaScript    return document.getElementById('corporate-text').textContent
+    ${parentCompany}    get text    ${accessDisplayPath}//option[@selected]
+    ${currentCompany}    strip string    ${currentCompany}
+    ${parentCompany}    strip string    ${parentCompany}
+    ${currentCompanyLevel}    set variable if    '${currentCompany}'=='${parentCompany}'    parent    child
+    click element    ${accessDisplayPath}
+    ${tarCompany}    get text    ${childCpPath}[${CpIndex}]
+    ${tarCompany}    strip string    ${tarCompany}
+    click element    ${childCpPath}[${CpIndex}]
+    sleep    5
+    wait until element contains    ${corporateTxtPath}    ${tarCompany}

@@ -1,0 +1,28 @@
+*** Test Cases ***
+Enable user to modify worksheet locking criteria On User Profile Page
+    Login    ${USER}
+    Company Users
+    User Profile    ${USER}
+    Enable user to modify worksheet locking criteria should be displayed with checkbox
+
+Enable user to modify worksheet locking criteria Checked
+    Login    ${USER}
+    Company Users
+    User Profile    ${USER}
+    Check Enable user to modify worksheet locking criteria
+    Save On User Profile
+    Parent Company should be checked
+    Worksheet Locking Setup In Company Profile should exist
+    Child Company should be checked    ${CHILD_COMPANY}
+    Worksheet Locking Setup In Company Profile should exist
+
+Enable user to modify worksheet locking criteria UnChecked
+    Login    ${USER}
+    Company Users
+    User Profile    ${USER}
+    Uncheck Enable user to modify worksheet locking criteria
+    Save On User Profile
+    Parent Company should not be checked
+    Worksheet Locking Setup In Company Profile should not exist
+    Child Company should not be checked    ${CHILD_COMPANY}
+    Worksheet Locking Setup In Company Profile should not exist

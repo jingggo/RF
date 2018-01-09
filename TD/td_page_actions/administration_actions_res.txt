@@ -1,0 +1,13 @@
+*** Settings ***
+Resource          administration_compare_actions_res.txt
+
+*** Keywords ***
+Select From Company Profile
+    [Arguments]    ${label}
+    wait until page contains element    ${cp_dd_path}
+    select from list by label    ${cp_dd_path}    ${label}
+    click element    ${cp_go_btn_path}
+    ${titles}    split string    ${label}
+    run keyword if    "${label}"=="Delivery"    wait until page contains element    ${cp_delivery_button_path}
+    Comment    run keyword if    '${label}'!='Delivery'    wait until page contains element    //big[@class='title1' and contains(text(),'${titles[0]}')]
+    run keyword if    "${label}"!="Delivery"    wait until page contains    ${titles[0]}

@@ -1,0 +1,504 @@
+*** Settings ***
+Resource          ../assortment_planner_res.txt
+
+*** Keywords ***
+Choose Planningstage Vendor Buyer
+    [Arguments]    &{create_criterias}
+    wait until keyword succeeds    20 sec    3 sec    page should contain    Planning Stage
+    click element    //td[contains(text(),'${create_criterias.planningstage}')]//preceding-sibling::td/input[@name='planningstagename']    #    choose planning stage
+    select from list by label    //select[@name='vendorowner_name']    ${create_criterias.vendorowner}    #    choose owner
+    choose a buyer    ${create_criterias.buyer_company}    ${create_criterias.buyer}
+    click element    //form/input[last()]    #enter CreateSeasonalAssortment page
+    Comment    ${planningstage_vendorowner_buyer.planningstage}
+    Comment    ${planningstage_vendorowner_buyer.vendorowner}
+    Comment    ${planningstage_vendorowner_buyer.buyer}
+
+View Criteria Page Maximum Number of assortments exceeded
+
+No Assortments Display
+    [Documentation]    [ER-80039] You have no Collaborative Assortments for the criteria you selected. Please select different criteria to view.
+    \    page should contain element    //b[@class='error']
+
+Go To ${link} Page From CA
+    [Documentation]    Two Scenarios:
+    ...
+    ...    1. viewing criteria page opens directly when go to CA page;
+    ...
+    ...    2. click view criteria to go to viewing criteria page;
+    ...
+    ...    Click link cannot be use text to locator cuz for "Set Viewing Criteria" in buyer company side is "Set Viewing Criteria:"
+    ${ca_page}    run keyword and return status    page should contain    ${link}    #    Set Viewing Criteria
+    run keyword if    ${ca_page}    click link    //a[contains(text(),'${link}')]    #    Set Viewing Criteria
+    run keyword if    ${ca_page}    wait until page does not contain    ${link}
+
+choose a buyer
+    [Arguments]    ${buyer_company}    ${buyer_user}
+    [Documentation]    buyer_user:ARG Inline Buyer
+    ${buyer_path}    set variable    //a[text()='${buyer_user}']//parent::b//parent::td//preceding-sibling::td/input
+    ${select_buyer_passed}    run keyword and return status    click element    ${buyer_path}
+    return from keyword if    ${select_buyer_passed}
+    ${passed}    choose buyer by search    ${buyer_company}
+    run keyword unless    ${passed}    click link    Click here
+    run keyword unless    ${passed}    choose buyer by search    ${buyer_company}
+    click element    ${buyer_path}    #choose the buyer    //a[text()='ARG Inline Buyer']//parent::b//parent::td//preceding-sibling::td/input
+
+choose buyer by search
+    [Arguments]    ${buyer_company}
+    input text    //input[@name='searchstring']    ${buyer_company}
+    click element    //input[@value='Search']
+    ${passed}    run keyword and return status    page should not contain    No customers found.
+    [Return]    ${passed}
+
+choose criterias on CreateSeasonalAssortment page
+    [Arguments]    ${ws_name}    &{create_criterias}
+    Comment    select from list by label    id=planningstage    ${create_criterias.planningstage}    #    1-F0    select planning stage
+    #    Default Attributes    Planning Stage    Season    Starting Month    Total # of Months    AUD Option
+    : FOR    ${attribute_id}    IN    season    month    totalmonth
+    \    ${contained}    ${attribute_value}    run keyword and ignore error    get from dictionary    ${create_criterias}    ${attribute_id}
+    \    continue for loop if    '${contained}'=='FAIL'
+    \    select from list by label    id=${attribute_id}    ${attribute_value}
+    select from list by label    id=season    ${create_criterias.season}    #    SPRING    select season
+    select from list by label    id=seasonyear    ${create_criterias.seasonyear}    #    2019    select season year
+    select from list by label    id=month    ${create_criterias.month}    #    DEC    select starting month
+    select from list by label    id=startingyear    ${create_criterias.startingyear}    #    2019    select starting year
+    select from list by label    id=totalmonth    ${create_criterias.totalmonth}    #    1    select \# of months
+    select from list by label    id=dept    ${create_criterias.dept}    #    PAT
+    select from list by label    id=division    ${create_criterias.division}    #    PATAGONIA
+    select from list by label    id=storegroup    ${create_criterias.storegroup}    #    System Default - Bulk Cluster
+    ${contained}    run keyword and return status    dictionary should contain key    ${create_criterias}    productcategory
+    run keyword if    ${contained}    select from list by label    name=productcategory    ${create_criterias.productcategory}
+    input text    ${assortment_name_path}    ${ws_name}
+    ${which_btn_to_save}    set variable    Save
+    click element    //input[@value='${which_btn_to_save}']    #enter ThankYou page
+    ${ws_full_name}    catenate    1-F0
+    Comment    &{create_criterias}    create dictionary    planningstage=1-F0    season=SPRING    seasonyear=2019    month=DEC
+    ...    startingyear=2019    totalmonth=1    dept=PAT    division=PATAGONIA    storegroup=System Default - Bulk Cluster
+
+If set my viewing criteria
+    [Arguments]    ${check_checkbox}=Y
+    [Documentation]    Default is Yes
+    run keyword unless    '${check_checkbox}'=='Y'    unselect checkbox    id=setviewingcriteriaid
+    click element    //input[@value='Finished']
+
+get wsid info by ws name
+    [Arguments]    ${ws_name}
+    ${wsid_info}    get element attribute    //th[contains(text(),'${ws_name}')]@onclick    #javascript:LC('20042053','102580')
+    ${wsid_info}    remove string    ${wsid_info}    javascript:LC(
+    ${wsid_info}    remove string    ${wsid_info}    )    '
+    ${wsid}    fetch from left    ${wsid_info}    ,
+    ${vslice}    fetch from right    ${wsid_info}    ,
+    [Return]    ${wsid}    ${vslice}
+
+select ws
+    [Arguments]    ${wsid}    ${vslice}=${EMPTY}
+    run keyword if    '${vslice}'=='${EMPTY}'    select checkbox    //input[contains(@value,'${wsid}_')]
+    return from keyword if    '${vslice}'=='${EMPTY}'
+    ${ws_checkbox_value}    catenate    SEPARATOR=_    ${wsid}    ${vslice}    ${wsid}
+    select checkbox    //input[@value='${ws_checkbox_value}']    #20042053_102580_20042053
+
+select ws by list
+    [Arguments]    @{wsids}
+    : FOR    ${wsid}    IN    @{wsids}
+    \    select ws    ${wsid}
+
+del_ws_by_name
+    [Arguments]    ${ws_name}
+    [Documentation]    Worksheet to be deleted needs to be in the CA page.
+    ...    If not in CA page or not exist, this keyword will not execute.
+    ${ws_exist}    run keyword and return status    page should contain element    //th[contains(text(),'${ws_name}')]
+    return from keyword if    ${ws_exist}==${False}
+    ${wsid}    ${vslice}    get wsid info by ws name    ${ws_name}
+    select ws    ${wsid}    ${vslice}
+    Select From CA List and Submit    3. Delete Selected
+    Click Element    //input[@value='Yes']    #Are You Sure Page
+    wait until keyword succeeds    20 sec    3 sec    page should contain    Collaborative
+    Comment    get ws full name
+
+Select From CA List and Submit
+    [Arguments]    ${label}
+    select from list by label    id=sl1    ${label}    #select from ca list and submit
+    click element    //select[@id='sl1']//parent::td//following-sibling::td/input    #Submit in CA page
+
+Choose Buyers
+    [Arguments]    @{buyers}
+    ${buyers_path}    create list
+    : FOR    ${buyer}    IN    @{buyers}    #//a[text()='ARG Inline Buyer']//parent::b//parent::td//preceding-sibling::td/input
+    \    ${buyer_path}    catenate    SEPARATOR=    //a[text()=    ${buyer}    ]//parent::b//parent::td//preceding-sibling::td/input
+    \    append to list    ${buyers_path}    ${buyer_path}
+    ${passed}    Click Elements    @{buyers_path}
+    return from keyword if    ${passed}
+    click link    Click here
+    Choose Buyers By Search    @{buyers}
+
+Click Elements
+    [Arguments]    @{loctors}
+    : FOR    ${loctor}    IN    @{loctors}
+    \    ${passed}    run keyword and return status    Click Element    ${loctor}
+    \    return from keyword if    ${passed}==${False}    ${False}
+    return from keyword    ${True}
+
+Choose Buyers By Search
+    [Arguments]    @{buyers}
+    ${buyer_companies}    Create List
+    : FOR    ${buyer}    IN    @{buyers}
+    \    ${buyer_company}    remove string    ${buyer}    Buyer
+    \    ${buyer_path}    catenate    SEPARATOR=    //a[text()=    '${buyer}'    ]//parent::b//parent::td//preceding-sibling::td/input
+    \    Choose Buyer By Search    ${buyer_company}
+    \    Click Elements    ${buyer_path}
+
+get ws full name
+    [Documentation]    Return dictionary of the ws's planning stage, season, year, dept, division and name with months.
+    ${full_name}    get text    //th[@id='th${wsid}']/following-sibling::th[1]    #    Order HL 2016 Retro Tee CKJ CKASIA HO16 Retro Track Capsule (NOV 16 - JAN 17)
+    ${ws_months_str}    fetch from right    ${full_name}    ${SPACE}(
+    ${ws_months_str}    fetch from left    ${ws_months_str}    )
+    ${if_single_month}    run keyword and return status    should not contain    ${ws_months_str}    -
+    Comment    ${ws_months}    set variable if    ${if_single_month}    ${ws_months_str}
+    ${ws_months}    split string    ${ws_months_str}    -
+    ${ws_months}    evaluate    [x.strip() for x in ${ws_months}]
+
+get wsid by ws name owner and buyer
+    [Arguments]    ${ws_owner}    ${ws_buyer}    ${ws_name}    ${ws_time}=${EMPTY}
+    [Documentation]    The ws should be visible in CA page.
+    ${owner_path}    set variable    //table[@class='table5']/tbody[tr[@id and th[contains(text(),'${ws_owner}')]]]    #    //table[@class='table5']/tbody[tr[@id]]    //table[@class='table5']/tbody[tr[@id and th[contains(text(),'Patagonia - Linda Collins')]]]
+    ${buyer_path}    set variable    //table[@class='table5']/tbody[tr[not(@*) and td[b[contains(text(),'${ws_buyer}')]]]]    #    //table[@class='table5']/tbody[tr[not(@*) and td[b[contains(text(),'ARG Inline')]]]]
+    ${name_path}    set variable if    '${ws_time}'=='${EMPTY}'    //table[@class='table5']/tbody[tr[@id and th[contains(text(),'${ws_name}')]]]    //table[@class='table5']/tbody[tr[@id and th[contains(text(),'${ws_name} (${ws_time}')]]]
+    ${name_ws_count}    get matching xpath count    ${name_path}
+    ${name_ws_count}    convert to integer    ${name_ws_count}
+    ${wsids_by_name}    Create List
+    : FOR    ${position_index}    IN RANGE    ${name_ws_count}
+    \    ${wsid_by_owner}    Get Element Attribute    ${name_path}[position()=${position_index+1}]/tr@id
+    \    append to list    ${wsids_by_name}    ${wsid_by_owner}
+    log many    ${wsids_by_name}
+    return from keyword if    ${name_ws_count}==${1}    ${wsids_by_name[0]}
+    ${owner_ws_count}    get matching xpath count    ${owner_path}
+    ${owner_ws_count}    convert to integer    ${owner_ws_count}
+    ${wsids_by_owner}    Create List
+    : FOR    ${position_index}    IN RANGE    ${owner_ws_count}
+    \    ${wsid_by_owner}    Get Element Attribute    ${owner_path}[position()=${position_index+1}]/tr@id
+    \    append to list    ${wsids_by_owner}    ${wsid_by_owner}
+    log many    ${wsids_by_owner}
+    ${buyer_ws_count}    get matching xpath count    ${buyer_path}
+    ${buyer_ws_count}    convert to integer    ${buyer_ws_count}
+    ${wsids_by_buyer}    Create List
+    : FOR    ${position_index}    IN RANGE    ${buyer_ws_count}
+    \    ${wsid_by_owner}    Get Element Attribute    ${buyer_path}[position()=${position_index+1}]/preceding-sibling::tbody[1]/tr@id
+    \    append to list    ${wsids_by_buyer}    ${wsid_by_owner}
+    log many    ${wsids_by_buyer}
+    : FOR    ${wsid_by_owner}    IN    @{wsids_by_owner}
+    \    ${buyer_contained}    run keyword and return status    list should contain value    ${wsids_by_buyer}    ${wsid_by_owner}
+    \    ${name_contained}    run keyword and return status    list should contain value    ${wsids_by_name}    ${wsid_by_owner}
+    \    return from keyword if    ${name_contained} and ${buyer_contained}    ${wsid_by_owner}
+
+Share WS
+    [Arguments]    ${wsid}
+    Select WS    ${wsid}
+    Click Element    //input[@value='Share with Buyer(s)']
+    #Jump to Collaborative Notes Page
+    ${in_collaborative_notes_page}    \    run keyword and ignore error    get text
+    run keyword if    '${in_collaborative_notes_page}'=='PASS'    Click Element    //input[@value='Submit']
+    wait until page contains element    //tr[@id='workid20016272']/../following-sibling::tbody[1]/tr[2]/td[last()]//small[text()='Shared']    #//tr[@id='workid20016272']/../following-sibling::tbody[1]/tr[2]/td[last()]//small[text()='Shared']
+    \    Get Text    //tr[@id='workid20016272']/../following-sibling::tbody[1]/tr[2]/td[last()]
+
+Approve WS
+    [Arguments]    ${wsid}
+    Select WS    ${wsid}
+    Click Element    //input[@value='Approve Orders']
+    wait until page contains element    //tr[@id='workid${wsid}']/../following-sibling::tbody[1]/tr[2]/td[last()]//small[contains(text(),'Approved')]    1 min
+
+Send Bulk Orders
+    [Arguments]    ${wsid}
+    Select WS    ${wsid}
+    Click Element    //input[@value='Send Bulk Orders']
+    #    Note: Placeholder styles and colors without units will automatically be removed when worksheets are Bulk Sent.    Bulk can not be sent on the following worksheets because they contain no quantities or no style colors:
+    wait until page contains element    //tr[@id='workid${wsid}']/../following-sibling::tbody[1]/tr[2]/td[last()]//small[contains(text(),'Bulk')]    5 sec
+
+Add Remove Styles By Basic Search
+    [Arguments]    ${wsid}    ${sc_season_year}    &{styles_colors}
+    Expand Worksheet    ${wsid}
+    Comment    //a[@href='efsnPackage.do_orderWorksheetPreAddRemoveStyle?worksheetid=20040186']
+    Click Link    //a[@href='efsnPackage.do_orderWorksheetPreAddRemoveStyle?worksheetid=${wsid}']
+    wait until page contains    Basic Search
+    ${cur_link_area}    Get Text    ${add_remove_styles_link_td_path}
+    ${basic_search_page}    ${no_return}    run keyword and ignore error    Click Link    Basic Search
+    ${styles}    get dictionary keys    ${styles_colors}
+    ${start_line}    set variable    ${1}
+    : FOR    ${style}    IN    @{styles}
+    \    ${style_colors}    get from dictionary    ${styles_colors}    ${style}
+    \    ${end_line}    input style colors each row    ${start_line}    ${style}    ${style_colors}
+    \    ${start_line}    set variable    ${end_line + 1}
+    Click Button    Add to worksheet    #Click Element    //input[@value='Add to worksheet']
+    #Jump to AreYouSure page    //tr[td[contains(text(),'NB1015')] and td[contains(text(),'100')]]/td[3]/select
+    Select From List By Label    //tr[td[contains(text(),'${style}')] and td[contains(text(),'100')]]/td[3]/select    ${sc_season_year}    #BASIC-2018
+    Click Button    Yes
+    Comment    //table[@id='stylecolor']/tbody/tr[${rel_tr_index}]/td[1]/input[@name='stylenumbers']
+    Comment    //table[@id='stylecolor']/tbody/tr[${rel_tr_index}]/td[2]/input[@name='stylecolors']
+    Comment    ${styles_colors}    NB1015=[100]
+    Comment    Input Text    //table[@id='stylecolor']/tbody/tr[1]/td[1]/input[@name='stylenumbers']    ${styles}    #NB1015
+    Comment    Input Text    //table[@id='stylecolor']/tbody/tr[1]/td[2]/input[@name='stylecolors']    ${colors_code}    #100
+
+Potential Error When Create WS
+    [Documentation]    CreateTemplatePage:
+    ...
+    ...    [ER-80397] Please select a planning stage.
+    ...
+    ...    [ER-30052] Please select a buyer owner.
+    ...
+    ...    Seasonal Page:
+    ...
+    ...    [ER-30376] You must select one Season and one Year to populate, Please check your information and re-enter.
+    ${er}    ${er_text}    run keyword and ignore error    get text    id=er1
+    run keyword if    '${er}'=='PASS'    Fail    ${er_text}
+
+${plus_minus} Worksheet To Plus Or Minus By ${src_wsid}
+    [Documentation]    Plus/Minus
+    ...
+    ...
+    ...    Plus Worksheet/Minus Worksheet
+    ${plus_minus}    convert to lowercase    ${plus_minus}
+    ${if_plus}    run keyword and return status    should be equal as strings    ${plus_minus}    plus    \    ${True}
+    ${plus_minus}    set variable if    ${if_plus}    plus    minus
+    ${opposite_value}    set variable if    ${if_plus}    minus    plus
+    ${plus_path}    set variable    //th[@id='th${src_wsid}']/img[@class='plus']
+    ${minus_path}    set variable    //th[@id='th${src_wsid}']/img[@class='minus']
+    ${expected_path}    set variable    //th[@id='th${src_wsid}']/img[@class='${plus_minus}']
+    ${opposite_path}    set variable    //th[@id='th${src_wsid}']/img[@class='${opposite_value}']
+    ${expected_status}    run keyword and return status    element should be visible    ${expected_path}    #visible means '-' is visible, and can click to collapse
+    run keyword if    ${expected_status}    click element    ${expected_path}
+    wait until element is visible    ${opposite_path}
+
+input style colors each row
+    [Arguments]    ${start_line}    ${style}    ${style_colors}
+    [Documentation]    The minor value of start line is .
+    : FOR    ${index}    ${style_color}    IN ENUMERATE    ${style_colors}
+    \    ${rel_tr_index}    evaluate    ${start_line} \ + ${index}
+    \    wait until page contains element    //table[@id='stylecolor']/tbody/tr[${rel_tr_index}]/td[1]/input[@name='stylenumbers']    3 sec
+    \    Input Text    //table[@id='stylecolor']/tbody/tr[${rel_tr_index}]/td[1]/input[@name='stylenumbers']    ${style}    #NB1015
+    \    Input Text    //table[@id='stylecolor']/tbody/tr[${rel_tr_index}]/td[2]/input[@name='stylecolors']    ${style_color}    #100
+    return from keyword    ${rel_tr_index}
+
+Filter Worksheet with Correct Results
+    [Arguments]    @{filter_hierarchy_criterias}
+    Go To Set Viewing Criteria Page From CA
+    &{filter_hierarchy_criterias}    Get Filter Hierarchy Data    @{filter_hierarchy_criterias}
+    Clear Viewing Criteria page
+    Input Filter Conditions In Viewing Criteria Page    &{filter_hierarchy_criterias}
+    Verify Worksheets After Filter    &{filter_hierarchy_criterias}
+
+Verify Months For The Worksheets Filtered
+    [Arguments]    ${wss_count}    &{filter_hierarchy_criterias}
+    ${time_range}    get from dictionary    ${filter_hierarchy_criterias}    time_range
+    ${time_range_transfered}    Transfer Time Range    @{time_range}
+    @{time_range_transfered}    convert to list    ${time_range_transfered}
+    ${uncodition_wss}    create list
+    : FOR    ${ws_index}    IN RANGE    1    ${wss_count+1}
+    \    ${x_wsid}    get element attribute    //table[@class='table5']/tbody[@id][${ws_index}]@id    #x20010240
+    \    ${wsid}    fetch from right    ${x_wsid}    x
+    \    ${month_pass}    verify at least a month in a worksheet    ${wsid}    @{time_range_transfered}    &{filter_hierarchy_criterias}
+    \    run keyword if    '${month_pass}'=='FAIL'    append to list    ${uncodition_wss}    ${wsid}
+    ${uncodition_wss_count}    get length    ${uncodition_wss}
+    return from keyword If    ${uncodition_wss_count}>${0}    FAIL    ${uncodition_wss}
+    [Return]    PASS    ${EMPTY}
+
+verify at least a month in a worksheet
+    [Arguments]    ${wsid}    @{months}    &{filter_hierarchy_criterias}
+    [Documentation]    Return PASS Or FAIL
+    Plus Worksheet To Plus Or Minus By ${wsid}
+    ${ws_monthly_tbody_path}    set variable    //tbody[@id='x${wsid}']
+    ${ws_monthly_info}    get text    ${ws_monthly_tbody_path}
+    : FOR    ${month_year}    IN    @{months}
+    \    ${month_year}    split string    ${month_year}
+    \    ${month_year}    catenate    SEPARATOR=    ${month_year[0]}    ${SPACE}    ${SPACE}
+    \    ...    ${month_year[1]}    #there are two spaces between month and year
+    \    ${contained_month}    run keyword and return status    should contain    ${ws_monthly_info}    ${month_year}
+    \    return from keyword if    ${contained_month}    PASS
+    [Teardown]    Minus Worksheet To Plus Or Minus By ${wsid}
+    [Return]    FAIL
+
+Transfer Time Range
+    [Arguments]    @{time_range}
+    [Documentation]    2012_1
+    ...
+    ...    to
+    ...
+    ...    JAN 12
+    ${num_str}    Create Dictionary    1=JAN    2=FEB    3=MAR    4=APR    5=MAY
+    ...    6=JUN    7=JUL    8=AUG    9=SEP    10=OCT    11=NOV
+    ...    12=DEC
+    ${time_range_transfered}    create list
+    : FOR    ${year_month}    IN    @{time_range}
+    \    ${year_month}    split string    ${year_month}    _
+    \    ${year}    get from list    ${year_month}    0
+    \    ${month_num}    get from list    ${year_month}    1
+    \    ${sub_year}    get substring    ${year}    2
+    \    ${month_str}    get from dictionary    ${num_str}    ${month_num}
+    \    ${time_transfered}    catenate    ${month_str}    ${sub_year}
+    \    append to list    ${time_range_transfered}    ${time_transfered}
+    [Return]    ${time_range_transfered}
+
+Verify Worksheets After Filter
+    [Arguments]    &{filter_hierarchy_criterias}
+    ${wss_count}    get matching xpath count    //th[@id]
+    ${wss_count}    convert to integer    ${wss_count}
+    ${time_range_setted}    run keyword and return status    dictionary should contain key    ${filter_hierarchy_criterias}    time_range
+    ${time_range}    run keyword if    ${time_range_setted}    get from dictionary    ${filter_hierarchy_criterias}    time_range
+    ${months_pass}    ${uncodition_wss_for_months}    run keyword if    ${time_range_setted}    Verify Months For The Worksheets Filtered    ${wss_count}    &{filter_hierarchy_criterias}
+    ${criterias_pass}    ${uncodition_wss_for_criterias}    Verify Criterias In BlueBar For The Worksheet Filtered    ${wss_count}    &{filter_hierarchy_criterias}
+
+Verify Criterias In BlueBar For The Worksheet Filtered
+    [Arguments]    ${wss_count}    &{filter_hierarchy_criterias}
+    [Documentation]    \# verify result in buyer side Buyer Dept # Department Division Owned by Buyer Owned by Vendor    #    Planning Stage    Product Category    Season    Status
+    ${uncodition_wss}    create list
+    : FOR    ${ws_index}    IN RANGE    1    ${wss_count+1}
+    \    ${x_wsid}    get element attribute    //table[@class='table5']/tbody[@id][${ws_index}]@id    #x20010240
+    \    ${wsid}    fetch from right    ${x_wsid}    x
+    \    ${verify_pass}    Verify Criterias For a Worksheet After Filtered    ${wsid}    &{filter_hierarchy_criterias}
+    \    Run keyword if    '${verify_pass}'=='FAIL'    append to list    ${uncodition_wss}    ${wsid}
+    ${uncodition_wss_count}    get length    ${uncodition_wss}
+    return from keyword If    ${uncodition_wss_count}>${0}    FAIL    ${uncodition_wss}
+    [Return]    PASS    ${EMPTY}
+
+Verify Criterias For a Worksheet After Filtered
+    [Arguments]    ${wsid}    &{filter_hierarchy_criterias}
+    Comment    planning stage    seasons    year    dept    division    Order BASIC 2017 \ CUM CKASIA FW17_Collection_2017X (JUL 17 - JUN 18)
+    Comment    owned by buyer
+    Comment    Owned by Vendor
+    Comment    dept#    po#
+    Comment    product category
+    ${ws_monthly_tbody_path}    set variable    //tbody[@id='x${wsid}']
+    ${ws_criterias_info_str}    get text    ${ws_monthly_tbody_path}/preceding-sibling::tbody[2]
+    ${ws_criterias_info}    split string    ${ws_criterias_info_str}
+    : FOR    ${ws_criteria_index}    ${ws_criteria}    IN ENUMERATE    Planning Stage    Season    Year
+    ...    Department    Division
+    \    ${setted}    ${ws_criteria_values}    run keyword and ignore error    get from dictionary    ${filter_hierarchy_criterias}    ${ws_criteria}
+    \    continue for loop if    '${setted}'=='FAIL'
+    \    ${verify_in}    evaluate    [x in '${ws_criterias_info_str}' for x in ${ws_criteria_values}]    #at least one ${True} returns, this case would be pass.
+    \    run keyword and continue on failure    list should contain value    ${verify_in}    ${True}
+    : FOR    ${ws_criteria}    IN    Owned by Vendor
+    \    ${setted}    ${ws_criteria_values}    run keyword and ignore error    get from dictionary    ${filter_hierarchy_criterias}    ${ws_criteria}
+    \    continue for loop if    '${setted}'=='FAIL'
+    \    ${ws_vendor_info}    get text    ${ws_monthly_tbody_path}/preceding-sibling::tbody[1]/tr/td[2]/b
+    \    run keyword and continue on failure    list should contain value    ${ws_criteria_values}    ${ws_vendor_info}
+    : FOR    ${ws_criteria}    IN    Buyer Dept #    po_numbers
+    \    ${setted}    ${ws_criteria_values}    run keyword and ignore error    get from dictionary    ${filter_hierarchy_criterias}    ${ws_criteria}
+    \    continue for loop if    '${setted}'=='FAIL'
+    \    ${po_info}    get text    ${ws_monthly_tbody_path}/preceding-sibling::tbody[3]
+    \    ${verify_in}    evaluate    [x in '${po_info}' for x in ${ws_criteria_values}]
+    \    run keyword and continue on failure    list should contain value    ${verify_in}    ${True}
+    : FOR    ${ws_criteria}    IN    po_numbers
+    \    ${setted}    ${ws_criteria_values}    run keyword and ignore error    get from dictionary    ${filter_hierarchy_criterias}    ${ws_criteria}
+    \    continue for loop if    '${setted}'=='FAIL'
+    \    ${po_info}    get text    ${ws_monthly_tbody_path}/preceding-sibling::tbody[3]
+    \    run keyword and continue on failure    should contain    ${po_info}    ${ws_criteria_values}
+    Comment    :FOR    ${ws_criteria}    IN    Status
+    Comment    \    ${setted}    ${ws_criteria_values}    run keyword and ignore error    get from dictionary    ${filter_hierarchy_criterias}
+    ...    ${ws_criteria}
+    Comment    \    continue for loop if    '${setted}'=='FAIL'
+    Comment    \    ${status_info}    get text    ${ws_monthly_tbody_path}/preceding-sibling::tbody[1]//td[5]
+    Comment    \    ${verify_in}    evaluate    [x in '${status_info}' for x in ${ws_criteria_values}]
+    Comment    \    run keyword and continue on failure    list should contain value    ${verify_in}    ${True}
+    #    Bulk Sent    Bulk sent
+    [Return]    PASS
+
+Download Worksheet
+    [Arguments]    ${wsid}    ${store_path}
+    [Documentation]    fpath: only include download path ex: r'E:\\CompareFiles\\download_stag'
+    select ws    ${wsid}
+    select from list by label    //form[@id='form1']/table[2]//select    6. Download Selected
+    click element    //form[@id='form1']/table[2]//input[@value='Submit']
+    Choose Download Selected Options
+    click element    name=submit
+    Comment    win wait    Opening 7thOnlineWorksheets.zip    Timeout=1600
+    Comment    win active    Opening 7thOnlineWorksheets.zip
+    Comment    process wait    \    5
+    win wait    Enter name of file to save to…    \    300
+    win active    Enter name of file to save to…
+    process wait    \    5
+    ${download_sequence}    get time    epoch
+    ${store_path_file}    catenate    SEPARATOR=${/}    ${store_path}    7thOnlineWorksheets_${download_sequence}.zip
+    control set text    Enter name of file to save to…    \    Edit1    ${store_path_file}
+    process wait    \    3
+    control click    Enter name of file to save to…    \    Button1
+    wait until created    ${store_path_file}    20 seconds
+
+Choose Download Selected Options
+    [Arguments]    ${ws_tabs}=2    ${STD}=${True}    ${Transfer}=${True}    ${default}=${True}
+    [Documentation]    ws_tabs:
+    ...
+    ...    download seasonal tabs only:
+    ...    value: 0 --- Edit monthly flow%;
+    ...    value: 1 --- Edit monthly units;
+    ...    value: 2 --- Edit cluster and flow %
+    ...
+    ...    download seasonal and monthly tabs:
+    ...    value: all
+    ...
+    ...    FOB and STD:
+    ...
+    ...    Default is checked. If want to unselect, change to False.
+    ${w_titles}    get window titles
+    ${w_names}    get window names
+    ${w_ids}    get window identifiers
+    ${w_handles}    list windows
+    log many    ${w_titles}    ${w_names}    ${w_ids}    ${w_handles}
+    select window    new
+    wait until page contains    SelectedOptions
+    return from keyword if    ${default}
+    run keyword if    ${STD}    select checkbox    name=displaystdcostwithzero
+    run keyword if    ${Transfer}    select checkbox    name=displaytransferpricewithzero
+    run keyword unless    ${STD}    unselect checkbox    name=displaystdcostwithzero
+    run keyword unless    ${Transfer}    unselect checkbox    name=displaytransferpricewithzero
+    run keyword if    '${ws_tabs}'=='all'    select radio button    downloadmonthly    downloadseasonalandmonthlytabs
+    return from keyword if    '${ws_tabs}'=='all'
+    select radio button    downloadmonthly    downloadseasonaltabs
+    select radio button    editmonthdata    ${ws_tabs}    #0/1/2
+
+Download Worksheets
+    [Arguments]    ${store_path}    @{wsids}
+    [Documentation]    Download all worksheets by check all worksheets.
+    ...    And the worksheet name is 7thOnlineWorksheets by default.
+    Comment    select ws by list    @{wsids}
+    click link    Check All
+    select from list by value    //form[@id='form1']/table[2]//select    download
+    click element    //form[@id='form1']/table[2]//input[@value='Submit']
+    Choose Download Selected Options
+    click element    name=submit
+    ${download_sequence}    get time    epoch
+    ${store_path_file}    catenate    SEPARATOR=${/}    ${store_path}    ${download_worksheets_default_name}
+    Download to local    ${store_path_file}
+
+Download to local
+    [Arguments]    ${store_path_file}
+    Comment    win wait    Opening 7thOnlineWorksheets.zip    Timeout=1600
+    Comment    win active    Opening 7thOnlineWorksheets.zip
+    Comment    process wait    \    5
+    win wait    Enter name of file to save to…    \    2400
+    win active    Enter name of file to save to…
+    process wait    \    5
+    control set text    Enter name of file to save to…    \    Edit1    ${store_path_file}
+    process wait    \    3
+    control click    Enter name of file to save to…    \    Button1
+    wait until created    ${store_path_file}    20 seconds
+    Wait Until File Size Larger Than 0    ${store_path_file}
+
+Download to local by dir
+    [Arguments]    ${dir}    # skip / at the end
+    [Documentation]    dir: example: E:${/}CompareFiles${/}doorinfo_download_excels
+    create directory    ${dir}
+    win wait    Enter name of file to save to…    \    300
+    win active    Enter name of file to save to…
+    process wait    \    5
+    ${file_name}    control get text    Enter name of file to save to…    \    Edit1
+    control set text    Enter name of file to save to…    \    Edit1    ${dir}${/}${file_name}
+    process wait    \    3
+    control click    Enter name of file to save to…    \    Button1
+    wait until created    ${dir}${/}${file_name}    30 seconds
+    Wait Until File Size Larger Than 0    ${dir}${/}${file_name}
+    [Return]    ${file_name}
+
+Wait Until File Size Larger Than 0
+    [Arguments]    ${path}    ${timeout}=100
+    sleep    0.5
+    : FOR    ${sec}    IN RANGE    ${timeout}
+    \    ${file_size}    Get File Size    ${path}
+    \    run keyword if    '${file_size}'=='0'    sleep    ${sec}
+    \    exit for loop if    '${file_size}'>'0'

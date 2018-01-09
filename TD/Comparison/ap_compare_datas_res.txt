@@ -1,0 +1,179 @@
+*** Settings ***
+Resource          ap_actions_res.txt
+Library           MyUtil
+
+*** Variables ***
+${pre_result_htm}    <html><head><style>.diff { color: #FF0000; }</style></head><body><table width="98%" cellspacing="0" cellpadding="1" border="1"><tbody><tr><th>Production</th><th>Stage</th></tr>
+${end_result_htm}    </tbody></table></body></html>
+${content_html_jquery}    $(document).ready(function(){});htm=$("#content").html();return htm;    # return $("#content").html();In ck, maincontent is class attribute, In TD maincontent is id attribute
+${content_txt_jquery}    $(document).ready(function(){});htm=$("#maincontent").text();return htm;
+${notabcontent_html_jquery}    $(document).ready(function(){});htm=$("#notabcontent").html();return htm;
+
+*** Keywords ***
+Compare Assortment Permissions Page
+    ${link}    set variable    Set Assortment Permissions
+    ${enabled}    run keyword and return status    wait until page contains element    //a[text()='${link}']    5
+    return from keyword if    ${enabled}==${False}
+    : FOR    ${tag}    IN    prod    stag
+    \    ${browser_index}    set variable if    '${tag}' == 'prod'    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click link    Set Assortment Permissions
+    ${page_tag}    set variable    Set Assortment Permissions
+    ${content}    Get Div Content Html    prod    stag
+    Compare HTML Datas    ${page_tag}    &{content}
+
+Compare Cluster Sequence Page
+    ${link}    set variable    Set Cluster Sequence
+    ${enabled}    run keyword and return status    wait until page contains element    //a[text()='${link}']    5
+    return from keyword if    ${enabled}==${False}
+    : FOR    ${tag}    IN    prod    stag
+    \    ${browser_index}    set variable if    '${tag}' == 'prod'    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click link    Set Cluster Sequence
+    ${page_tag}    set variable    Set Cluster Sequence
+    ${content}    Get Div Content Html    prod    stag
+    Compare HTML Datas    ${page_tag}    &{content}
+
+Compare Store Groups Page
+    ${link}    set variable    Store Groups
+    ${enabled}    run keyword and return status    wait until page contains element    //a[text()='${link}']    5
+    return from keyword if    ${enabled}==${False}
+    : FOR    ${tag}    IN    prod    stag
+    \    ${browser_index}    set variable if    '${tag}' == 'prod'    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click link    Store Groups
+    ${page_tag}    set variable    Store Groups
+    ${content}    Get Div Content Html    prod    stag
+    Compare HTML Datas    ${page_tag}    &{content}
+
+Compare Assortment Profile
+    [Documentation]    Enter Assortment Profile Page.
+    ...
+    ...    Get html data.
+    ...
+    ...    Compare.
+    Assortment Profile Module all envs    prod    stag
+    click link all envs    Open All
+    Compare HTML Content htmls    AP Main
+
+Compare Size Scales
+    Navigation Size Scales Module all envs
+    Compare HTML Content htmls    Size Scales
+
+Compare HTML Datas
+    [Arguments]    ${page_tag}    &{content}
+    ${prod_htm_content}    get from dictionary    ${content}    prod
+    ${stag_htm_content}    get from dictionary    ${content}    stag
+    ${prod_htm_content}    replace string using regexp    ${prod_htm_content}    dump=(.*?)"    dump=1"
+    ${stag_htm_content}    replace string using regexp    ${stag_htm_content}    dump=(.*?)"    dump=1"
+    ${prod_htm_content}    replace string using regexp    ${prod_htm_content}    <tbody><tr><td><a id="morerows" href="(.*?)" class="random">More Clusters</a></td></tr>    <tbody><tr><td><a id="morerows" href="1234" class="random">More Clusters</a></td></tr>    #this part for ws edit info page. href is a random number
+    ${stag_htm_content}    replace string using regexp    ${stag_htm_content}    <tbody><tr><td><a id="morerows" href="(.*?)" class="random">More Clusters</a></td></tr>    <tbody><tr><td><a id="morerows" href="1234" class="random">More Clusters</a></td></tr>
+    ${prod_htm_content}    remove string using regexp    ${prod_htm_content}    <!--.*?-->    #remove the comment line
+    ${stag_htm_content}    remove string using regexp    ${stag_htm_content}    <!--.*?-->
+    Comment    ${prod_htm_content}    remove string using regexp    ${prod_htm_content}    <!--|-->
+    Comment    ${stag_htm_content}    remove string using regexp    ${stag_htm_content}    <!--|-->
+    ${prod_htm_content}    remove string using regexp    ${prod_htm_content}    &nbsp;    #remove space
+    ${stag_htm_content}    remove string using regexp    ${stag_htm_content}    &nbsp;
+    ${prod_htm_content}    remove string using regexp    ${prod_htm_content}    0xef
+    ${stag_htm_content}    remove string using regexp    ${stag_htm_content}    0xef
+    Comment    ${cmp_stat}    ${compare_error}    run keyword and ignore error    diff outputs    ${prod_htm_content}    ${stag_htm_content}
+    ${cmp_stat}    Should be equal as Html    ${prod_htm_content}    ${stag_htm_content}
+    return from keyword if    ${cmp_stat} == ${True}    ${True}
+    Analysis Compare    ${page_tag}    ${prod_htm_content}    ${stag_htm_content}
+    set test message    ${page_tag} compare failed.    ${True}
+    run keyword and continue on failure    Fail    ${page_tag} compare failed.
+    Comment    ${diff}    render html diff    ${prod_htm_content}    ${stag_htm_content}
+    Comment    create file    E:${/}CompareFiles${/}analysis${/}diff.htm    ${diff}
+    [Return]    ${False}
+
+Analysis Compare
+    [Arguments]    ${page_tag}    ${prod_htm_content}    ${stag_htm_content}
+    [Documentation]    dir\\user_ap.htm
+    Comment    ${compare_style_bank_dir}    ${compare_ca_dir}    ${compare_retailer_profile_dir}    ${compare_store_group_dir}    ${compare_ws_download_dir}
+    ${dir}    set variable    ${compare_result_dir}
+    ${prod_output}    catenate    SEPARATOR=${/}    ${dir}    prod    ${page_tag}_${user}.htm
+    ${stag_output}    catenate    SEPARATOR=${/}    ${dir}    stag    ${page_tag}_${user}.htm
+    create file    ${prod_output}    ${prod_htm_content}
+    create file    ${stag_output}    ${stag_htm_content}
+    ${wsid_status}    run keyword and return status    variable should exist    ${wsid}
+    ${compare_company_tag}    set variable if    '${compare_company}'==''    ${SPACE}    ${compare_company}
+    ${tag_with_wsid}    run keyword if    ${wsid_status}    catenate    ${page_tag}    ${user}    ${compare_company_tag}
+    ...    ${wsid}.htm
+    ${tag_without_wsid}    run keyword unless    ${wsid_status}    catenate    ${page_tag}    ${user} ${compare_company_tag}.htm
+    ${file_name}    set variable if    ${wsid_status}    ${tag_with_wsid}    ${tag_without_wsid}
+    ${analysis_file_output}    catenate    SEPARATOR=${/}    ${dir}    analysis    ${file_name}
+    ${analysis_htm}    catenate    SEPARATOR=    ${pre_result_htm}    <tr><td>    ${prod_htm_content}    </td>
+    ...    <td>    ${stag_htm_content}    </td></tr>    ${end_result_htm}
+    create file    ${analysis_file_output}    ${analysis_htm}
+    Comment    ${diff_result_dir}    catenate    SEPARATOR=${/}    ${dir}    diff_html_result1    ${file_name}
+    Comment    ${result}    render_html_diff    ${prod_htm_content}    ${stag_htm_content}
+    Comment    create file    ${diff_result_dir}    ${result}
+    ${diff_result_dir}    catenate    SEPARATOR=${/}    ${dir}    diff_html_result2    ${file_name}
+    ${prod_htm_contents}    split to lines    ${prod_htm_content}
+    ${stag_htm_contents}    split to lines    ${stag_htm_content}
+    ${pass}    ${result}    run keyword and ignore error    Hndiff    ${prod_htm_contents}    ${stag_htm_contents}
+    run keyword if    '${pass}'=='PASS'    create file    ${diff_result_dir}    ${result}
+
+Compare AP HTML ${page} Content
+    [Documentation]    This is for assortment profile links or other links who can back to main page like AP.
+    ${enabled}    ${error_msg}    run keyword and ignore error    wait until page contains element    //a[text()='${page}']    5
+    run keyword if    '${enabled}'=='FAIL'    run keyword and continue on failure    fail    ${error_msg}
+    return from keyword if    '${enabled}'=='FAIL'
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click link    ${page}
+    Compare HTML Content htmls    AP ${page}
+    Comment    Compare Store Groups
+    Go Back All Envs
+
+Compare Copy All
+    Navigation Copy All Module all envs
+    Compare HTML Content htmls    Copy All
+
+Compare Collaborative Assortments
+    ${module_tag}    set variable    Collaborative Assortments
+    set test variable    ${module_tag}
+    Navigation ${module_tag} Module all envs
+    Compare HTML Content htmls    ${module_tag}
+
+Compare HTML Content htmls
+    [Arguments]    ${page_tag}
+    ${content}    Get Div Content Html    prod    stag
+    ${compare_status}    Compare HTML Datas    ${page_tag}    &{content}
+    [Return]    ${compare_status}
+
+Compare HTML Content Txts
+    [Arguments]    ${page_tag}
+    ${content}    Get Div Content Txt    prod    stag
+    ${compare_status}    Compare HTML Datas    ${page_tag}    &{content}
+    [Return]    ${compare_status}
+
+Compare Zip Excels
+    [Arguments]    ${zip_name}    ${parent_dir}
+    [Documentation]    ${parent_dir}:E:${/}CompareFiles
+    ${prod_dir}    catenate    SEPARATOR=    ${parent_dir}    download_prod
+    ${stag_dir}    catenate    SEPARATOR=    ${parent_dir}    download_stag
+    ${prod_zip_excel}    catenate    SEPARATOR=    ${parent_dir}    download_prod${/}    ${zip_name}
+    ${stag_zip_excel}    catenate    SEPARATOR=    ${parent_dir}    download_stag${/}    ${zip_name}
+    ${pf}    Extract ZIP    ${prod_zip_excel}    ${prod_dir}${/}    ${user}_
+    ${sf}    Extract ZIP    ${stag_zip_excel}    ${stag_dir}${/}    ${user}_
+    Comment    ${pf}    catenate    SEPARATOR=${/}    ${prod_dir}    \    #pcheng_wsid_FA17 Core assortment.xlsx
+    Comment    ${sf}    catenate    SEPARATOR=${/}    ${stag_dir}    \    #pcheng_wsid_FA17 Core assortment.xlsx
+    compare excel    ${pf}    ${sf}    ${parent_dir}${user}_7thOnlineWorksheets.xlsx
+    Comment    remove file
+
+Compare Store Groups
+    ${store_group_n}    get matching xpath count    //a[contains(@href,'do_doorAssignmentEdit')]
+    ${store_group_n}    convert to integer    ${store_group_n}
+    : FOR    ${xpath}    IN RANGE    1    ${store_group_n + 1}
+    \    ${store_group_path}    set variable    //input[@id='filter']//following-sibling::table[1]/tbody/tr[${xpath}]//a[contains(@href,'do_doorAssignmentEdit')]
+    \    wait until page contains element    ${store_group_path}
+    \    ${store_group_name}    get text    ${store_group_path}
+    \    Click Store Group All Envs    ${store_group_path}
+    \    Compare Store Group    ${store_group_name}
+    \    go back all envs
+
+Compare Store Group
+    [Arguments]    ${page_tag}
+    ${content}    Get Div Content Html    prod    stag
+    ${compare_status}    Compare HTML Datas    ${page_tag}    &{content}

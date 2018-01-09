@@ -1,0 +1,200 @@
+*** Settings ***
+Resource          style_bank_compare_datas_res.txt
+Resource          style_bank_compare_actions_res.txt
+Resource          ap_actions_res.txt
+Resource          style_bank_datas.txt
+Resource          style_bank_actions_res.txt
+Resource          ../td_page_src/eshowroom/style_bank_src.txt
+
+*** Keywords ***
+compare style bank original page
+    [Documentation]    Compare the whole Style Bank Home page instead of each style.
+    ${prod_season_year_list}    ${stag_season_year_list}    get season and year from dropdown all envs
+    run keyword and continue on failure    lists should be equal    ${prod_season_year_list}    ${stag_season_year_list}    Style Bank: Year Season list is not equal.
+    ${prod_select_label}    ${stag_select_label}    get selected list label all envs    ${season_year_select_path}
+    ${selected_season_year_equal}    run keyword and return status    should be equal as strings    ${prod_select_label}    ${stag_select_label}    #if current selected labels are not equal, chage the stage label following the prod label
+    run keyword unless    ${selected_season_year_equal}    run keyword and continue on failure    Fail    Style Bank: Selected label under Year Season list is not equl.
+    return from keyword if    ${selected_season_year_equal}==${False}
+    #run keyword unless    ${selected_season_year_equal}    select from season and year dropdown    ${prod_select_label}
+    Compare HTML Content htmls    SB original
+
+get season and year from dropdown all envs
+    [Documentation]    Be used in Style Bank and PH Styles.
+    ...
+    ...    The time under season-year dropdown on Style Bank or PH page would be returned.
+    switch browser    ${PROD_BROWSER_INDEX}
+    wait until page contains element    ${season_year_select_path}    20
+    ${prod_season_year_list}    get list items    ${season_year_select_path}
+    switch browser    ${STAGE_BROWSER_INDEX}
+    wait until page contains element    ${season_year_select_path}    20
+    ${stag_season_year_list}    get list items    ${season_year_select_path}
+    [Return]    ${prod_season_year_list}    ${stag_season_year_list}
+
+get ph view option all envs
+    [Documentation]    Style/Color/Size under the dropdown.
+    switch browser    ${PROD_BROWSER_INDEX}
+    wait until page contains element    ${ph_view_option_path}    20
+    ${prod_style_types_list}    get list items    ${ph_view_option_path}
+    switch browser    ${STAGE_BROWSER_INDEX}
+    wait until page contains element    ${ph_view_option_path}    20
+    ${stag_style_types_list}    get list items    ${ph_view_option_path}
+    [Return]    ${prod_style_types_list}    ${stag_style_types_list}
+
+compare style bank next page
+    [Arguments]    ${times}
+    [Documentation]    If times is more than the largest, then only compare until the largest
+    ${times}    evaluate    ${times} + 1
+    : FOR    ${index}    IN RANGE    1    ${times}
+    \    ${next_exist}    run keyword and return status    page should contain element    ${sb_table_top_next_path}
+    \    return from keyword if    ${next_exist}==${False}
+    \    click next in style bank all envs
+    \    Compare styles table in style bank    style_bank_${index}
+
+Compare styles table in style bank
+    [Arguments]    ${page_tag}
+    [Documentation]    This keyword only compares the html text of the Style table which class is table1, and not compare each style's links link image/color/size/upc...
+    ${styles_table_html_all_envs}    create dictionary
+    : FOR    ${tag}    IN    prod    stag
+    \    ${browser_index}    set variable if    '${tag}' == 'prod'    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    ${styles_table_html}    execute javascript    return $("table.table1").html();
+    \    set to dictionary    ${styles_table_html_all_envs}    ${tag}=${styles_table_html}
+    ${prod_htm_content}    get from dictionary    ${styles_table_html_all_envs}    prod
+    ${stag_htm_content}    get from dictionary    ${styles_table_html_all_envs}    stag
+    ${prod_htm_content}    replace string using regexp    ${prod_htm_content}    dump=(.*?)"    dump=1"
+    ${stag_htm_content}    replace string using regexp    ${stag_htm_content}    dump=(.*?)"    dump=1"
+    ${cmp_stat}    Should Be Equal As Html    ${prod_htm_content}    ${stag_htm_content}
+    return from keyword if    ${cmp_stat}    ${True}
+    Analysis Compare    ${page_tag}    ${prod_htm_content}    ${stag_htm_content}
+    set test message    ${page_tag} styles table compare failed.    ${True}
+    run keyword and continue on failure    Fail    ${compare_error}
+    [Return]    ${styles_table_html_all_envs}
+
+Compare advanced search
+    [Arguments]    ${excel_tab_name}
+    ${advanced_search_exist}    go to advanced search on style bank all envs
+    run keyword if    ${advanced_search_exist}==${False}    Fail    Compare Advanced Search Main page
+    Comment    @{filter_hierarchy_criterias}    create list    DIV Group/CKJ    #Catalog Season Year/2017    Catalog Season Desc/BASIC    Product Group/MAINLINE
+    ${filter_hierarchy_criterias}    Get Style Bank Compare Ads Data From Excel    ${excel_tab_name}
+    &{styles_filter_criterias}    Get Filter Hierarchy Data    @{filter_hierarchy_criterias}
+    Filter styles by advanced search all envs    &{styles_filter_criterias}
+    Compare styles table in style bank    SB Advanced Search
+
+compare style
+    [Arguments]    ${style}
+    [Documentation]    Image Views/Style Info/Colors/Sizes/UPC
+    : FOR    ${style_link_txt}    IN    ${style}    Style    Colors    Sizes
+    ...    UPC
+    \    click style link all envs    ${style}    ${style_link_txt}
+    \    run keyword if    "${style_link_txt}"=="UPC"    Compare Style UPC Without Order    ${style}    ${style_link_txt}
+    \    run keyword if    "${style_link_txt}"=="Colors"    Compare Style Color Info Vals and Txts    ${style}    ${style_link_txt}
+    \    run keyword if    "${style_link_txt}"!="UPC" and "${style_link_txt}"!="Colors"    Compare HTML Content htmls    SB ${style} ${style_link_txt}
+    \    go back all envs
+    comment    Compare Style Color Info Vals and Txts
+
+Compare Style UPC Without Order
+    [Arguments]    ${style}    ${style_link_txt}
+    ${prod_size_infos}    ${stag_size_infos}    Get Sorted UPC Infos Of a Style All Envs
+    ${upc_infos_compare_status}    run keyword and return status    lists should be equal    ${prod_size_infos}    ${stag_size_infos}
+    run keyword if    ${upc_infos_compare_status}==${False}    Compare HTML Content htmls    SB ${style} ${style_link_txt}
+    [Return]    ${upc_infos_compare_status}
+
+Compare Style Color Info Vals and Txts
+    [Arguments]    ${style}    ${style_link_txt}
+    ${prod_color_infos}    ${stag_color_infos}    Get Color Des and Code All Envs
+    ${color_info_compare_ture}    run keyword and return status    lists should be equal    ${prod_color_infos}    ${stag_color_infos}
+    ${prod_color_scroll_infos}    ${stag_color_scroll_infos}    Get Color Info Scroll Data All Envs
+    ${color_info_compare_ture}    run keyword and return status    lists should be equal    ${prod_color_scroll_infos}    ${stag_color_scroll_infos}
+    switch browser    ${PROD_BROWSER_INDEX}
+    ${prod_color_txt}    Get Div Content Txt    prod    stag
+    switch browser    ${STAGE_BROWSER_INDEX}
+    ${stag_color_txt}    Get Div Content Txt    prod    stag
+    ${color_txt_compare_ture}    run keyword and return status    should be equal as strings    ${prod_color_txt}    ${stag_color_txt}
+    run keyword if    ${color_info_compare_ture}==${False} or ${color_txt_compare_ture}==${False}    Compare HTML Content htmls    SB ${style} ${style_link_txt}
+
+compare ph styles original page
+    ${prod_season_year_list}    ${stag_season_year_list}    get season and year from dropdown all envs
+    run keyword and continue on failure    should be equal as strings    ${prod_season_year_list}    ${stag_season_year_list}    PH Season Year List not equal.
+    ${prod_season_year_label}    ${stag_season_year_label}    get selected list label all envs    ${season_year_select_path}
+    run keyword and continue on failure    should be equal as strings    ${prod_season_year_label}    ${stag_season_year_label}    PH Season Year Selected Label compare Failed.
+    Comment    ${compare_status}    Compare HTML Content htmls    PH Styles original page
+    ${compare_status}    Compare HTML Content Txts    PH Styles original page
+    Comment    ${prod_style_types_list}    ${stag_style_types_list}    get ph view option all envs
+    Comment    run keyword and continue on failure    should be equal as strings    ${prod_style_types_list}    ${stag_style_types_list}    PH Style Type List compare Failed.
+    Comment    ${prod_style_types_label}    ${stag_style_types_label}    get selected list label all envs    ${ph_view_option_path}
+    Comment    run keyword and continue on failure    should be equal as strings    ${prod_style_types_label}    ${stag_style_types_label}    PH Style Type Selected Label compare Failed.
+
+Compare ph style
+    [Arguments]    ${ph_style}
+    click ph style edit all envs    ${ph_style}
+    ${prod_phinfo_vals}    ${stag_phinfo_vals}    Get PH Info Vals All Envs
+    ${ph_info_vals_compare_ture}    run keyword and return status    lists should be equal    ${prod_phinfo_vals}    ${stag_phinfo_vals}
+    switch browser    ${PROD_BROWSER_INDEX}
+    ${prod_color_txt}    Get Div Content Txt    prod    stag
+    switch browser    ${STAGE_BROWSER_INDEX}
+    ${stag_color_txt}    Get Div Content Txt    prod    stag
+    ${ph_txt_compare_ture}    run keyword and return status    should be equal as strings    ${prod_color_txt}    ${stag_color_txt}
+    run keyword if    ${ph_info_vals_compare_ture}==${False} or ${ph_txt_compare_ture}==${False}    Compare HTML Content htmls    PH Style ${ph_style} Edit
+    go back all envs
+
+Get Style Bank Compare Ads Data From Excel
+    [Arguments]    ${excel_tab_name}=StyleBank
+    [Documentation]    ads means advance search
+    #${excel_tab_name}    set variable    StyleBank
+    ${users}    Get Values Per Col    ${compare_setting_file}    ${excel_tab_name}    0
+    ${companies}    Get Values Per Col    ${compare_setting_file}    ${excel_tab_name}    1
+    ${user_rindex}    get index from list    ${users}    ${user}
+    ${user_sb_setting}    Get Values Per Row    ${compare_setting_file}    ${excel_tab_name}    ${user_rindex}
+    ${user_sb_ads_criteira}    get slice from list    ${user_sb_setting}    3
+    remove values from list    ${user_sb_ads_criteira}    ${EMPTY}
+    [Return]    ${user_sb_ads_criteira}
+
+Get Style Bank Download Report Type From Excel
+    [Arguments]    ${excel_tab_name}=StyleBank
+    [Documentation]    ads means advance search
+    #${excel_tab_name}    set variable    StyleBank
+    ${users}    Get Values Per Col    ${compare_setting_file}    ${excel_tab_name}    0
+    ${user_rindex}    get index from list    ${users}    ${user}
+    ${report_type}    excelCustomLibrary.Get Cell Value    ${compare_setting_file}    ${excel_tab_name}    ${user_rindex}    2
+    [Return]    ${report_type}
+
+Compare Style Bank Download
+    [Arguments]    ${excel_tab_name}
+    ${report_type}    Get Style Bank Download Report Type From Excel    ${excel_tab_name}
+    return from keyword if    '${report_type}'=='${EMPTY}'
+    ${advanced_search_exist}    go to advanced search on style bank all envs
+    run keyword if    ${advanced_search_exist}==${False}    Fail    Failed to go to advanced search page.
+    ${filter_hierarchy_criterias}    Get Style Bank Compare Ads Data From Excel    ${excel_tab_name}
+    &{styles_filter_criterias}    Get Filter Hierarchy Data    @{filter_hierarchy_criterias}
+    ${store_path_files}    Generate Style Bank Report All Envs    ${report_type}    &{styles_filter_criterias}
+    ${split_path}    split string    ${store_path_files[0]}    ${/}
+    ${diff_txt}    get from list    ${split_path}    -1
+    compare excel    ${store_path_files[0]}    ${store_path_files[1]}    ${compare_result_parent_dir}StyleBank${/}${diff_txt}    #${user}_7thOnlineWorksheets.xlsx
+
+Get Sorted UPC Infos Of a Style All Envs
+    switch browser    ${PROD_BROWSER_INDEX}
+    ${prod_size_infos}    Get Sorted UPC Infos Of a Style
+    switch browser    ${STAGE_BROWSER_INDEX}
+    ${stag_size_infos}    Get Sorted UPC Infos Of a Style
+    [Return]    ${prod_size_infos}    ${stag_size_infos}
+
+Get Color Des and Code All Envs
+    switch browser    ${PROD_BROWSER_INDEX}
+    ${prod_color_infos}    Get Color Des and Code
+    switch browser    ${STAGE_BROWSER_INDEX}
+    ${stag_color_infos}    Get Color Des and Code
+    [Return]    ${prod_color_infos}    ${stag_color_infos}
+
+Get Color Info Scroll Data All Envs
+    switch browser    ${PROD_BROWSER_INDEX}
+    ${prod_color_infos}    Get Color Info Scroll Data
+    switch browser    ${STAGE_BROWSER_INDEX}
+    ${stag_color_infos}    Get Color Info Scroll Data
+    [Return]    ${prod_color_infos}    ${stag_color_infos}
+
+Get PH Info Vals All Envs
+    switch browser    ${PROD_BROWSER_INDEX}
+    ${prod_color_infos}    Get PH Info Vals
+    switch browser    ${STAGE_BROWSER_INDEX}
+    ${stag_color_infos}    Get PH Info Vals
+    [Return]    ${prod_phinfo_vals}    ${stag_phinfo_vals}

@@ -1,0 +1,283 @@
+*** Settings ***
+Documentation     Prod URL: http://10.125.2.171 EF
+...
+...               Stag URL: http://10.125.2.179 EF
+Resource          ap_actions_res.txt
+Library           MyUtil
+Resource          style_bank_compare_datas_res.txt
+Resource          administration_compare_actions_res.txt
+Resource          accounts_compare_datas_res.txt
+Resource          ../../../RFScripts/TD_comprehensive/3__security_setup/res_users_UserGroups_Info.txt
+
+*** Variables ***
+
+*** Test Cases ***
+Template Compare
+    [Tags]    template-full
+    [Template]    Template of full compare
+    ${1}
+    ${2}
+
+Template Style Bank
+    [Tags]    sb
+    [Template]    Template of compare Style Bank
+    ${1}
+    ${6}
+
+Template PH Style
+    [Tags]    ph
+    [Template]    Template of compare PH Style
+
+Template Retailers
+    [Tags]    rp
+    [Template]    Template of compare Retailers
+    ${2}
+
+Template Accounts
+    [Tags]    door
+    [Template]    Template of compare Accounts
+    ${4}
+
+Template CA
+    [Tags]    ca
+    [Template]    Template of compare CA
+    ${2}
+    ${3}
+    ${4}
+    ${6}
+    ${7}
+
+compare excel test case
+    [Tags]    excel
+    Comment    ${p_dir}    set variable    E:${/}RFScripts${/}TD${/}TD comparison${/}EF${/}doorinfo_download_excels
+    Comment    compare local dir excels    ${p_dir}${/}prod    ${p_dir}${/}stag
+    Comment    :FOR    ${i}    IN RANGE    36
+    Comment    \    ${prod_account_num}    get values per col    ${p_dir}${/}prod${/}AccountAssignmentDownload_20171227-103540.xlsx    Account Assignment    ${i}
+    Comment    \    ${stag__account_num}    get values per col    ${p_dir}${/}stag${/}AccountAssignmentDownload_20171227-103658.xlsx    Account Assignment    ${i}
+    Comment    \    sort list    ${prod_account_num}
+    Comment    \    sort list    ${stag__account_num}
+    Comment    \    lists should be equal    ${prod_account_num}    ${stag__account_num}
+    ${content}    get file    Z:${/}QA${/}QA Material${/}TD${/}TD comparison${/}1225${/}EF${/}CA${/}Kroche_7thOnlineWorksheets_download_ws_diff.txt
+    ${lines}    split to lines    ${content}
+    @{cnt}    create list    2    12    22    32    42
+    ...    52    62    72
+    : FOR    ${linen}    IN RANGE    2    3    10
+    \    ${aline}    get from list    ${lines}    ${linen}
+    \    ${matches}    fetch from right    ${aline}    col2
+    \    ${matches}    remove string    ${matches}    [    ]
+    \    ${diffs}    split string    ${matches}    ,
+    \    ${prod}    get from list    ${diffs}    0
+    \    ${stag}    get from list    ${diffs}    1
+    \    ${prods}    split string    ${prod}    ;
+    \    ${stags}    split string    ${stag}    ;
+    \    sort list    ${prods}
+    \    sort list    ${stags}
+    \    lists should be equal    ${prods}    ${stags}
+
+Template Size Profile
+    [Tags]    size-scale
+    [Template]    Template of compare Size Profile
+    ${1}
+    ${2}
+    ${3}
+    ${4}
+    ${5}
+    ${6}
+    ${7}
+    ${8}
+    ${9}
+    ${10}
+
+Template Store Group
+    [Tags]    sg
+    [Template]    Template of compare Store Group
+    ${1}
+    ${2}
+
+*** Keywords ***
+Public Fragment
+    [Documentation]    Home page and logical workflow
+    Comment    #topcontainer    Navigation Menu
+    Comment    ${navi_cont}    Get HTML Text All Envs    prod    stag    return $("#topcontainer").html();
+    Comment    ${compare_status}    Compare HTML Datas    Home Navigation Menu    &{navi_cont}
+    Comment    #maincontent-except content    logic workflow
+    Comment    ${logical_wf_exist}    run keyword and return status    page should not contain element    id=notabcontent    #means no Logical Workflow    currently pat and ck exist, oak unexist
+    Comment    ${logic_wf_cont}    run keyword if    ${logical_wf_exist}    Get HTML Text All Envs    prod    stag
+    ...    return $("#wfview").html();
+    Comment    ${compare_status}    run keyword if    ${logical_wf_exist}    Compare HTML Datas    Home Logic Workflow    &{logic_wf_cont}
+    Comment    #home content
+    Comment    ${content}    Get Div Content Html    prod    stag
+    Comment    ${compare_status}    Compare HTML Datas    Home Content    &{content}
+    Compare HTML Content Htmls    Home
+
+Assortment Profile
+    Compare Assortment Profile
+    Compare AP HTML Set Assortment Permissions Content
+    Compare AP HTML Set Cluster Sequence Content
+    Compare AP HTML Store Groups Content
+    Comment    Compare HTML Quantity Break List Content
+    Compare Size Scales
+    Compare Copy All
+
+Worksheets
+    Compare Collaborative Assortments    #Initial Main Page
+    Comment    Compare Set Viewing Criteria
+    Comment    Compare worksheets
+    Comment    Filter Worksheet all envs    time_range/2017_2,2017_3,2017_4,2017_5,2017_6,2017_7,2017_8,2017_9,2017_10,2017_11,2017_12,2017_1    DIV Group/CKJ    Owned by Buyer/AI007 - Japan ECOM - AI007 JP ECOM Buyer,AI007 - Japan Retail - AI007 JP Retail Buyer    #@{filter_hierarchy_criteria}
+    #ws download
+    ${prod_ws_ids}    ${stag_ws_ids}    Get wsids in both envs
+    ${download_temp_prod}    catenate    SEPARATOR=    ${compare_result_parent_dir}    download_temp_prod
+    ${download_temp_stag}    catenate    SEPARATOR=    ${compare_result_parent_dir}    download_temp_stag
+    ${download_prod_dir}    catenate    SEPARATOR=    ${compare_result_parent_dir}    download_prod
+    ${download_stag_dir}    catenate    SEPARATOR=    ${compare_result_parent_dir}    download_stag
+    Create Directory    ${download_temp_prod}
+    Create Directory    ${download_temp_stag}
+    Create Directory    ${download_prod_dir}
+    Create Directory    ${download_stag_dir}
+    switch browser    ${PROD_BROWSER_INDEX}
+    Empty Directory    ${download_temp_prod}
+    Download Worksheets    ${download_temp_prod}    ${prod_ws_ids[0]}
+    Move File    ${download_temp_prod}${/}${download_worksheets_default_name}    ${download_prod_dir}${/}${user}_7thOnlineWorksheets.zip
+    Wait Until Created    ${download_prod_dir}${/}${user}_7thOnlineWorksheets.zip
+    switch browser    ${STAGE_BROWSER_INDEX}
+    Empty Directory    ${download_temp_stag}
+    Download Worksheets    ${download_temp_stag}    ${stag_ws_ids[0]}
+    Move File    ${download_temp_stag}${/}${download_worksheets_default_name}    ${download_stag_dir}${/}${user}_7thOnlineWorksheets.zip
+    Wait Until Created    ${download_stag_dir}${/}${user}_7thOnlineWorksheets.zip
+    Compare Zip Excels    ${user}_7thOnlineWorksheets.zip    ${compare_result_parent_dir}
+
+Style Bank
+    Comment    Navigation Style Bank Module all envs
+    Comment    compare style bank original page
+    Comment    Compare advanced search    ${compare_sb_setting_sheet}
+    Comment    ${styles}    get styles from whole page from style bank    #comes from stage
+    Comment    ${styles_len}    get length    ${styles}
+    Comment    ${slice_len}    set variable if    ${styles_len}>=${5}    ${5}    ${styles_len}
+    Comment    ${styles_slice}    get slice from list    ${styles}    0    ${slice_len}    #choose at most 5 styles to compare
+    Comment    : FOR    ${style}    IN    @{styles_slice}
+    Comment    \    compare style    ${style}
+    Navigation Style Bank Module all envs
+    Comment    compare style bank next page    3
+    Compare Style Bank Download    ${compare_sb_setting_sheet}
+
+PH Style
+    Navigation PH Styles Module all envs
+    compare ph styles original page
+    Compare advanced search    ${compare_ph_setting_sheet}
+    ${ph_styles}    get styles from whole page from PH Style
+    ${styles_len}    get length    ${ph_styles}
+    ${slice_len}    set variable if    ${styles_len}>=${5}    ${5}    ${styles_len}
+    ${styles_slice}    get slice from list    ${ph_styles}    0    ${slice_len}    #choose at most 5 styles to compare
+    : FOR    ${style}    IN    @{styles_slice}
+    \    Compare PH Style    ${style}
+    Navigation PH Styles Module all envs
+    Compare Style Bank Download    ${compare_ph_setting_sheet}
+
+Compare Size Profile
+    Navigation Size Profile Module all envs
+    Compare HTML Content htmls    Size Vertical Sequence
+    Comment    ${error}    Run keyword and return status    Page Should Not Contain    Error
+    Comment    Return From Keyword If    ${error}==${False}
+    go to size horizontal sequence all envs
+    Compare HTML Content htmls    Size Horizontal Sequence
+    go back all envs
+    go to size range all envs
+    Compare HTML Content htmls    Size Range
+    go back all envs
+
+Compare Administration
+    [Documentation]    Company Info/Password/Ownership/Company User/Company Profile
+    Navigation Company Info Module all envs
+    Compare HTML Content htmls    Company Info
+    Navigation Password Module all envs
+    Compare HTML Content htmls    Password
+    Navigation Ownership Module all envs
+    Compare HTML Content htmls    Ownership
+    Navigation Company Users Module all envs
+    Compare HTML Content htmls    Company Users
+    Navigation Company Profile Module all envs
+    Compare Company Profile Main Datas    #Company Profile Main Page
+    Compare Company Profile Dropdown Datas    #Company Profile Dropdowns
+
+Compare Retailers
+    Navigation Customer Directory Module all envs
+    Comment    repeat keyword    5 times    click next in customer directory all envs
+    : FOR    ${page_index}    IN RANGE    20
+    \    Compare HTML Content htmls    Customer Directory Main
+    \    Compare Retailers Per Page
+    \    ${next_status}    run keyword and return status    wait until page contains element    ${cd_next_path}
+    \    exit for loop if    ${next_status}==${False}
+    \    click next in customer directory all envs
+
+Template of full compare
+    [Arguments]    ${nrow}
+    [Documentation]    nrow >=1
+    Login compare envs    ${compare_setting_file}    ${compare_setting_sheet}    ${nrow}
+    Public Fragment
+    Style Bank
+    Compare Size Profile
+    PH Style
+    Compare Administration
+    Assortment Profile
+    Compare Retailers
+    Worksheets
+    Compare Doorinfo
+    [Teardown]    Close All Browsers
+
+Template of compare Style Bank
+    [Arguments]    ${nrow}
+    Login compare envs    ${compare_setting_file}    ${compare_sb_setting_sheet}    ${nrow}
+    ${compare_result_dir}    set variable    ${compare_style_bank_dir}
+    set test variable    ${compare_result_dir}
+    Style Bank
+    [Teardown]    Close All Browsers
+
+Template of compare Size Profile
+    [Arguments]    ${nrow}
+    Login compare envs    ${compare_setting_file}    ${compare_sb_setting_sheet}    ${nrow}
+    ${compare_result_dir}    set variable    ${compare_style_bank_dir}
+    set test variable    ${compare_result_dir}
+    Compare Size Profile
+    [Teardown]    Close All Browsers
+
+Template of compare PH Style
+    [Arguments]    ${nrow}
+    Login compare envs    ${compare_setting_file}    ${compare_ph_setting_sheet}    ${nrow}
+    ${compare_result_dir}    set variable    ${compare_ph_dir}
+    set test variable    ${compare_result_dir}
+    PH Style
+    [Teardown]    Close All Browsers
+
+Template of compare Accounts
+    [Arguments]    ${nrow}
+    Login compare envs    ${compare_setting_file}    ${compare_accounts_setting_sheet}    ${nrow}
+    Compare Doorinfo
+    [Teardown]    Close All Browsers
+
+Template of compare Retailers
+    [Arguments]    ${nrow}
+    Login compare envs    ${compare_setting_file}    ${compare_retailer_profile_setting_sheet}    ${nrow}
+    ${compare_result_dir}    set variable    ${compare_retailer_profile_dir}
+    set test variable    ${compare_result_dir}
+    Compare Retailers
+    [Teardown]    Close All Browsers
+
+Template of compare CA
+    [Arguments]    ${nrow}
+    Login compare envs    ${compare_setting_file}    ${compare_ca_setting_sheet}    ${nrow}
+    ${compare_result_dir}    set variable    ${compare_ca_dir}
+    set test variable    ${compare_result_dir}
+    Comment    Public Fragment
+    Comment    Compare Administration
+    Comment    Assortment Profile
+    Worksheets
+    [Teardown]    Close All Browsers
+
+Template of compare Store Group
+    [Arguments]    ${nrow}
+    Login compare envs    ${compare_setting_file}    ${compare_store_group_setting_sheet}    ${nrow}
+    ${compare_result_dir}    set variable    ${compare_store_group_dir}
+    set test variable    ${compare_result_dir}
+    Assortment Profile Module all envs    prod    stag
+    Compare AP HTML Store Groups Content
+    [Teardown]    Close All Browsers

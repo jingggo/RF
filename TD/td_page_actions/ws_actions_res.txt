@@ -1,0 +1,53 @@
+*** Settings ***
+Resource          ap_actions_res.txt
+
+*** Keywords ***
+Select Groupby On View Page
+    [Arguments]    ${value}
+    [Documentation]    Based on "Select from list by value".
+    select from list by value    name=groupby    ${value}
+    click element    //input[@value='view']
+    wait until page does not contain element    //input[@value="Wait"]    60    #class=sb pw
+    wait until page contains element    //option[@value="${value}" and @selected]    120    #//option[@value="ByGroup" and @selected]]
+
+Select View Month On View Page
+    [Arguments]    ${ws_month}
+    [Documentation]    based on select from list by label
+    Select from list by label    ${view_page_months_list_path}    ${ws_month}
+    click button    view
+    wait until keyword succeeds    120    5s    page should contain element    //option[@selected and text()='${ws_month}']
+
+Get worksheets list
+    [Documentation]    return $("table.table5").html(); \ if view worksheets in folders by month was checked, this jquery could only catch parts .
+    ...
+    ...    $("form[name=message]").html()
+    #    //table[@class='table5']
+    ${table5_html}    execute javascript    return $("form[name=message]").html();
+    ${ws_ids}    get regexp matches    ${table5_html}    id="x(.*?)"    1
+    Comment    ${ws_tr_ids}    get regexp matches    ${table5_html}    id="workid(.*?)"    1
+    Comment    ${ws_th_ids}    get regexp matches    ${table5_html}    id="th(.*?)"    #click th id can expand
+    Comment    log many    ${table5_html}
+    log many    ${ws_ids}
+    Comment    log many    ${ws_tr_ids}
+    Comment    log many    ${ws_th_ids}
+    Comment    ${wsid}    set variable    ${ws_ids[0]}
+    Comment    ${expand}    execute javascript    return $("#x20040174").visible();
+    Comment    run keyword if    ${expand}==${False}    execute javascript    $("#th20040174").click();
+    [Return]    ${ws_ids}
+
+Expand Worksheet
+    [Arguments]    ${wsid}
+    ${expand}    execute javascript    return $("#x${wsid}").visible();    # True is expand and False is eclipse
+    run keyword if    ${expand}==${False}    execute javascript    $("#th${wsid}").click();    #expand
+    wait until element is visible    //tbody[@id='x${wsid}']
+
+Collapse Worksheet
+    [Arguments]    ${wsid}
+    ${expand}    execute javascript    return $("#x${wsid}").visible();    # True is expand and False is eclipse
+    run keyword if    ${expand}    execute javascript    $("#th${wsid}").click();    #collapse
+
+go to seasonal notes page
+    [Arguments]    ${wsid}
+    element should be visible    //input[@id='topck${wsid}']/parent::td/following-sibling::td[2]/a[text()='Notes']
+    click element    //input[@id='topck${wsid}']/parent::td/following-sibling::td[2]/a[text()='Notes']    #//input[@id='topck20024594']/parent::td/following-sibling::td[2]/a[text()='Notes']
+    wait until page contains element    //big[@class='title2' and text()='Notes']

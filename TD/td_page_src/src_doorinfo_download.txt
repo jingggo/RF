@@ -1,0 +1,4 @@
+*** Variables ***
+${account_group_assignment_download_path}    //li[contains(@class,'IconExcel_1')]    # xpath=//li[@title='Account Group Assignment Excel Download']
+${account_group_download_path}    //li[contains(@class,'IconExcel_2')]    # xpath=//li[@title='Account Group Excel Download']
+${AccountGrouptoRetailerDownload_path}    //li[contains(@class,'IconExcel_3')]    # xpath=//li[@title='Account Group to Retailer Relation Excel Download']

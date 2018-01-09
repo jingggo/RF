@@ -1,0 +1,68 @@
+*** Settings ***
+Resource          ../Comprehensive/td_company_res.txt
+
+*** Keywords ***
+get styles from whole page from style bank
+    [Documentation]    Can both be used in PH Styles.
+    ${styles}    create list
+    page should contain element    //table[@class='table1']    No styles found.
+    ${styles_table_html}    execute javascript    return $(".table1").html();
+    ${styles}    get regexp matches    ${styles_table_html}    <a.*DetailImages.*>(.*)</a>    1
+    log many    ${styles}
+    [Return]    ${styles}
+
+get styles from whole page from PH Style
+    [Documentation]    Can both be used in PH Styles.
+    ${styles}    create list
+    page should contain element    //table[@class='table1']    No styles found.
+    ${style_table_tr_n}    Get Matching Xpath Count    //table[@class='table1']/tbody/tr
+    ${style_table_tr_n}    convert to integer    ${style_table_tr_n}
+    ${style_n}    evaluate    ${style_table_tr_n}-${1}
+    ${styles}    create list
+    : FOR    ${style_index}    IN RANGE    2    ${style_n + 2}
+    \    ${style}    Get Text    //table[@class='table1']/tbody/tr[${style_index}]/td[2]
+    \    ${style}    fetch from left    ${style}    [    #to remove [DPH] mark
+    \    ${style}    strip string    ${style}
+    \    append to list    ${styles}    ${style}
+    log many    ${styles}
+    [Return]    ${styles}
+
+Get Sorted UPC Infos Of a Style
+    [Documentation]    return list per row
+    ${ntr}    get matching xpath count    //table[@class="table4"]/tbody/tr
+    ${ntr}    convert to integer    ${ntr}    #4
+    ${size_infos}    create list
+    : FOR    ${tr_index}    IN RANGE    ${1}    ${ntr}    #1,2,3
+    \    ${size_info_aline}    execute javascript    return $("table.table4 tbody").children().eq(${tr_index}).text();    #eq() start from 1
+    \    append to list    ${size_infos}    ${size_info_aline}
+    log many    ${size_infos}
+    sort list    ${size_infos}
+    #    &nbsp; Before info
+    [Return]    ${size_infos}
+
+Get Color Des and Code
+    ${ninput}    execute javascript    return $("div.DTFC_LeftWrapper").find("input").length;
+    ${color_info_vals}    create list
+    : FOR    ${i}    IN RANGE    ${ninput}
+    \    ${color_info_val}    execute javascript    return $("div.DTFC_LeftWrapper").find("input").eq(${i}).val();    #$("div.DTFC_LeftWrapper").find("input").eq(0).val()
+    \    append to list    ${color_info_vals}    ${color_info_val}
+    log many    ${color_info_vals}
+    [Return]    ${color_info_vals}
+
+Get Color Info Scroll Data
+    ${nmid}    execute javascript    return $("div.dataTables_scroll").find("input").length;
+    ${color_info_vals}    create list
+    : FOR    ${i}    IN RANGE    ${nmid}
+    \    ${color_info_val}    execute javascript    return $("div.dataTables_scroll").find("input").eq(0).val();    #$("div.DTFC_LeftWrapper").find("input").eq(0).val()
+    \    append to list    ${color_info_vals}    ${color_info_val}
+    log many    ${color_info_vals}
+    [Return]    ${color_info_vals}
+
+Get PH Info Vals
+    ${ph_vals_len}    execute javascript    return $("form#placeholderstyleform").find("input").length;
+    ${color_info_vals}    create list
+    : FOR    ${i}    IN RANGE    ${ph_vals_len}
+    \    ${color_info_val}    execute javascript    return $("form#placeholderstyleform").find("input").eq(${i}).val();    #$("div.DTFC_LeftWrapper").find("input").eq(0).val()
+    \    append to list    ${color_info_vals}    ${color_info_val}
+    log many    ${color_info_vals}
+    [Return]    ${color_info_vals}

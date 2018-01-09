@@ -1,0 +1,351 @@
+*** Settings ***
+Resource          ../td_page_src/src_home_page.txt
+Resource          ../td_page_src/src_navigation.txt
+Resource          ../td_page_src/src_file_uploads.txt
+Resource          ../td_page_src/src_zk_common_elements.txt
+Resource          ../td_page_src/src_doorinfo_option.txt
+Resource          ../td_page_src/src_doorinfo_notes.txt
+Resource          ../td_page_src/src_doorinfo_modify.txt
+Resource          ../td_page_src/src_doorinfo_freeze.txt
+Resource          ../td_page_src/src_doorinfo_download.txt
+Resource          ../td_page_src/src_zk.txt
+Library           Selenium2Library
+Library           Collections
+Library           String
+Library           OperatingSystem
+Library           AutoItLibrary
+Library           DatabaseLibrary
+Library           excelCustomLibrary
+Library           OperatingSystem
+Resource          ../td_settings.txt
+Resource          ../td_page_src/Assortment Planner/src_collaborative_assortments.txt
+Resource          ../td_page_src/Assortment Planner/src_assortment_planner.txt
+Resource          ../td_page_src/Assortment Planner/src_copy_selected.txt
+Resource          ../td_page_src/Assortment Planner/src_view_criteria.txt
+Resource          ../td_page_src/eshowroom/src_style_bank.txt
+Resource          ../td_page_actions/style_bank_actions_res.txt
+Resource          ../td_page_actions/style_bank_datas.txt
+
+*** Keywords ***
+get parent cmid from db
+    [Arguments]    ${DB_APP}
+    connect to database using custom params    cx_Oracle    ${DB_APP}
+    ${queryOf_parent_cmid}    catenate    select u.company_id from users u where u.login=    '${user}'    order by u.company_id
+    ${parent_company_ids}    query    ${queryOf_parent_cmid}
+    ${parent_company_id}    get from list    ${parent_company_ids}    0
+    ${parent_company_id}    convert to list    ${parent_company_id}
+    ${parent_company_id}    get from list    ${parent_company_id}    0
+    [Return]    ${parent_company_id}
+
+query from db
+    [Arguments]    ${sql}
+    Comment    ${DB_APP}    get cell value    ${fuserPath}    ${sheetTab}    0    3
+    Comment    ${DB_APP}    remove string    ${DB_APP}    \\
+    log    ${DB_APP}
+    connect to database using custom params    cx_Oracle    ${DB_APP}
+    @{result}    query    ${sql}
+    disconnect from database
+    [Return]    @{result}
+
+get rename dictionary
+    ${queryOf_renamedAttr}    set variable    select cd.default_name, cd.defined_name from cmm_define_attribute cd where cd.company_id=${PCMID}
+    ${rename_list}    query from db    ${queryOf_renamedAttr}
+    &{rename_dictionary}    evaluate    dict(${rename_list})
+    log many    &{rename_dictionary}
+    ${len1}    get length    ${rename_dictionary}
+    Comment    ${items}    get dictionary items    ${rename_dictionary}
+    Comment    : FOR    ${key}    ${value}    IN    @{items}
+    Comment    \    run keyword if    '${value}'=='${None}'    remove from dictionary    ${rename_dictionary}    ${key}
+    Comment    log many    &{rename_dictionary}
+    Comment    ${len2}    get length    ${rename_dictionary}
+    [Return]    &{rename_dictionary}
+
+get default hierarchy attributes from db
+    connect to database using custom params    cx_Oracle    ${DB_APP}
+    ${queryOfHieraychyAttrs}    catenate    select cc.* from company_criteria cc    where cc.company_id=${PCMID}    and cc.criteria_type=5
+    log many    ${queryOfHieraychyAttrs}
+    ${hierarchyAttrsSysDefault}    query    ${queryOfHieraychyAttrs}
+    ${hierarchyAttrsSysDefault}    get from list    ${hierarchyAttrsSysDefault}    0
+    ${hierarchyAttrsSysDefault}    get slice from list    ${hierarchyAttrsSysDefault}    2    -2
+    ${hierarchyAttrsSysDefault}    convert to list    ${hierarchyAttrsSysDefault}
+    remove values from list    ${hierarchyAttrsSysDefault}    ${None}
+    [Return]    ${hierarchyAttrsSysDefault}
+
+get define attributes
+    [Arguments]    @{DEFAULT_HIERARCHY_ATTRIBUTE}
+    log many    @{DEFAULT_HIERARCHY_ATTRIBUTE}    &{RENAME_DIC}
+    ${define_criterias}    create list
+    : FOR    ${sys_criteria}    IN    @{DEFAULT_HIERARCHY_ATTRIBUTE}
+    \    ${define_criteria}    get from dictionary    ${RENAME_DIC}    ${sys_criteria}
+    \    ${define_criteria}    set variable if    '${define_criteria}' == '${None}'    ${sys_criteria}    ${define_criteria}
+    \    append to list    ${define_criterias}    ${define_criteria}
+    log many    ${define_criterias}
+    [Return]    ${define_criterias}
+
+login7thonline
+    [Arguments]    ${url}    ${browserType}    ${username}    ${company}    ${browserProfile}= ${browser_profile_ff_1}
+    ${browserIndex}    Open Browser    ${url}    ${browserType}    \    \    ${EMPTY}
+    ...    ${browserProfile}
+    run keyword if    '${browserType}'=='ie'    click link    Continue to this website (not recommended).
+    wait until element is visible    id=loginwrapper    25    The server at ${url} is unavailable currently.
+    Maximize Browser Window
+    Input Text    ${username_path}    ${username}
+    Input Password    ${psd_path}    ${password}
+    ${isMapVisible}    run keyword and return status    element should be visible    ${map_check_path}
+    run keyword if    ${isMapVisible}    Select Checkbox    ${map_check_path}
+    click element    ${log_in_button_path}
+    Wait Until Page Does Not Contain Element    loginform
+    ${isWarnVisible}    run keyword and return status    Page Should Contain    Warning:    #${status} would be PASS or FAIL
+    Run Keyword if    ${isWarnVisible}    Click Element    ${Yes_button}
+    ${isUserUnloginBefore}    run keyword and return status    element should be visible    ${IagreeBtnPath}
+    run keyword if    ${isUserUnloginBefore}    register and change password    wuhan02    wuhan02
+    Wait until element is enabled    ${navigation_menu_path}    ${timeout}    The navigation menu bar is unavailale.
+    run keyword if    '${company}'!='${EMPTY}'    select company    ${username}    ${company}
+    [Return]    ${browserIndex}
+
+select company
+    [Arguments]    ${user}    ${companyName}
+    ${isSingleCom}    run keyword and return status    page should contain element    id=corporate-text
+    ${isFor}    set variable if    ${isSingleCom}    1    0
+    ${allCompaniesForLoginUser}    create list    ${companyName}
+    : FOR    ${i}    IN RANGE    ${isFor}
+    \    wait until keyword succeeds    2 min    2 sec    click element    id=corporate-text
+    \    wait until element is visible    name=access    20 seconds
+    \    ${allCompaniesForUser}    get text    id=corporate-select
+    \    ${allCompaniesForLoginUser}    split to lines    ${allCompaniesForUser}
+    \    ${companyStatus}    run keyword and return status    select from list by label    name=access    ${companyName}
+    \    run keyword if    '${companyStatus}' =='False'    FAIL    company: '${companyName}' doesn't belong to user: '${user}'. Please change correct company.
+    \    wait until keyword succeeds    2 min    2 sec    wait until element is visible    ${navigation_menu_path}    ${timeout}
+    set global variable    ${allCompaniesForLoginUser}
+
+register and change password
+    [Arguments]    ${oldPsd}    ${newPsd}    ${email}=fake@7thonline.cn
+    click element    ${IagreeBtnPath}
+    wait until element is visible    id=cpasswordwrapper
+    input password    xpath=//input[@name='oldpassword']    ${oldPsd}
+    input password    xpath=//input[@name='password']    ${newPsd}
+    input password    xpath=//input[@name='reenterpassword']    ${newPsd}
+    input text    xpath=//input[@name='email']    ${email}
+    click element    xpath=//input[@name='submit']
+
+entry page via navimenu
+    [Arguments]    ${page_link}    ${Confirm_element}
+    [Documentation]    Enter some modules by open the navigation menu and click its element.
+    Wait Until Keyword Succeeds    60 sec    3 sec    Page should contain element    ${navigation_menu_path}
+    ${trigger_status}    run keyword and return status    page should contain element    ${navigation_menu_path}/parent::div[@class='open']
+    run keyword unless    ${trigger_status}    click element    ${navigation_menu_path}
+    Wait Until element is enabled    ${navigation_menu_path}/parent::div[@class='open']    20    The navigation menu is unable to open.
+    wait until keyword succeeds    10 s    3 s    Click element    ${page_link}    #${DoonInfoLink_path}
+    wait until keyword succeeds    1 min    6 sec    page should not contain element    ${z_enter_processing_path}    #${z_apply_processing_path}
+    Comment    Wait Until Page Contains Element    ${Confirm_element}    100    The page failed to open because the confirm element is not appear.
+
+select criteria to work with by list
+    [Arguments]    ${criteria_values}    ${currency}=USD
+    [Documentation]    Need to confirm if only one value in the dropdown, the value choosed would changed to All Select in the focus cell.
+    ...
+    ...    currency can be choosed form LOCAL/USD
+    Comment    ${slecte_cri}    create list    RETAIL STORES    FEMALE    All Selected    All Selected
+    ${criterias_values_path}    set variable    //label[text()='value']
+    Comment    ${criterias_to_work}    create list    ${define_hier_criterias}    Currency
+    : FOR    ${index}    ${criteria_to_work}    IN ENUMERATE    @{DEFINE_HIER_CRITERIAS}
+    \    spread criteria dropdown in home page    xpath=//span[@id='ddcl-attr${index+1}']    #spread dropdown
+    \    ${criteria_value_path}    replace string    ${criterias_values_path}    value    ${criteria_values[${index}]}
+    \    ${criteria_value_path}    catenate    SEPARATOR=    xpath=//div[@id='ddcl-attr${index+1}-ddw']    ${criteria_value_path}
+    \    sleep    3
+    \    wait until element is visible    ${criteria_value_path}
+    \    click element    ${criteria_value_path}
+    \    click element    xpath=//span[@id='ddcl-attr${index+1}']    #close dropdown
+    select from list by value    id=localcurrency    ${currency}
+
+select criteria to work with by dict
+    [Arguments]    ${criteria_dict}    ${currency}=USD
+    [Documentation]    Need to confirm if only one value in the dropdown, the value choosed would changed to All Select in the focus cell.
+    ...
+    ...    currency can be choosed form LOCAL/USD
+    ${criteria_items}    get dictionary items    ${criteria_dict}
+    : FOR    ${index}    ${criteria_to_work_key}    ${criteria_to_work_value}    IN ENUMERATE    @{criteria_items}
+    \    spread criteria dropdown in home page    xpath=//span[@id='ddcl-attr${index+1}']    #spread dropdown
+    \    comment    ${criteria_value_path}    set variable    xpath=//div[@id='ddcl-attr${index+1}-ddw']//label[text()='value']
+    \    ${criteriaIndex}    convert to string    ${index + 1}
+    \    ${criteria_value_path}    replace string    ${home_criteria_value_path}    {criteriaIndex}    ${criteriaIndex}
+    \    select values from criteria dropdown    ${criteria_to_work_value}    ${criteria_value_path}
+    \    click element    xpath=//span[@id='ddcl-attr${index+1}']    #close dropdown
+    select from list by value    id=localcurrency    ${currency}
+    comment    @{DEFINE_HIER_CRITERIAS}
+    capture page screenshot    ${TESTNAME}
+
+spread criteria dropdown in home page
+    [Arguments]    ${locator}
+    click element    ${locator}
+    ${class_active}    get element attribute    ${locator}/span@class
+    run keyword if    'ui-state-active' not in '${class_active}'    spread criteria dropdown in home page    ${locator}
+
+get hierarchy values from db
+    [Arguments]    ${userOfUserTab}
+    [Documentation]    return type is dictionary
+    connect to database using custom params    cx_Oracle    ${DB_APP}
+    ${hierarchyAttrsSysDefault}    get default hierarchy attributes from db
+    ${lenghOfHierarchyAttributes}    get length    ${hierarchyAttrsSysDefault}
+    ${indexOfST}    get index from list    ${hierarchyAttrsSysDefault}    Store Type Code
+    ${indexOfST}    evaluate    ${indexOfST} + 1
+    ${indexOfDept}    get index from list    ${hierarchyAttrsSysDefault}    Department
+    ${indexOfDept}    evaluate    ${indexOfDept} + 1
+    ${hierarchyValuesOfEach}    create list
+    : FOR    ${i}    IN RANGE    1    ${lenghOfHierarchyAttributes + 1}
+    \    ${queryOfEachHierarchy}    catenate    select distinct cup.attr_value${i} from criteria_user_permission cup    where cup.user_id in(select u.user_id from users u where u.login='${userOfUserTab}')    order by cup.attr_value${i}
+    \    ${2DimValue}    query    ${queryOfEachHierarchy}
+    \    ${queryOfSt}    run keyword if    ${i} == ${indexOfST}    catenate    select distinct st.store_type_code from store_type st where st.store_type_id in    ( select distinct cup.attr_value${i} from criteria_user_permission cup
+    \    ...    where cup.user_id in(select u.user_id from users u where u.login='${userOfUserTab}' and u.company_id=${PCMID}))    order by st.store_type_code
+    \    ${queryOfDt}    run keyword if    ${i} == ${indexOfDept}    catenate    select distinct upper(dt.dept) from buyer_dept dt where dt.buyer_dept_id in    (select distinct cup.attr_value${i} from criteria_user_permission cup
+    \    ...    where cup.user_id in(select u.user_id from users u where u.login='${userOfUserTab}' and u.company_id=${PCMID}))    order by upper(dt.dept)
+    \    ${valuesOfSt}    run keyword if    ${i} == ${indexOfST}    query    ${queryOfSt}
+    \    ${valuesOfDt}    run keyword if    ${i} == ${indexOfDept}    query    ${queryOfDt}
+    \    ${2DimValue}    set variable if    ${i} == ${indexOfST}    ${valuesOfSt}    ${2DimValue}
+    \    ${2DimValue}    set variable if    ${i} == ${indexOfDept}    ${valuesOfDt}    ${2DimValue}
+    \    ${value}    transfer to 1 dim list from 2 dim list    ${2DimValue}
+    \    append to list    ${hierarchyValuesOfEach}    ${value}
+    ${dicOfHierarchyValues}    evaluate    dict(zip(${DEFINE_HIER_CRITERIAS},${hierarchyValuesOfEach}))
+    log many    ${dicOfHierarchyValues}
+    [Return]    ${dicOfHierarchyValues}
+
+transfer to 1 dim list from 2 dim list
+    [Arguments]    ${2DimValue}
+    ${1DimList}    create list
+    : FOR    ${i}    IN    @{2DimValue}
+    \    ${i}    convert to list    ${i}
+    \    ${1DimList}    combine lists    ${1DimList}    ${i}
+    log many    ${1DimList}
+    [Return]    ${1DimList}
+
+select values from criteria dropdown
+    [Arguments]    ${per_criteria_values_list}    ${per_criteria_value_path}
+    [Documentation]    The values is a list in each criteria's dropdown.
+    : FOR    ${per_criteria_value}    IN    @{per_criteria_values_list}
+    \    ${criteria_value_path}    replace string    ${per_criteria_value_path}    {criteriaText}    ${per_criteria_value}
+    \    sleep    2
+    \    wait until element is visible    ${criteria_value_path}
+    \    click element    ${criteria_value_path}
+
+set sp plan level default
+    [Arguments]    ${sp_plan_level_path}
+    select checkbox    ${sp_plan_level_path}/input
+    wait until element is visible    ${sp_plan_level_path}/parent::tr[@class='checkedrowcolor']
+    click element    ${ap_list_setDefault1_path}
+    wait until element is not visible    ${sp_plan_level_path}/parent::tr[@class='checkedrowcolor']
+    ${default_txt}    get text    ${sp_plan_level_path}/following-sibling::td[@class='tdright']
+    ${default_txt}    strip string    ${default_txt}
+    should be equal as strings    ${default_txt}    Yes    Not set default.
+
+enter_ap_list_to_set_default
+    [Documentation]    The plan level to set default is from the setting data.
+    entry page via navimenu    ${assortment_plan_list_path}    ${ap_list_setDefault1_path}
+    Comment    ${PLAN_NAME}    ${PLAN_LEVEL_NAME}    set variable    RETAIL STORES-NO GENDER-HOME-US-2018    GENDER2 PRODUCTCATEGORY
+    Comment    ${PLAN_NAME}    get cell value    ${cmm_comprehensive_setting_dir}    CMM    ${rowToRead}    10
+    Comment    ${PLAN_LEVEL_NAME}    get cell value    ${cmm_comprehensive_setting_dir}    CMM    ${rowToRead}    11
+    #expand the sp plan
+    ${sp_plan_plus_minus_img_path}    replace string    ${sp_plan_plus_minus_img_path}    {planName}    ${PLAN_NAME}
+    ${plus_or_minus}    get element attribute    ${sp_plan_plus_minus_img_path}@class
+    run keyword if    '${plus_or_minus}'=='plus'    click element    ${sp_plan_plus_minus_img_path}    #expand
+    wait until element is visible    ${sp_plan_plus_minus_img_path}[@class='minus']
+    #check the special plan level whether set default
+    ${sp_plan_level_path}    replace string    ${sp_plan_level_path}    {planName}    ${PLAN_NAME}
+    ${sp_plan_level_path}    replace string    ${sp_plan_level_path}    {planLevelName}    ${PLAN_LEVEL_NAME}
+    log    ${sp_plan_level_path}
+    ${pre_default_txt}    get text    ${sp_plan_level_path}/following-sibling::td[@class='tdright']
+    ${pre_default_txt}    strip string    ${pre_default_txt}
+    run keyword unless    '${pre_default_txt}'=='Yes'    set sp plan level default    ${sp_plan_level_path}
+
+get the relation of month and season in cp
+    entry page via navimenu    ${company_profile_path}    ${profile_txt_path}
+    wait until element is visible    ${profile_txt_path}
+    select from list by label    ${cp_dropdown_path}    Set Planning Planning Season(s)
+    click element    ${cp_go_btn_path}
+    wait until element is visible    ${cp_planing_txt_path}
+    ${cp_planning_seasons_tr_cnt}    get matching xpath count    ${cp_planning_seasons_tr_path}
+    ${cp_planning_seasons_tr_cnt}    convert to integer    ${cp_planning_seasons_tr_cnt}
+    ${tr_txts}    create list
+    : FOR    ${tr_index}    IN RANGE    1    ${cp_planning_seasons_tr_cnt + 1}
+    \    ${tr_txt}    get text    ${cp_planning_seasons_tr_path}[${tr_index}]
+    \    continue for loop if    '${tr_txt}'=='${EMPTY}'
+    \    continue for loop if    'Q1' in '${tr_txt}'
+    \    append to list    ${tr_txts}    ${tr_txt}
+    log many    ${tr_txts}
+    ${tr_months_txts}    get from list    ${tr_txts}    0
+    ${tr_months_txts}    split string    ${tr_months_txts}
+    remove from list    ${tr_txts}    0
+    ${department_seasons_dict}    create dictionary
+    : FOR    ${tr_txt}    IN    @{tr_txts}
+    \    ${tr_txt}    remove string    ${tr_txt}    CY
+    \    ${tr_txt}    split string    ${tr_txt}
+    \    ${tr_month_season}    evaluate    dict(zip(${tr_months_txts[1:]},${tr_txt[1:]}))
+    \    set to dictionary    ${department_seasons_dict}    ${tr_txt[0]}=${tr_month_season}
+    log many    &{department_seasons_dict}
+    [Return]    ${department_seasons_dict}
+
+get season year relation
+    [Arguments]    ${department_seasons_dict}    ${dept_attr}    ${month_year_lst}
+    ${month_season_relation_dict}    get from dictionary    ${department_seasons_dict}    ${dept_attr}
+    ${month_year_relation_dict}    create dictionary
+    ${ap_checked_months}    create list
+    : FOR    ${month_with_year}    IN    @{month_year_lst}
+    \    ${month_with_year}    split string    ${month_with_year}
+    \    ${month}    get from list    ${month_with_year}    0
+    \    append to list    ${ap_checked_months}    ${month}
+    \    ${full_year}    catenate    SEPARATOR=    20    ${month_with_year[1]}
+    \    set to dictionary    ${month_year_relation_dict}    ${month_with_year[0]}=${full_year}
+    ${seasons_years}    create list
+    : FOR    ${month}    IN    @{ap_checked_months}
+    \    ${season}    get from dictionary    ${month_season_relation_dict}    ${month}
+    \    ${season}    convert to uppercase    ${season}
+    \    ${year}    get from dictionary    ${month_year_relation_dict}    ${month}
+    \    ${season_year}    catenate    SEPARATOR=${SPACE}-${SPACE}    ${season}    ${year}
+    \    append to list    ${seasons_years}    ${season_year}
+    ${seasons_years}    remove duplicates    ${seasons_years}
+    [Return]    ${seasons_years}
+
+strip list
+    [Arguments]    ${str}
+    ${str}    convert to list    ${str}
+    ${str_stripped}    evaluate    [ele.strip() for ele in ${str}]
+    [Return]    ${str_stripped}
+
+close current window and switch to main
+    close window
+    switch browser    1
+
+log in system and initial
+    log    ${fuserPath}
+    ${env}    get cell value    ${fuserPath}    ${DoorInfoSheet}    0    1
+    ${db_app}    get cell value    ${fuserPath}    ${DoorInfoSheet}    0    3
+    ${db_pos}    get cell value    ${fuserPath}    ${DoorInfoSheet}    0    4
+    ${uCnt}    get user count    ${fuserPath}    ${DoorInfoSheet}
+    log    ${rowToRead}    #this is in the batch file
+    ${user}    get cell value    ${fuserPath}    ${DoorInfoSheet}    ${rowToRead}    0
+    ${childCompany}    get cell value    ${fuserPath}    ${DoorInfoSheet}    ${rowToRead}    2
+    ${company_check_level}    get cell value    ${fuserPath}    ${DoorInfoSheet}    ${rowToRead}    18
+    ${user_check_level}    get cell value    ${fuserPath}    ${DoorInfoSheet}    ${rowToRead}    19
+    ${cur_company_name}    get cell value    ${fuserPath}    ${DoorInfoSheet}    ${rowToRead}    2
+    log many    ${env}    ${uCnt}    ${user}    ${childCompany}    ${company_check_level}    ${user_check_level}
+    connect to database using custom params    cx_Oracle    ${db_app}
+    Comment    ${qOfUserType}    catenate    select distinct cg.group_type from cmm_group cg    join users u on u.group_id=cg.group_id    where u.login='${user}'
+    Comment    ${usertype}    query    ${qOfUserType}
+    Comment    ${usertype}    get from list    ${usertype}    0
+    Comment    ${usertype}    get from list    ${usertype}    0
+    ${usertype}    get cell value    ${fuserPath}    ${DoorInfoSheet}    ${rowToRead}    1
+    login7thonline    ${env}    ff    ${user}    ${childCompany}    ${browser_profile_ff_1}
+    set global variable    ${db_app}
+    set global variable    ${db_pos}
+    set global variable    ${cur_company_name}
+    set global variable    ${env}
+    set global variable    ${user}
+    set global variable    ${usertype}
+    set global variable    ${childCompany}
+    set global variable    ${company_check_level}
+    set global variable    ${user_check_level}
+    ${orig timeout}    set selenium timeout    20
+    set global variable    ${orig timeout}
+    ${PCMID}    get parent cmid from db    ${db_app}
+    set global variable    ${PCMID}
+    Comment    ${rename_dic}    get rename dictionary
+    Comment    set global variable    ${rename_dic}
+    set selenium speed    .2 seconds

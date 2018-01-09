@@ -1,0 +1,41 @@
+*** Settings ***
+Resource          upload_linesheet_action_res.txt
+Resource          upload_linesheet_settings.txt
+Resource          get_email_res.txt
+Resource          get_info_from_backend_res.txt
+Resource          get_interface_msg_after_upload_res.txt
+Resource          upload_actions_res.txt
+Resource          ../../../td_page_src/src_file_uploads.txt
+Resource          get_datas_on_file_uploads_res.txt
+Resource          ../../td_company_res.txt
+Resource          get_data_from_local_upload_files.txt
+
+*** Keywords ***
+File Type
+    [Arguments]    ${file_type}
+    [Documentation]    Return file_type_value
+    ${file_type}    catenate    Upload    ${file_type}
+    page should contain element    ${file_uploads_file_type_sel_id}
+    Select From List By Label    ${file_uploads_file_type_sel_id}    ${file_type}
+    ${file_type_value}    Get Element Attribute    //select/option[text()='${file_type}']@value
+    [Return]    ${file_type_value}
+
+File Name
+    [Arguments]    ${file_type_value}    ${upload_file_path}
+    ${locator}    replace string    ${file_uploads_file_name_path}    {file_type_value}    ${file_type_value}
+    Wait Until Page Contains Element    ${locator}    10
+    run keyword and continue on failure    input text    ${locator}    ${upload_file_path}
+    run keyword and continue on failure    Choose File    //div[@class='hidden${SPACE}is${file_type_value}']//input[@name='uploadfile']    ${upload_file_path}
+
+Delimiter
+    [Arguments]    ${file_type_value}    ${delimiter_value}=tab
+    [Documentation]    comma/tab/backtick
+    Comment    Select Radio Button    delimiter    ${value}
+    ${locator}    replace string    ${file_uploads_delimiter_path}    {file_type_value}    ${file_type_value}
+    ${locator}    replace string    ${locator}    {value}    ${delimiter_value}
+    Click Element    ${locator}
+
+Process Document
+    [Arguments]    ${file_type_value}
+    ${locator}    replace string    ${file_uploads_process_document_path}    {file_type_value}    ${file_type_value}
+    Click Element    ${locator}

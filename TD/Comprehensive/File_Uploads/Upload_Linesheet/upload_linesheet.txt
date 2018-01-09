@@ -1,0 +1,1220 @@
+*** Settings ***
+Resource          upload_actions_res.txt
+Variables         scenarios_expexted_result.py
+
+*** Test Cases ***
+Test Email
+    [Tags]    test
+    Comment    Check Result In Email
+    Comment    ${linesheet_files}    List Directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}
+    Comment    ${pre_required_files}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-1.txt
+    Comment    ${upload_files}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-2.txt
+    Comment    log many    ${pre_required_files}    ${upload_files}
+    Comment    ${styles}    create list    ES001A    ES002A
+    Comment    ${styles_comma}    Evaluate    ','.join(${styles})
+    Comment    log    ${styles_comma}
+    Comment    ${FILES_TO_UPLOAD}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-2.txt    True
+    Comment    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    1
+    Comment    Upload Linesheet    ${upload_file}
+    Comment    Check Result On File Uploads Successfully    ${upload_file}
+    Comment    ${scenario_styles}    Get Scenario Styles From Scenario Files    ${upload_file}
+    Comment    ${scenario_upcs}    Get Scenario UPC Page Infos From Scenario Files    ${upload_file}
+    ${actual_scenario_upcs_1}    Create List    EFES002A    RED    001    SMALL    S
+    ...    ${EMPTY}
+    ${actual_scenario_upcs_2}    Create List    EFES002A    NAVY    002    SMALL    S
+    ...    ${EMPTY}
+    ${actual_scenario_upcs}    Create List    ${actual_scenario_upcs_2}    ${actual_scenario_upcs_1}
+    ${existing_record_file_1}    Create List    EFES002A    RED    001    SMALL    S
+    ...    ${EMPTY}
+    ${existing_record_file}    Create List    ${existing_record_file_1}
+    Evaluate    [@{actual_scenario_upcs}.remove(value) for value in @{existing_record_file}]
+    Comment    Remove Values From list    ${actual_scenario_upcs}    ${existing_record_file[0]}
+    LOG MANY    @{actual_scenario_upcs}
+
+Test Upload Existing
+    [Tags]    test
+    ${URL}    Set Variable    https://10.125.2.174
+    ${USER}    Set Variable    efparent
+    ${COMPANY}    Set Variable    Eileen Fisher
+    Login 7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${browser_profile_ff_1}
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    Comment    ${upload_file}    set variable    E:${/}RFScripts${/}linesheet_upload_data_ef${/}scenario 1-1.txt
+    ${pre_required_files}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-1.txt    True
+    :FOR    ${upload_file}    IN    @{pre_required_files}
+    \    Upload Linesheet    ${upload_file}
+    \    Capture Result On File Uploads    ${upload_file}
+    Comment    Get all actual style bank result
+
+Login
+    ${URL}    Set Variable    https://10.125.2.174
+    ${USER}    Set Variable    efparent
+    ${COMPANY}    Set Variable    Eileen Fisher
+    Login 7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${browser_profile_ff_1}
+    ${FILES_TO_UPLOAD}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-2.txt    True
+    Set Global Variable    ${FILES_TO_UPLOAD}
+    ${FILES_TO_UPLOAD_INDEX}    Set variable    0
+    Set Global Variable    ${FILES_TO_UPLOAD_INDEX}
+    Comment    ${ACTUAL_RESULT_FILE}    Set variable    D:${/}learngitt${/}RFProject${/}TD${/}Comprehensive${/}File_Uploads${/}Upload_Linesheet${/}actual_result.txt
+    Comment    Set Global Variable    ${ACTUAL_RESULT_FILE}
+    Comment    Create File    ${ACTUAL_RESULT_FILE}
+
+Scenario001-New Style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*001-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet
+    Run keyword and continue on failure    Lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO001}
+    Check Result In Email
+
+Scenario002-New Style Color
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*002-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO002}
+    Check Result In Email
+
+Scenario003-Color code duplicate with existing color
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*003-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO003}
+    Check Result In Email
+
+Scenario004-Color des duplicate with existing color
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*004-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO004}
+    Check Result In Email
+
+Scenario005-Color code and Color Desc Don't Match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*005-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO004}
+    Check Result In Email
+
+Scenario006-New Size
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*006-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO006}
+    Check Result In Email
+
+Scenario007-Size code duplicate with existing size
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*007-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO007}
+    Check Result In Email
+
+Scenario008-Size des duplicate with existing size
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*008-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO008}
+    Check Result In Email
+
+Scenario009-Size Code and Size Desc Don't Match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*009-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO004}
+    Check Result In Email
+
+Scenario010-Delete some sizes of a style_color
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*010-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO010}
+    Check Result In Email
+
+Scenario011-Delete all sizes of a style_color
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*011-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO011}
+    Check Result In Email
+
+Scenario012-Delete some color of a style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*012-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO012}
+    Check Result In Email
+
+Scenario013-Delete all colors of a style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*013-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank
+    ${scenario_styles}    Get Scenario Styles From Scenario Files    ${upload_file}
+    Advanced Search On Style Bank By Style    ${scenario_styles}
+    Run keyword and continue on failure    Page should contain    No styles found.
+    Capture Page Screenshot    ${UPLOAD_LINESHEET_PNGS_DIR}${/}scenario013_result.png
+    Check Result In Email
+
+Scenario014-Delete non-existing style_color
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*014-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario015-Color code different from existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*015-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO015}
+    Check Result In Email
+
+Scenario016-Color name different from existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*016-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO016}
+    Check Result In Email
+
+Scenario017-Color code and color des dont match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*017-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario018-Size code different from existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*018-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO018}
+    Check Result In Email
+
+Scenario019-Size name diff from existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*019-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO019}
+    Check Result In Email
+
+Scenario020-Size code and size des dont match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*020-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario021-Color Code Duplicate with existing color
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*021-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO021}
+    Check Result In Email
+
+Scenario022-Color des duplicate with existing color
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*022-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO022}
+    Check Result In Email
+
+Scenario023-Color code and color des dont match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*023-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario024-Size code duplicate
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*024-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO024}
+    Check Result In Email
+
+Scenario025-Size desc duplicate
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*025-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO025}
+    Check Result In Email
+
+Scenario026-Size code and size des dont match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*026-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario027-Color code diff from existing record with the same UPC
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*027-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO027}
+    Check Result In Email
+
+Scenario028-Color des diff from existing record with the same UPC
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*028-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO028}
+    Check Result In Email
+
+Scenario029-Color code duplicate with existing record of another UPC
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*029-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario030-Color des duplicate with existing record of another UPC
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*030-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario031
+    [Documentation]    Color Code same as existing record of same UPC, Color Desc duplicate with existing record of another UPC
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*031-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    30
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario032
+    [Documentation]    Color Desc same as existing record of same UPC, Color Code duplicate with existing record of another UPC
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*032-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    31
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario033-Same UPC diff size code
+    [Documentation]    Size Code different from existing record with the same UPC
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*033-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    32
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO033}
+    Check Result In Email
+
+Scenario034-Same UPC diff size name
+    [Documentation]    Size Name different from existing record with the same UPC
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*034-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    33
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO034}
+    Check Result In Email
+
+Scenario035
+    [Documentation]    Size code duplicate with existing record of another UPC
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*035-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    34
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario036
+    [Documentation]    Size des duplicate with existing record of another UPC
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*036-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    35
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario037
+    [Documentation]    Size code same as existing record of same UPC, Size Desc duplicate with existing record of another UPC
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*037-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    36
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario038
+    [Documentation]    Size Desc same as existing record of same UPC, Size Code duplicate with existing record of another UPC
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*038-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    37
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario039-UPC different from existing record UPC
+    [Documentation]    UPC different from existing record UPC
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*039-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    38
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario 40-UPC already exist for style of another vendor company
+    [Documentation]    Only system with multiple-vendor companies would run
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*040-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    39
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario 41-UPC already exist for another style
+    [Documentation]    UPC already exist for style of another vendor company
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*041-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    40
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO041}
+    Check Result In Email
+
+Scenario 42-UPC already exist for another color within the same style
+    [Documentation]    Line 1: Upload successfully. Color ‘002 BLUE’ is added to style ‘S042A’. The UPC 4200 is assigned to style ‘S042A’ color ‘002 BLUE’ size ‘S Small’.
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*042-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    41
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO042}
+    Check Result In Email
+
+Scenario 43-UPC already exist for another size within the same style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*043-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO043}
+    Check Result In Email
+
+Scenario 44-P action-UPC matching existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*044-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO044}
+    Check Result In Email
+
+Scenario 45-P action-Color Code different from existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*045-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO045}
+    Check Result In Email
+
+Scenario 46-P action-Color Desc different from existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*046-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO046}
+    Check Result In Email
+
+Scenario 47-P action-Size Code different from existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*047-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO047}
+    Check Result In Email
+
+Scenario 48-P action-Size Name different from existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*048-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO048}
+    Check Result In Email
+
+Scenario 49-P action-UPC different from existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*049-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO049}
+    Check Result In Email
+
+Scenario 50-P action-UPC already exist for style of another vendor company
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*050-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO050}
+    Check Result In Email
+
+Scenario 51-P action-UPC already exist for another style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*051-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO051}
+    Check Result In Email
+
+Scenario 52-P action-UPC already exist for another color within the same style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*052-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO052}
+    Check Result In Email
+
+Scenario 53-P action-UPC already exist for another size within the same style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*053-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO053}
+    Check Result In Email
+
+Scenario 54-Delete some Sizes of a style_color
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*054-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO054}
+    Check Result In Email
+
+Scenario 55-Delete all Sizes of a style_color
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*055-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank
+    ${scenario_styles}    Get Scenario Styles From Scenario Files    ${upload_file}
+    Advanced Search On Style Bank By Style    ${scenario_styles}
+    Run keyword and continue on failure    Page should contain    No styles found.
+    Capture Page Screenshot    ${UPLOAD_LINESHEET_PNGS_DIR}${/}scenario055_result.png
+    Check Result In Email
+
+Scenario 56-Delete some color of a style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*056-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO056}
+    Check Result In Email
+
+Scenario 57-Delete all colors of a style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*057-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank
+    ${scenario_styles}    Get Scenario Styles From Scenario Files    ${upload_file}
+    Advanced Search On Style Bank By Style    ${scenario_styles}
+    Run keyword and continue on failure    Page should contain    No styles found.
+    Capture Page Screenshot    ${UPLOAD_LINESHEET_PNGS_DIR}${/}scenario057_result.png
+    Check Result In Email
+
+Scenario 58-Delete non-existing style_color
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*058-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Check Result In Email
+
+Scenario 59-D action-UPC different from existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*059-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO059}
+    Check Result In Email
+
+Scenario 60-D action-UPC already exist for style of another vendor company
+    ${current_pcompany_id}    Get element attribute    //select[@name='access']/option@value
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*060-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Run keyword unless    ${current_pcompany_id} in ${td_pat_oak_pc_ids}    Pass execution    System Only has a vendor.
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    59
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO060}
+    Check Result In Email
+
+Scenario 61-action-UPC already exist for another style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*061-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO061}
+    Check Result In Email
+
+Scenario 62-Upload 13 digit UPC with leading 0-existing UPC is 12 digit-UPC match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*062-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO062}
+    Check Result In Email
+
+Scenario 63-Upload 13 digit UPC with leading 0-existing UPC is 12 digit-UPC dont match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*063-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO063}
+    Check Result In Email
+
+Scenario 64-Upload 13 digit UPC with leading 0-existing UPC is 13 digit
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*064-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO064}
+    Check Result In Email
+
+Scenario 65-Upload 13 digit UPC with NO leading 0-no existing record or no UPC for existing style_color_size
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*065-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO065}
+    Check Result In Email
+
+Scenario 66-Upload 13 digit UPC with NO leading 0-existing UPC is 12 digit
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*066-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO066}
+    Check Result In Email
+
+Scenario 67-Upload 13 digit UPC with NO leading 0-existing UPC is 13 digit-UPC match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*067-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO067}
+    Check Result In Email
+
+Scenario 68-Upload 13 digit UPC with NO leading 0-existing UPC is 13 digit-UPC dont match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*068-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO068}
+    Check Result In Email
+
+Scenario 69-Upload 13 digit UPC with leading 0
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*069-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO069}
+    Check Result In Email
+
+Scenario 70-Upload 13 digit UPC with NO leading 0-no existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*070-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO070}
+    Check Result In Email
+
+Scenario 71-Upload 13 digit UPC with leading 0-no existing record or no UPC for existing style_color_size
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*071-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO071}
+    Check Result In Email
+
+Scenario 72-Upload 13 digit UPC with leading 0-existing UPC is 12 digit
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*072-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO072}
+    Check Result In Email
+
+Scenario 73-Upload 13 digit UPC with leading 0-existing UPC is 13 digit-UPC match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*073-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO073}
+    Check Result In Email
+
+Scenario 74-Upload 13 digit UPC with leading 0-existing UPC is 13 digit-UPC dont match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*074-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO074}
+    Check Result In Email
+
+Scenario 75-Upload 13 digit UPC with NO leading 0-no existing record or no UPC for existing style_color_size
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*075-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO075}
+    Check Result In Email
+
+Scenario 76-Upload 13 digit UPC with NO leading 0-existing UPC is 12 digit
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*076-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO076}
+    Check Result In Email
+
+Scenario 77-Upload 13 digit UPC with NO leading 0-existing UPC is 13 digit-UPC match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*077-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO077}
+    Check Result In Email
+
+Scenario 78-Upload 13 digit UPC with NO leading 0-existing UPC is 13 digit-UPC dont match
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*078-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO078}
+    Check Result In Email
+
+Scenario 79-Upload 13 digit UPC with leading 0-no existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*079-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO079}
+    Check Result In Email
+
+Scenario 80-Upload 13 digit UPC with NO leading 0-no existing record
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*080-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO080}
+    Check Result In Email
+
+Scenario 81-Corporate Division is missing
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*081-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+
+Scenario 82-Corporate Division doesnt exist
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*082-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+
+Scenario 83-Corporate Division is of a buyer company
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*083-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+
+Scenario 84-Style Number is missing
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*084-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+
+Scenario 85-Color Desc is missing
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*085-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+
+Scenario 86-Size Desc is missing
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*086-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+
+Scenario 87-Add style_color with_without Short Color Desc
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*087-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_short_color}    Get Styles Short Colors After Upload Linesheet
+
+Scenario 88-Assign Short Color Name
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*088-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+
+Scenario 89-Modify Short Color Name
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*089-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+
+Scenario 90-Delete Short Color Name
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*090-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+
+Scenario 91-Short Color Name Duplicate with that of another style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*091-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+
+Scenario 92-Short Color Name Duplicate with that of another color within the same style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*092-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+
+Scenario 93-Short Color Name exceed 10 digit
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*093-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+
+Scenario 94-Add style_color with_without Pattern#
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*094-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_style_colors_patterns}    Get Styles Patterns After Upload Linesheet
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO094}
+
+Scenario 95-Assign Pattern
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*095-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_style_colors_patterns}    Get Styles Patterns After Upload Linesheet
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO094}
+
+Scenario 96-Modify Pattern
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*096-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_style_colors_patterns}    Get Styles Patterns After Upload Linesheet
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO094}
+
+Scenario 97-Delete Pattern
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*097-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_style_colors_patterns}    Get Styles Patterns After Upload Linesheet
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO094}
+
+Scenario 98-Pattern Duplicate with that of another style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*098-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads Successfully    ${upload_file}
+    ${actual_scenario_style_colors_patterns}    Get Styles Patterns After Upload Linesheet
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO094}
+
+Scenario 99-Pattern Duplicate with that of another color within the same style
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*099-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_style_colors_patterns}    Get Styles Patterns After Upload Linesheet
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO094}
+
+Scenario 100-Pattern exceed 30 digit
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*100-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+
+Scenario 101-WHSL_MSRP price
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*101-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+
+Scenario 102-Low Cost_Low Retail price
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*102-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+
+Scenario 103-STD cost
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*103-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+
+Scenario 104-Season doesnt exist
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*104-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+
+Scenario 105-Yield Unit larger than 99.99
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
+    ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*105-2.txt
+    ${upload_file}    Get from list    ${upload_files}    0
+    Set test variable    ${upload_file}
+    Upload Linesheet    ${upload_file}
+    Check Result On File Uploads With Errors    ${upload_file}
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank    #Navigate Into Style Bank
+    ${scenario_styles}    Get Scenario Styles From Scenario Files    ${upload_file}
+    ${scenario_styles}    remove duplicates    ${scenario_styles}
+    Advanced Search On Style Bank By Style    ${scenario_styles}    #    EFES001A
+
+*** Keywords ***
+Get all actual style bank result
+    ${FILES_TO_UPLOAD}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-1.txt    True
+    Create File    ${CURDIR}${/}ACTUAL_RESULT.txt
+    : FOR    ${upload_file}    IN    @{FILES_TO_UPLOAD[60:80]}
+    \    Set test variable    ${upload_file}
+    \    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet
+    \    ${actual_scenario_upcs}    convert to string    ${actual_scenario_upcs}
+    \    Append to file    ${CURDIR}${/}ACTUAL_RESULT.txt    ${actual_scenario_upcs}\r\n

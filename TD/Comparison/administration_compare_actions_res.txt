@@ -1,0 +1,13 @@
+*** Settings ***
+Resource          administration_actions_res.txt
+Resource          administration_compare_datas_res.txt
+Resource          administration_datas_res.txt
+Resource          ap_actions_res.txt
+Resource          ../td_page_src/company_profile_src.txt
+
+*** Keywords ***
+Select From Company Profile All envs
+    [Arguments]    ${label}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    Select From Company Profile    ${label}

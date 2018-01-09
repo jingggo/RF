@@ -1,0 +1,98 @@
+*** Settings ***
+Library           DatabaseLibrary
+Library           Collections
+Library           String
+
+*** Variables ***
+${userGroupNameModifyPath}    xpath=//div[@class='p5 z-hlayout']
+${currentTabNamePath}    xpath=//div[@class='z-tabs']//li[@class='z-tab z-tab-selected']
+${userGroupsNameUiPath}    xpath=//div[@class='securlistbox bh z-listbox']//div[@class='z-listbox-body z-word-nowrap']//table/tbody[1]
+${userGroupColsPath}    //div[@class='securlistbox bh z-listbox']//div[@class='z-listbox-header']//colgroup/col
+${newGroupTextPath}    xpath=//div[@class='p5 z-hlayout']/div[1]/b
+${createUserGroupInputBoxPath}    xpath=//div[@class='p5 z-hlayout']/div[2]/input
+${addBtnOfUserGroupPath}    xpath=//div[@class='p5 z-hlayout']/div[4]/button
+${unCreatedAdminTypesInDpPath}    xpath=//div[@class='p5 z-hlayout']/div[3]/select
+${renameUGDropdownPath}    xpath=//div[@class='p5 z-hlayout']/div[7]/select
+${renameUserGroupInputBoxPath}    xpath=//div[@class='p5 z-hlayout']/div[11]/input
+${renameSubmitPath}    xpath=//div[@class='p5 z-hlayout']/div[12]/Button
+${scrollxSecurityTabPath}    xpath=//div[@class='securlistbox bh z-listbox']//div[@class='z-listbox-frozen']
+${scrollxUserTabPath}    xpath=//div[@class='securlistbox2 z-listbox']//div[@class='z-listbox-frozen']
+${saveBtnPath}    xpath=//li[@title='Save']
+${savecloseBtnPath}    xpath=//li[@title='Save & Close']//img
+${templateDownloadPath}    xpath=//li[@title='Download Security Template']
+${accessDownloadPath}    xpath=//li[@title='Download Security Access']
+${delSelectedPath}    xpath=//li[@title='Delete Selected']
+${filterGroupNamePath}    xpath=//div[@class='hwrapper z-vlayout'][2]//tr[@class='z-auxhead']/th[@class='z-auxheader'][2]//input
+${filterUserNamePath}    xpath=//div[@class='hwrapper z-vlayout'][2]//tr[@class='z-auxhead']/th[@class='z-auxheader'][3]//input
+${filterLoginPath}    xpath=//div[@class='hwrapper z-vlayout'][2]//tr[@class='z-auxhead']/th[@class='z-auxheader'][4]//input
+${sortGroupNamePath}    xpath=//tr[@class='z-listhead']/th[contains(@class,'z-listheader z-listheader-sort')]//div[contains(text(),'Group Name')]
+${sortUserNamePath}    xpath=//tr[@class='z-listhead']/th[contains(@class,'z-listheader z-listheader-sort')]//div[contains(text(),'User Name')]
+${sortLoginPath}    xpath=//tr[@class='z-listhead']/th[contains(@class,'z-listheader z-listheader-sort')]//div[contains(text(),'Log-In')]
+${sortExceptionsPath}    xpath=//tr[@class='z-listhead']/th[contains(@class,'z-listheader z-listheader-sort')]//div[@title='Exceptions']//preceding-sibling::div
+${iconsBarPath}    //div[@class='z-menubar z-menubar-horizontal']/ul/li
+${groupTableVisiblePath}    xpath=//div[@class='z-tabpanels']//div[@class='hwrapper z-vlayout']//div[@class='securlistbox bh z-listbox']
+${userTableVisiblePath}    xpath=//div[@class='z-tabpanels']//div[@class='hwrapper z-vlayout']//div[@class='bh z-listbox']
+${closePathST}    xpath=//li[@title='Close']
+${usersTableColsLength}    //div[@class='bh z-listbox']//div[@class='z-listbox-body']//colgroup/col
+${filterBtnPath}    xpath=//button[contains(text(),'Filter')]
+${hierarchyAttributesAreaPath}    //div[@class='z-tabpanels']//div[@class='z-tabpanel'][2]//div[@class='z-vlayout']//div[@class='p5 z-hlayout']/div[1]
+${partHierarchyValuesPath}    //div[@class='z-tabpanels']//div[@class='z-tabpanel'][2]//div[@class='z-vlayout']//div[@class='z-vlayout-inner'][1]//div[@class='z-hlayout']
+${selectedTabPath}    xpath=//div[@class='z-tabs']//li[@class='z-tab z-tab-selected']//span
+${userTabSecurityBoxHeaderPath}    //div[@class='z-tabpanels']//div[@class='z-tabpanel'][2]/div[@class='z-vlayout']/div[@class='z-vlayout-inner'][2]/div[@class='hwrapper1 z-vlayout']//div[@class='z-listbox-header']
+${userTabSecurityBoxBodyPath}    //div[@class='z-tabpanels']//div[@class='z-tabpanel'][2]/div[@class='z-vlayout']/div[@class='z-vlayout-inner'][2]/div[@class='hwrapper1 z-vlayout']//div[@class='z-listbox-body z-word-nowrap']
+${userTabFrozenPath}    xpath=//div[@class='z-tabpanels']//div[@class='z-tabpanel'][2]/div[@class='z-vlayout']/div[@class='z-vlayout-inner'][2]/div[@class='hwrapper1 z-vlayout']//div[@class='z-listbox-frozen']//div[@class='z-frozen-inner']
+${MPCorGroupDefaultPath}    xpath=//div[text()='Group Default']/parent::td[@class='firstrowcell z-listcell']/following-sibling::td[1]//input
+${MPRegGroupDefaultPath}    xpath=//div[text()='Group Default']/parent::td[@class='firstrowcell z-listcell']/following-sibling::td[2]//input
+${MPSecGroupDefaultPath}    xpath=//div[text()='Group Default']/parent::td[@class='firstrowcell z-listcell']/following-sibling::td[3]//input
+${MPInCorGroupDefaultPath}    xpath=//div[text()='Group Default']/parent::td[@class='firstrowcell z-listcell']/following-sibling::td[4]//input
+${MPInRegGroupDefaultPath}    xpath=//div[text()='Group Default']/parent::td[@class='firstrowcell z-listcell']/following-sibling::td[5]//input
+${MPCorApplyAllPath}    xpath=//div[text()='Apply to All']/parent::td[@class='firstrowcell z-listcell']/following-sibling::td[1]//input
+${MPRegApplyAllPath}    xpath=//div[text()='Apply to All']/parent::td[@class='firstrowcell z-listcell']/following-sibling::td[2]//input
+${MPSecApplyAllPath}    xpath=//div[text()='Apply to All']/parent::td[@class='firstrowcell z-listcell']/following-sibling::td[3]//input
+${MPInCorApplyAllPath}    xpath=//div[text()='Apply to All']/parent::td[@class='firstrowcell z-listcell']/following-sibling::td[4]//input
+${MPInRegApplyAllPath}    xpath=//div[text()='Apply to All']/parent::td[@class='firstrowcell z-listcell']/following-sibling::td[5]//input
+${dwTemplatePath}    xpath=//li[@title='Download Security Template']
+${dwAccessPath}    xpath=//li[@title='Download Security Access']
+${curSecurityTabPath}    xpath=//li[@class='z-tab z-tab-selected']//span[text()='Security Groups']
+${curUserTabPath}    xpath=//li[@class='z-tab z-tab-selected']//span[contains(text(),'Security for')]
+${curTabNamePath}    xpath=//li[@class='z-tab z-tab-selected']//span
+${securityTabPath}    xpath=//span[text()='Security Groups']
+${userTabPath}    xpath=//span[contains(text(),'Security for')]
+
+*** Keywords ***
+get user groups name info in security from db
+    [Arguments]    ${cmid}
+    connect to database using custom params    cx_Oracle    ${db_app}
+    ${queryOf_users}    catenate    select UPPER(cg.group_name),cg.group_type from cmm_group cg    where cg.group_level !=1    and cg.company_id=${cmid}    order by cg.group_level, UPPER(cg.group_name)
+    log    ${queryOf_users}
+    ${userGroups}    query    ${queryOf_users}
+    ${userGroupsName_len}    get length    ${userGroups}
+    ${userGroupsNameLst}    create list
+    : FOR    ${userGroup}    IN    @{userGroups}
+    \    ${userGroup}    convert to list    ${userGroup}
+    \    ${userGroupName}    get from list    ${userGroup}    0
+    \    ${userGroupName}    convert to uppercase    ${userGroupName}
+    \    ${userGroupType}    get from list    ${userGroup}    1
+    \    ${userGroupName_join}    evaluate    ' - '.join(['${userGroupName}','${userGroupType}'])
+    \    ${userGroupNameUi}    set variable if    '${userGroupType}'=='Non Admin'    ${userGroupName}    ${userGroupName_join}
+    \    append to list    ${userGroupsNameLst}    ${userGroupNameUi}
+    log many    ${userGroupsNameLst}
+    [Return]    ${userGroupsNameLst}
+
+get user info in security from db
+    [Arguments]    ${userName}
+    connect to database using custom params    cx_Oracle    ${db_app}
+    ${queryOf_userType}    catenate    select cg.* from users u, cmm_group cg where u.company_id=cg.company_id and u.group_id=cg.group_id and u.login=    '${userName}'
+    log    ${queryOf_userType}
+    ${userInfo}    query    ${queryOf_userType}
+    ${userInfo}    get from list    ${userInfo}    0
+    ${userInfo}    convert to list    ${userInfo}
+    ${pcmid}    get from list    ${userInfo}    1
+    ${userGroupName}    get from list    ${userInfo}    2
+    ${userGroupName}    convert to uppercase    ${userGroupName}
+    ${userGroupType}    get from list    ${userInfo}    3
+    ${userGroupName}    set variable if    '${userGroupType}'=='Non Admin'    ${userGroupName}    ${userGroupName} - ${userGroupType}
+    ${userGroupLevel}    get from list    ${userInfo}    4
+    log many    ${pcmid}    ${userGroupName}    ${userGroupType}    ${userGroupLevel}
+    disconnect from database
+    [Return]    ${pcmid}    ${userGroupName}    ${userGroupType}    ${userGroupLevel}

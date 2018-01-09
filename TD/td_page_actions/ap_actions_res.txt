@@ -1,0 +1,34 @@
+*** Settings ***
+Resource          ../td_page_src/Assortment Planner/assortment_profile.txt
+Resource          ../Comprehensive/td_company_res.txt
+Resource          ap_compare_datas_res.txt
+Resource          get_compare_datas_res.txt
+Library           DiffLibrary
+Resource          ws_compare_actions_res.txt
+Resource          td_compare_res.txt
+Resource          compare_selenium_actions_res.txt
+Resource          ws_actions_res.txt
+Library           compare_html_txt
+Resource          ws_compare_datas_res.txt
+Resource          compare_res.txt
+
+*** Keywords ***
+Assortment Profile Module all envs
+    [Arguments]    ${tag1}    ${tag2}
+    : FOR    ${tag}    IN    ${tag1}    ${tag2}
+    \    ${browser_index}    set variable if    '${tag}' == 'prod'    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    td_company_res.entry page via navimenu    //a[text()='Assortment Profile']    ${set_criteria1_path}
+    \    page should contain    AssortmentProfile
+
+Click Store Group All Envs
+    [Arguments]    ${locator}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click store group    ${locator}
+
+click store group
+    [Arguments]    ${locator}
+    wait until page contains element    ${locator}
+    Click Element    ${locator}
+    run keyword and continue on failure    wait until page contains    //big[text()='Edit']    20

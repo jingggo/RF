@@ -1,0 +1,16 @@
+*** Variables ***
+${MP Criteria Setup Path}    xpath=//a[text()='MP Criteria Setup']
+${savePathINMP}    xpath=//li[@title='Save']
+${saveclosePathINMP}    xpath=//li[@title='Save & Close']
+${corPlanLevalPath}    xpath=//label[@for='planlevel' and text()='Corporate Plan Level']
+${regPlanLevelPath}    xpath=//label[@for='planlevel' and text()='Regional Plan Level']
+${closePathInMP}    xpath=//li[@title='Close']
+${firstmonthPath}    xpath=//b[text()='First Calendar Month:']
+
+*** Keywords ***
+get MP List Info
+    ${areaOfCor}    get matching xpath count    //table[@id='pdashboard1']
+    ${areaOfReg}    get matching xpath count    //table[@id='pdashboard2']
+    ${areaOfCor}    convert to integer    ${areaOfCor}
+    ${areaOfReg}    convert to integer    ${areaOfReg}
+    [Return]    ${areaOfCor}    ${areaOfReg}

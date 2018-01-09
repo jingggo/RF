@@ -1,0 +1,65 @@
+*** Settings ***
+Resource          accounts_compare_datas_res.txt
+
+*** Keywords ***
+click retailer info all envs
+    [Arguments]    ${locator}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click retailer info    ${locator}
+
+click contact info all envs
+    [Arguments]    ${locator}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    ${user_status}    click contact info    ${locator}
+    [Return]    ${user_status}
+
+click edit shipping all envs
+    [Arguments]    ${locator}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click edit shipping    ${locator}
+
+click edit account all envs
+    [Arguments]    ${locator}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click edit account    ${locator}
+
+click retailer profile all envs
+    [Arguments]    ${locator}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click retailer profile    ${locator}
+
+click discount settings all envs
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click discount settings
+
+click discount name by index all envs
+    [Arguments]    ${index}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click discount name by index    ${index}
+
+click discount default by index all envs
+    [Arguments]    ${index}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    ${default_status}    click discount default by index    ${index}
+    [Return]    ${default_status}
+
+click next in customer directory all envs
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click next in customer directory
+
+Download File In ZK Menubar All Envs
+    [Arguments]    ${locator}    ${store_prod_dir}    ${store_stag_dir}
+    switch browser    ${PROD_BROWSER_INDEX}
+    ${file_name_prod}    Download File In ZK Menubar    ${locator}    ${store_prod_dir}
+    switch browser    ${STAGE_BROWSER_INDEX}
+    ${file_name_stag}    Download File In ZK Menubar    ${locator}    ${store_stag_dir}
+    [Return]    ${file_name_prod}    ${file_name_stag}

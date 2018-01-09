@@ -1,0 +1,14 @@
+*** Settings ***
+Library           String
+Library           Collections
+Library           DateTime
+Library           Dialogs
+Library           OperatingSystem
+Library           Process
+
+*** Test Cases ***
+test
+    Comment    log environment variables
+    Comment    log variables
+    Comment    log    ${CURDIR}
+    #    ${EXECDIR} = E:\RFProject\TD\Comprehensive

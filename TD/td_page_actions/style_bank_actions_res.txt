@@ -1,0 +1,102 @@
+*** Settings ***
+Resource          ../Comprehensive/td_company_res.txt
+
+*** Keywords ***
+click next in style bank
+    ${next_exist}    run keyword and return status    page should contain element    ${sb_table_top_next_path}
+    run keyword if    ${next_exist}    click link    ${sb_table_top_next_path}
+
+select from season and year dropdown
+    [Arguments]    ${label}
+    [Documentation]    Catalog Season Desc-Catalog Season Year in CK.
+    ...
+    ...    If the no ph styles created in PH style Bank, the initial label of the selected season year is 'season-year' or it's rename.
+    select from list by label    ${season_year_select_path}    ${label}
+    click element    name=view
+    wait until page contains element    //option[@selected and text()='${label}']    #//option[@selected and text()='SP-2018']
+
+select from ph view option in ph style page
+    [Arguments]    ${label}
+    [Documentation]    label: can be Style/Color/Size; case sensitive
+    select from list by label    ${ph_view_option_path}    ${label}
+    click button    name=view
+    wait until page contains element    //option[@selected and text()='${label}']
+
+go to advanced search on style bank
+    ${advanced_search_exist}    run keyword and return status    page should contain Link    Advanced Search    Advanced Search link doesn't show.
+    return from keyword if    ${advanced_search_exist}==${False}    ${advanced_search_exist}
+    click link    Advanced Search
+    wait until page contains element    id=key    5    Filtered By on Advanced Search Page doesn't display.
+    [Return]    ${advanced_search_exist}
+
+Filter styles by advanced search
+    [Arguments]    &{styles_filter_criterias}
+    Choose Filter Hierarchy    &{styles_filter_criterias}
+    Click element    ${sb_advanced_search_btn1_path}
+    wait until page does not contain element    //input[@value='Wait']
+    wait until page contains    Criteria:    20    Timeout when filter worksheet.    #&nbsp; in PH page space is this.
+
+click style link
+    [Arguments]    ${style}    ${style_link_txt}
+    [Documentation]    Copy/Copy to PH/Style Info/Colors/Sizes/UPC
+    ...
+    ...    xpath can not recognize text with space in it. so input unique word for 'style_link_txt'.
+    ...
+    ...    'style_link_txt' should be "Copy/PH/Style/Colors/Sizes/UPC" and case sensitive.
+    ${style_tr_path}    replace string    ${style_tr_path}    {style}    ${style}
+    wait until element is visible    ${style_tr_path}//a[contains(text(),'${style_link_txt}')]
+    click link    ${style_tr_path}//a[contains(text(),'${style_link_txt}')]
+    run keyword if    '${style_link_txt}'=='${style}'    wait until page contains element    ${sb_image_view_title1_path}    10
+    run keyword if    '${style_link_txt}'=='Style'    wait until page contains element    ${sb_style_info_title2_path}    10
+    run keyword if    '${style_link_txt}'=='Colors'    wait until page contains element    ${sb_color_info_title2_path}    10
+    run keyword if    '${style_link_txt}'=='Sizes'    wait until page contains element    ${sb_size_info_title1_path}    10
+    run keyword if    '${style_link_txt}'=='UPC'    wait until page contains element    ${sb_upc_title1_path}    10
+    sleep    0.1
+
+click ph style edit
+    [Arguments]    ${ph_style}
+    ${ph_style_edit_path}    replace string    ${ph_style_edit_path}    {ph_style}    ${ph_style}
+    wait until page contains element    ${ph_style_edit_path}
+    click element    ${ph_style_edit_path}
+    wait until page contains element    ${sb_style_info_title2_path}
+
+go to size horizontal sequence
+    wait until page contains element    ${size_profile_horizontal_sequence_path}
+    click element    ${size_profile_horizontal_sequence_path}
+    wait until page contains element    ${size_profile_horizontal_title3_path}
+
+go to size range
+    wait until page contains element    ${size_profile_size_range_path}
+    click element    ${size_profile_size_range_path}
+    wait until page contains element    ${size_profile_size_range_title2_path}
+
+Generate Style Bank Report
+    [Arguments]    ${report_type}    ${store_path}    &{styles_filter_criterias}
+    Choose Filter Hierarchy    &{styles_filter_criterias}
+    Select From List By Label    id=sl1    ${report_type}
+    Click element    name=download
+    ${download_sequence}    get time    epoch
+    create directory    ${store_path}
+    ${random_num}    generate random string    8    [NUMBERS]
+    ${store_path_file}    catenate    SEPARATOR=${/}    ${store_path}    ${user}.do_linesheetDownload_${random_num}.xls
+    Download to local    ${store_path_file}
+    [Return]    ${store_path_file}
+
+Advanced Search On Style Bank By Style
+    [Arguments]    ${styles}
+    [Documentation]    type of styles is list.
+    ${styles_comma}    Evaluate    ','.join(${styles})
+    Wait Until Page Contains    Advanced Search
+    Click Link    Advanced Search
+    Wait Until Page Contains    Filter Hierarchy
+    Wait Until Page Contains Element    ${sb_as_input_style_path}
+    Input Text    ${sb_as_input_style_path}    ${styles_comma}
+    Click Element    ${sb_advanced_search_btn1_path}
+    Wait Until Page Contains Element    ${sb_search_criteria_txt_path}
+
+Go To UPC Page
+    [Arguments]    ${style}
+    ${upc_locator}    replace string    ${sb_style_upc_path}    {style}    ${style}
+    wait until page contains element    ${upc_locator}
+    Click Element    ${upc_locator}
+    Wait Until Page Contains Element    ${sb_upc_title1_path}

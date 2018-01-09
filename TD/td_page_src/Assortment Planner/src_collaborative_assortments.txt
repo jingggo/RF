@@ -1,0 +1,10 @@
+*** Variables ***
+${assortment_name_path}    //input[@name='assortmentname']
+${ws_edit_info_path}    //tbody[@id='x{wsid}']//a[text()='Edit Info']
+${edit_info_page_title_path}    //big[text()='Edit']
+${ws_seasonl_view_path}    //tbody[@id='x{wsid}']//preceding-sibling::tbody[1]//a[text()='View']
+${view_page_months_list_path}    //select[@name='worksheetid']
+${view_page_groupby_list_path}    //select[@name='groupby']
+${ws_seasonl_history_path}    //tbody[@id='x{wsid}']//preceding-sibling::tbody[1]//a[text()='History']
+${ws_history_title2_path}    //big[@class='title2' and text()='History']
+${compare_to_cur_version_paths}    //table[@class='table1']/tbody/tr

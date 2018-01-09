@@ -1,0 +1,99 @@
+*** Settings ***
+Resource          accounts_compare_datas_res.txt
+
+*** Keywords ***
+click retailer info
+    [Arguments]    ${locator}
+    [Documentation]    table path for the retailer should know.
+    ...    example: 'locator' should be: //input[@name='removecompany']/following-sibling::table[@class='table1'][1]
+    ${retailer_info_path}    catenate    SEPARATOR=    ${locator}    ${cd_retailer_info_path}
+    wait until page contains element    ${retailer_info_path}    20
+    click link    ${retailer_info_path}
+    wait until page contains element    ${cd_retailer_info_title1_path}    20
+
+click contact info
+    [Arguments]    ${locator}
+    [Documentation]    table path for the retailer should know.
+    ...    example: 'locator' should be: //input[@name='removecompany']/following-sibling::table[@class='table1'][1]
+    ${contact_info_path}    catenate    SEPARATOR=    ${locator}    ${cd_user_info_path}
+    ${user_status}    run keyword and return status    wait until page contains element    ${contact_info_path}
+    return from keyword if    ${user_status}==${False}    ${user_status}
+    click link    ${contact_info_path}
+    wait until page contains element    ${cd_user_info_title1_path}    20
+    [Return]    ${user_status}
+
+click edit shipping
+    [Arguments]    ${locator}
+    ${contact_info_path}    catenate    SEPARATOR=    ${locator}    ${cd_customer_address_path}
+    wait until page contains element    ${contact_info_path}    20
+    click link    ${contact_info_path}
+    wait until page contains element    ${cd_customer_title1_path}    20
+
+click edit account
+    [Arguments]    ${locator}
+    ${contact_info_path}    catenate    SEPARATOR=    ${locator}    ${cd_edit_account_path}
+    wait until page contains element    ${contact_info_path}    20
+    click link    ${contact_info_path}
+    wait until page contains element    ${cd_customer_title1_path}    20
+
+click retailer profile
+    [Arguments]    ${locator}
+    ${contact_info_path}    catenate    SEPARATOR=    ${locator}    ${cd_retailer_profile_path}
+    wait until page contains element    ${contact_info_path}    20
+    click link    ${contact_info_path}
+    wait until page contains element    ${cd_retailer_info_title1_path}    20
+
+click discount settings
+    wait until page contains    Discount Settings    20
+    click link    Discount Settings
+    wait until page contains element    ${cd_discount_title1_path}    20
+
+click discount name by index
+    [Arguments]    ${index}
+    ${x_index}    evaluate    ${index}+1
+    ${discount_name_path}    set variable    //table[@class='table1']/tbody/tr[${x_index}]${cd_discount_item_path}
+    wait until page contains element    ${discount_name_path}    20
+    click element    ${discount_name_path}
+    wait until page contains element    ${cd_discount_title2_path}    20
+
+click discount default by index
+    [Arguments]    ${index}
+    ${x_index}    evaluate    ${index}+1
+    ${discount_default_path}    set variable    //table[@class='table1']/tbody/tr[${x_index}]${cd_discount_default_path}
+    ${default_status}    run keyword and return status    wait until page contains element    ${discount_default_path}    20
+    return from keyword if    ${default_status}==${False}    ${default_status}
+    click element    ${discount_default_path}
+    wait until page contains element    ${cd_discount_default_title2_path}    20
+    [Return]    ${default_status}
+
+click next in customer directory
+    ${next_exist}    run keyword and return status    wait until page contains element    ${cd_next_path}    20
+    run keyword if    ${next_exist}    click link    ${cd_next_path}
+
+Download File In ZK Menubar
+    [Arguments]    ${locator}    ${dir}
+    wait until keyword succeeds    60 sec    5 sec    Click Element    ${locator}
+    ${file_name}    Download to local by dir    ${dir}
+    [Return]    ${file_name}
+
+get all values in doorinfo
+    #per screen    return $("div.zsscroll").scrollLeft()
+    ${scroll_height}    execute javascript    return $("div.zsscroll").height()    #436    get the div height
+    ${scroll_height}    evaluate    ${scroll_height}-30
+    ${scroll_width}    set variable    2000    #    get the div width    return $("div.zsscroll").width()
+    execute javascript    $("div.zsscroll").scrollLeft(${scroll_width})    #scroll left
+    ${scroll_top_left}    set variable    -1    #initial
+    ${zsblock_data_all}    create list
+    : FOR    ${scroll_time}    IN RANGE    100
+    \    ${scroll_top}    evaluate    ${scroll_height}*${scroll_time}    #get the top you need to scroll to
+    \    execute javascript    $("div.zsscroll").scrollTop(${scroll_top})    #scroll to the top
+    \    ${zsblock_data}    execute javascript    return $("div.zsscroll div.zsblock").html();    #get zsblock html per screen
+    \    ${zsblock_data}    get_zs_table_from_html    ${zsblock_data}
+    \    ${zsblock_data_all}    combine lists    ${zsblock_data_all}    ${zsblock_data}
+    \    ${zsblock_data_all}    remove duplicates    ${zsblock_data_all}
+    \    ${scroll_top_left_last}    set variable    ${scroll_top_left}    #get the last time top
+    \    ${scroll_top_left}    execute javascript    return $("div.zsscroll").scrollTop()    #get current top
+    \    exit for loop if    '${scroll_top_left_last}'=='${scroll_top_left}'    #exit if last time top equals to current top
+    log many    @{zsblock_data_all}
+    ${zsblock_data_all_len}    get length    ${zsblock_data_all}
+    [Return]    ${zsblock_data_all}

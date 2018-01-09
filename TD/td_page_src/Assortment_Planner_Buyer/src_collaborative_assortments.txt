@@ -1,0 +1,2 @@
+*** Variables ***
+${ws_list_empty_text_path}    //b[@class='red']    # Your Collaborative Assortment list is empty.

@@ -1,0 +1,141 @@
+*** Settings ***
+Resource          accounts_actions_res.txt
+Resource          accounts_compare_actions_res.txt
+Resource          accounts_datas_res.txt
+Resource          ap_actions_res.txt
+Resource          style_bank_compare_actions_res.txt
+Resource          ../td_page_src/customer_directory_src.txt
+Resource          ../../../RFScripts/TD_comprehensive/2__DoorInfo/1__interface/LittleComponents.txt
+Library           zkLibrary
+
+*** Keywords ***
+Compare Retailers Per Page
+    [Documentation]    RetailerInfo/ContactInfo/Retailer Profile/Edit Shipping/Edit Account #
+    ${retailer_tables_count}    get matching xpath count    ${retailer_tables_path}
+    ${retailer_tables_count}    convert to integer    ${retailer_tables_count}
+    : FOR    ${retailer_index}    IN RANGE    1    ${retailer_tables_count+1}
+    \    ${retailer_company}    wait until keyword succeeds    10 s    2 s    get text    ${retailer_tables_path}[${retailer_index}]${cd_retailer_info_path}
+    \    set test variable    ${retailer_company}
+    \    Compare Retailer Info    ${retailer_tables_path}[${retailer_index}]
+    \    Compare Contacts Info    ${retailer_tables_path}[${retailer_index}]
+    \    Compare Customer Address    ${retailer_tables_path}[${retailer_index}]
+    \    Compare Customer Info    ${retailer_tables_path}[${retailer_index}]
+    \    compare retailer profile    ${retailer_tables_path}[${retailer_index}]
+
+Compare Retailer Profile
+    [Arguments]    ${locator}
+    click retailer profile all envs    ${locator}
+    Compare HTML Content Htmls    Retailer Profile ${retailer_company}
+    Compare Discount Settings
+
+Compare Retailer Info
+    [Arguments]    ${locator}
+    click retailer info all envs    ${locator}
+    Compare HTML Content Txts    Retailer Info ${retailer_company}
+    go back all envs
+
+Compare Contact Info
+    [Arguments]    ${locator}
+    [Documentation]    user info level
+    ...    For some reason, maybe no users displayed under the retailer company, so no need to compare it.
+    ${user_status}    click contact info all envs    ${locator}
+    return from keyword if    ${user_status}==${False}
+    Compare HTML Content Txts    Contact Info ${retailer_company}
+    go back all envs
+
+Compare Customer Address
+    [Arguments]    ${locator}
+    click edit shipping all envs    ${locator}
+    Compare HTML Content Txts    Edit Shipping ${retailer_company}
+    go back all envs
+
+Compare Customer Info
+    [Arguments]    ${locator}
+    click edit account all envs    ${locator}
+    Compare HTML Content htmls    Edit Account Num ${retailer_company}
+    go back all envs
+
+Compare Discount Settings
+    click discount settings all envs
+    Compare HTML Content Txts    Discount Setting ${retailer_company}
+    ${no_setting_status}    run keyword and return status    page should contain    No Discount Settings found.
+    run keyword unless    ${no_setting_status}    compare discount items
+    repeat keyword    2 times    go back all envs    #back to customer directory
+
+compare discount items
+    ${discount_items_count}    get matching xpath count    ${cd_discount_item_path}
+    ${discount_items_count}    convert to integer    ${discount_items_count}
+    : FOR    ${index}    IN RANGE    1    ${discount_items_count+1}
+    \    compare discount item    ${index}
+
+compare discount item
+    [Arguments]    ${index}
+    [Documentation]    //table[@class='table1']/tbody/tr[2] is the first item path
+    ...
+    ...    index: 1 \ means the first item
+    #compare edit discount
+    click discount name by index all envs    ${index}
+    Compare HTML Content Htmls    edit discount ${index} ${retailer_company}
+    go back all envs    #back to discount setting page
+    #compare default criteria
+    ${default_status}    click discount default by index all envs    ${index}
+    return from keyword if    ${default_status}==${False}
+    Compare HTML Content Txts    default discount ${index} ${retailer_company}
+    go back all envs    #back to discount setting page
+
+Compare Contacts Info
+    [Arguments]    ${locator}
+    ${user_per_retailer_count}    get matching xpath count    ${locator}${cd_user_info_path}
+    ${user_count}    convert to integer    ${user_per_retailer_count}
+    : FOR    ${tr_index}    IN RANGE    2    ${user_count+2}
+    \    Compare Contact Info    ${locator}/tbody/tr[${tr_index}]
+
+Compare Door Info Interface Datas
+    switch browser    ${PROD_BROWSER_INDEX}
+    ${prod_doorinfo_datas}    get all values in doorinfo
+    switch browser    ${STAGE_BROWSER_INDEX}
+    ${stag_doorinfo_datas}    get all values in doorinfo
+    ${doorinfo_interface_cmp_status}    run keyword and return status    lists should be equal    ${prod_doorinfo_datas}    ${stag_doorinfo_datas}
+    return from keyword if    ${doorinfo_interface_cmp_status}
+    : FOR    ${prod_doorinfo_data}    ${stag_doorinfo_data}    IN ZIP    ${prod_doorinfo_datas}    ${stag_doorinfo_datas}
+    \    run keyword and continue on failure    should be equal as strings    ${prod_doorinfo_data}    ${stag_doorinfo_data}
+    #Debug    To check the data from interface is correct.
+    Comment    ${doors}    create list
+    Comment    :FOR    ${door_row}    IN    @{prod_doorinfo_datas}
+    Comment    \    ${door}    get from list    ${door_row}    1
+    Comment    \    append to list    ${doors}    ${door}
+    Comment    ${col_len}    get row length    C:${/}Users${/}jyang${/}Downloads${/}AccoutGroupDownload_20171107-142046.xlsx    Door
+    Comment    ${doors_excel}    create list
+    Comment    :FOR    ${door_excel_row}    IN RANGE    ${col_len}
+    Comment    \    ${door_excel}    excelCustomLibrary.get cell value    C:${/}Users${/}jyang${/}Downloads${/}AccoutGroupDownload_20171107-142046.xlsx    Door    ${door_excel_row}
+    ...    2
+    Comment    \    append to list    ${doors_excel}    ${door_excel}
+    Comment    remove from list    ${doors}    0
+    Comment    remove from list    ${doors_excel}    0
+    Comment    :FOR    ${door_c}    ${door_excel_c}    IN ZIP    ${doors}    ${doors_excel}
+    Comment    \    run keyword and continue on failure    should be equal as strings    ${door_c}    ${door_excel_c}
+
+Compare ZK Download
+    [Arguments]    ${locator}    ${store_prod_dir}    ${store_stag_dir}    ${diff_dir}
+    Comment    ${store_path_file_prod}    ${store_path_file_stag}    Download File In ZK Menubar All Envs    ${locator}    ${store_prod_dir}    ${store_stag_dir}
+    Comment    ${store_path_file_prod}    catenate    SEPARATOR=${/}    ${store_prod_dir}    ${store_path_file_prod}
+    Comment    ${store_path_file_stag}    catenate    SEPARATOR=${/}    ${store_stag_dir}    ${store_path_file_stag}
+    Comment    run keyword and continue on failure    Compare Excel    ${store_path_file_prod}    ${store_path_file_stag}    ${diff_dir}${store_path_file_prod}
+    ${doorinfo_download_dir}    set variable    ${diff_dir}
+    ${store_prod_dir}    catenate    SEPARATOR=${/}    ${doorinfo_download_dir}    prod
+    ${store_stag_dir}    catenate    SEPARATOR=${/}    ${doorinfo_download_dir}    stag
+    ${store_path_file_prod}    ${store_path_file_stag}    Download File In ZK Menubar All Envs    ${locator}    ${store_prod_dir}    ${store_stag_dir}
+    ${store_path_file_prod}    catenate    SEPARATOR=${/}    ${store_prod_dir}    ${store_path_file_prod}
+    ${store_path_file_stag}    catenate    SEPARATOR=${/}    ${store_stag_dir}    ${store_path_file_stag}
+    run keyword and continue on failure    Compare Excel    ${store_path_file_prod}    ${store_path_file_stag}    ${doorinfo_download_dir}${/}${store_path_file_prod}
+
+Compare Doorinfo
+    ${navi_door_info}    execute javascript    return $("[href*='door']").eq(0).text();    #    get the doorinfo link text from navigation menu in case Door is renamed.    return $("[href*='doorInfo']").text();
+    ${door_txt}    fetch from left    ${navi_door_info}    Info
+    ${door_txt}    strip string    ${door_txt}
+    Navigation ${navi_door_info} Module all envs
+    Compare ZK Download    //li[contains(@class,'IconExcel_1')]    ${compare_result_parent_dir}doorinfo_download_excels${/}prod    ${compare_result_parent_dir}doorinfo_download_excels${/}stag    ${compare_result_parent_dir}doorinfo_download_excels
+    Compare ZK Download    //li[contains(@class,'IconExcel_2')]    ${compare_result_parent_dir}doorinfo_download_excels${/}prod    ${compare_result_parent_dir}doorinfo_download_excels${/}stag    ${compare_result_parent_dir}doorinfo_download_excels
+    Compare ZK Download    //li[contains(@class,'IconExcel_3')]    ${compare_result_parent_dir}doorinfo_download_excels${/}prod    ${compare_result_parent_dir}doorinfo_download_excels${/}stag    ${compare_result_parent_dir}doorinfo_download_excels
+    Compare Door Info Interface Datas
+    #    //li[@title='${door_txt} Assignment Excel Download']    //li[@title='${door_txt} Excel Download']    //li[@title='${door_txt} to Retailer Relation Excel Download']

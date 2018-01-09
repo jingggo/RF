@@ -1,0 +1,42 @@
+*** Settings ***
+Library           OperatingSystem
+Library           String
+Library           Collections
+
+*** Test Cases ***
+Options page should be all selected
+
+Datas In Row One should be clear
+
+replace
+    ${dir}    set variable    Z:${/}Developer${/}Code Exchange${/}jyang${/}Performance${/}TD${/}Buyer_Worksheet_GA7.4.0.0${/}Other resources${/}
+    lr_replace    ${dir}lr.txt    ${dir}lr_1.txt    vslice    vslices
+    lr_replace    ${dir}lr_1.txt    ${dir}lr_2.txt    worksheetid    wsids
+    lr_replace    ${dir}lr_2.txt    ${dir}lr_3.txt    islocked    wss_islocked
+    remove file    ${dir}lr_1.txt
+    remove file    ${dir}lr_2.txt
+
+*** Keywords ***
+lr_replace
+    [Arguments]    ${tfpath}    ${sfpath}    ${to_replace}    ${replace}
+    [Documentation]    tfpath is the path of the file needed to replace.
+    ...    sfpath is the path new file to save.
+    ...
+    ...
+    ...    <b>"Name=${to_replace}", "Value=<${replace}_${index}}", ENDITEM</b>
+    ...    to replace is the value to identify the line;
+    ...    replace is the array defined before
+    ${fcontent}    get file    ${tfpath}
+    ${fcontent_line_count}    get line count    ${fcontent}
+    ${fcontent_lst}    split to lines    ${fcontent}
+    Comment    ${to_replace}    ${replace}    set variable    worksheetid    wsids
+    create file    ${sfpath}    #E:${/}doc${/}lr_new.txt
+    ${index}    set variable    ${1}
+    :FOR    ${f}    IN    @{fcontent_lst}
+    \    ${f}    set variable    ${f}\r\n
+    \    ${value_true}    run keyword and return status    should contain    ${f}    ${to_replace}
+    \    run keyword if    ${value_true}==${False}    append to file    ${sfpath}    ${f}
+    \    continue for loop if    ${value_true}==${False}
+    \    ${new_f}    replace string using regexp    ${f}    "Name=${to_replace}", "Value=(.*?)", ENDITEM,    "Name=${to_replace}", "Value=<${replace}_${index}}", ENDITEM,
+    \    ${index}    evaluate    ${index} + 1
+    \    append to file    ${sfpath}    ${new_f}

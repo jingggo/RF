@@ -1,0 +1,37 @@
+*** Settings ***
+Library           Collections
+Library           String
+Library           excelCustomLibrary
+
+*** Variables ***
+${browser_profile_ff_1}    C:\\Users\\pc\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\webdriver-zip-profile3\\    # webdriver-24-profile1
+${browser_profile_ff_2}    C:\\Users\\pc\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\webdriver-zip-profile4\\    # webdriver-24-profile2
+${comprehensive_setting_dir}    E:${/}RFProject${/}TD${/}comprehensive_setting.xlsx    # E:\\CMM_comprehensive_setting.xlsx.${EXECDIR}${/}comprehensive_setting.xlsx
+${AP_sheet}       CMM
+${resultDir}      ${EXECDIR}\\result\\    # E:\\RFScripts\\CMM\\result\\
+${source_result_path}    ${EXECDIR}\\output\\    # E:\\RFScripts\\CMM\\output\\
+${download_worksheets_default_name}    7thOnlineWorksheets.zip
+
+*** Keywords ***
+process criterias data from setting
+    [Arguments]    ${setting_sheet}    ${row_index}
+    ${effec_cmb_criteria_value}    create dictionary
+    : FOR    ${cell}    IN RANGE    6
+    \    ${criteria_value}    get cell value    ${cmm_comprehensive_setting_dir}    ${setting_sheet}    ${row_index}    ${cell + 4}
+    \    continue for loop if    '${criteria_value}' == '${EMPTY}'
+    \    ${criteria_key}    set variable    ${cell+1}
+    \    ${criteria_key}    convert to string    ${criteria_key}
+    \    @{criteria_values}=    split string    ${criteria_value}    ,${SPACE}
+    \    set to dictionary    ${effec_cmb_criteria_value}    ${criteria_key}=${criteria_values}
+    ${CRITERIA_CURRENCY}    get cell value    ${cmm_comprehensive_setting_dir}    ${setting_sheet}    ${row_index}    3
+    set global variable    ${CRITERIA_CURRENCY}
+    ${EFFEC_CMB_CRITERIA_VALUE}    set variable    ${effec_cmb_criteria_value}
+    set global variable    ${EFFEC_CMB_CRITERIA_VALUE}
+    log many    &{effec_cmb_criteria_value}
+    [Return]    ${effec_cmb_criteria_value}    ${CRITERIA_CURRENCY}
+
+process months from setting
+    [Arguments]    ${fpath}    ${sheet_name}    ${rowToRead}
+    ${months}    get cell value    ${fpath}    ${sheet_name}    ${rowToRead}    12
+    @{months}=    split string    ${months}    /
+    [Return]    @{months}

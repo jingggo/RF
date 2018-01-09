@@ -1,0 +1,3 @@
+*** Settings ***
+Suite Setup       log in system and initial
+Resource          td_company_res.txt

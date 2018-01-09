@@ -1,0 +1,27 @@
+*** Settings ***
+Resource          upload_actions_res.txt
+
+*** Keywords ***
+Upload Linesheet
+    [Arguments]    ${upload_file}
+    ${file_type_value}    File Type    Linesheet
+    File Name    ${file_type_value}    ${upload_file}
+    Delimiter    ${file_type_value}    tab
+    Process Document    ${file_type_value}
+
+Remove Titles From File
+    [Arguments]    ${upload_file}
+    ${file_content}    get file    ${upload_file}
+    log    ${file_content}
+    ${file_contents}    split to lines    ${file_content}
+    log many    @{file_contents}
+    ${file_title}    get from list    ${file_contents}    0
+    ${file_titles}    split string    ${file_title}    \t
+    ${cor_contains}    run keyword and return status    list should contain value    ${file_titles}    Corporate Division
+    return from keyword if    ${cor_contains}==${False}
+    ${sub_file}    Remove String Using Regexp    ${file_content}    ^.*?\n    #\r\n
+    log    ${sub_file}
+    Comment    ${file_contents}    Get Substring    ${file_contents}    1
+    Comment    ${file_contents}    convert to list    ${file_contents}
+    Comment    ${sub_file}    Evaluate    "\r\n".join(${file_contents})
+    Create File    ${upload_file}    ${sub_file}

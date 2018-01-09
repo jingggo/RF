@@ -1,0 +1,4 @@
+*** Variables ***
+${notes_path}     xpath=//li[@title='Notes']
+${notes_edit_path}    //textarea[@name='notes']
+${note_area_path}    xpath=//textarea[@name='notes']

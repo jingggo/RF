@@ -1,0 +1,2 @@
+*** Settings ***
+Resource          administration_compare_actions_res.txt

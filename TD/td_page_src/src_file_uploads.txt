@@ -1,0 +1,27 @@
+*** Settings ***
+Library           Selenium2Library
+Library           String
+Resource          src_public_html.txt
+
+*** Variables ***
+${file_uploads_file_type_sel_id}    id=theSelect
+${file_uploads_file_name_path}    //div[@class='hidden${SPACE}is{file_type_value}']//input[@name='uploadfile']    # //div[@class='hidden is2']//input[@class='finput']//input[@class='finput']
+${file_uploads_delimiter_path}    //div[@class='hidden${SPACE}is{file_type_value}']//input[@value='{value}']
+${file_uploads_process_document_path}    //div[@class='hidden${SPACE}is{file_type_value}']//input[@value='Process Document']
+${content_after_upload_path}    //big[@class='title1']//parent::div
+${file_type_list}    xpath=//select[@id='theSelect']
+${thankMsg_path}    xpath=//div[@id='content']
+${viewSelectedLr}    xpath=//input[@value='View Selected']
+${FilterHierarchy}    Filter Hierarchy
+
+*** Keywords ***
+choose type to upload
+    [Arguments]    ${file_type}    ${delimiter_type}    # Upload Account|Upload Account Group|Upload Linesheet...text dropdown list
+    ${file_type}    set variable    ${file_type}    #eg.Upload Account
+    ${delimiter_type}    set variable    ${delimiter_type}
+    ${type_value}    Get Element Attribute    xpath=//option[contains(text(),'${file_type}')]@value
+    Select From List    ${file_type_list}    ${type_value}    #eg.account
+    click element    xpath=//div[contains(@class,'${type_value}') and @style='']//input[@value='${delimiter_type}']    #select the special delimiter
+    Comment    ${status}    ${noNeed}    run keyword and ignore error    element should be visible    ${viewSelectedLr}
+    Comment    run keyword if    '${status}'=='FAIL'
+    [Return]    ${type_value}

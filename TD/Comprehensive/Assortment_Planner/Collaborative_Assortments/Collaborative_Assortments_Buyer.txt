@@ -1,0 +1,22 @@
+*** Settings ***
+Suite Setup       Select The CK Asia - China To Work With
+Resource          ../assortment_planner_buyer_res.txt
+
+*** Test Cases ***
+test
+    [Documentation]    Your Collaborative Assortment list is empty. //b[@class='red']
+    Go To Collaborative Assortments From Navi Menu
+
+Filter Worksheet By Template
+    [Documentation]    2017_1,2018_1 Season/BASIC,FW Buyer Dept #/17C-CHASE,17D-OP-ML Division/All Selected
+    ...
+    ...    2017_1,2018_1 Planning Stage/Replenish
+    [Setup]    Go To Collaborative Assortments From Navi Menu
+    [Template]    Filter Worksheet with Correct Results
+    time_range/2018_1
+    Owned by Vendor/CK Asia - China - Helen Chung
+    time_range/2017_1,2018_1    Department/CKJ,CUW    Owned by Vendor/CK Asia - China - Marine Chiu,CK Asia - China - Helen Chung    Status/Bulk sent,Locked by You
+    style_numbers/4AFBFV8    po_numbers/164-RC-11-CN-EC
+
+View Worksheet
+    Filter Worksheet with Correct Results    style_numbers/    po_numbers/    year_month/2018_1,2018_2    Owned by Vendor/CK Asia - China - Marine Chiu,CK Asia - China - Helen Chung

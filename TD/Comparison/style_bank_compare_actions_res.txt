@@ -1,0 +1,59 @@
+*** Settings ***
+Resource          style_bank_compare_datas_res.txt
+
+*** Keywords ***
+click next in style bank all envs
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click next in style bank
+
+go to advanced search on style bank all envs
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    ${advanced_search_exist}    go to advanced search on style bank
+    \    return from keyword if    ${advanced_search_exist}==${False}    ${advanced_search_exist}
+    [Return]    ${advanced_search_exist}
+
+Filter styles by advanced search all envs
+    [Arguments]    &{styles_filter_criterias}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    Filter styles by advanced search    &{styles_filter_criterias}
+
+click style link all envs
+    [Arguments]    ${style}    ${style_link_txt}
+    [Documentation]    Copy/Copy to PH/Style Info/Colors/Sizes/UPC
+    ...
+    ...    xpath can not recognize text with space in it. so input unique word for 'style_link_txt'.
+    ...
+    ...    'style_link_txt' should be "Copy/PH/Style/Colors/Sizes/UPC" and case sensitive.
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click style link    ${style}    ${style_link_txt}
+
+click ph style edit all envs
+    [Arguments]    ${ph_style}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    click ph style edit    ${ph_style}
+
+go to size horizontal sequence all envs
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    go to size horizontal sequence
+
+go to size range all envs
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    go to size range
+
+Generate Style Bank Report All Envs
+    [Arguments]    ${report_type}    &{styles_filter_criterias}
+    ${store_path_files}    create list
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    ${style_bank_dir}    set variable if    '${browser_index}'=='1'    prod    stag
+    \    ${store_path_file}    catenate    SEPARATOR=    ${compare_result_parent_dir}    StyleBank${/}    ${style_bank_dir}
+    \    ${store_path_env_file}    Generate Style Bank Report    ${report_type}    ${store_path_file}    &{styles_filter_criterias}
+    \    append to list    ${store_path_files}    ${store_path_env_file}    #0 is prod, 1 is stag
+    [Return]    ${store_path_files}

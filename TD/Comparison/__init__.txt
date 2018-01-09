@@ -1,0 +1,3 @@
+*** Settings ***
+Suite Setup       #Login compare envs    ${compare_setting_file}    ${compare_setting_sheet}    ${3}
+Resource          td_compare_res.txt

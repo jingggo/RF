@@ -1,0 +1,13 @@
+*** Settings ***
+Resource          ../td_company_res.txt
+Resource          Collaborative_Assortments/collaborative_assortments_res.txt
+Resource          Collaborative_Assortments/copy_assortments_res.txt
+Resource          Collaborative_Assortments/view_criteria_res.txt
+
+*** Keywords ***
+Go To ${module} From Navi Menu
+    ${trigger_status}    Get Element Attribute    ${navigation_menu_path}/parent::div@class
+    ${trigger_status}    Set variable if    '${trigger_status}'=='open'    open    close
+    Run Keyword if    '${trigger_status}'=='close'    click element    ${navigation_menu_path}
+    Wait Until element is enabled    ${navigation_menu_path}/parent::div[@class='open']    20    The navigation menu is unable to open.
+    click element    //a[text()='${module}']

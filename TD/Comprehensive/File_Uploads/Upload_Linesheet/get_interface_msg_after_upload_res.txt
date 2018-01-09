@@ -1,0 +1,83 @@
+*** Settings ***
+Resource          upload_actions_res.txt
+
+*** Keywords ***
+Check Result On File Uploads With Errors
+    [Arguments]    ${upload_file}
+    sleep    1    #ensure the page starts to processing
+    ${windows}    list windows
+    ${nWindows}    get length    ${windows}
+    run keyword if    ${nWindows}>${1}    select window    ${windows[1]}
+    ${page_title_after_upload}    Get Page Title
+    ${page_content_after_upload}    get text    ${content_after_upload_path}
+    ${page_contents_after_upload}    split to lines    ${page_content_after_upload}
+    remove values from list    ${page_contents_after_upload}    ${EMPTY}
+    log many    @{page_contents_after_upload}
+    ${ninfo}    get length    ${page_contents_after_upload}    #4
+    ${page_title}    get from list    ${page_contents_after_upload}    0
+    ${notice_errors_with_file_name}    get from list    ${page_contents_after_upload}    1
+    ${email_info}    get from list    ${page_contents_after_upload}    2
+    ${support_info}    get from list    ${page_contents_after_upload}    3
+    #    get screenshot on file uploads
+    ${file_split}    split string    ${upload_file}    ${/}
+    ${file_name}    get from list    ${file_split}    -1
+    ${file_name}    fetch from left    ${file_name}    .
+    Capture Page Screenshot    ${UPLOAD_LINESHEET_PNGS_DIR}${/}${file_name}.png
+    #    back to original window
+    Close Window
+    Select Window    ${windows[0]}
+
+Check Result On File Uploads Successfully
+    [Arguments]    ${upload_file}
+    #    get file real name
+    ${file_split}    split string    ${upload_file}    ${/}
+    ${file_name_txt}    get from list    ${file_split}    -1
+    ${file_name}    fetch from left    ${file_name_txt}    .
+    sleep    1    #ensure the page starts to processing
+    ${windows}    list windows
+    ${nWindows}    get length    ${windows}
+    run keyword if    ${nWindows}>${1}    select window    ${windows[1]}
+    ${page_title_after_upload}    Get Page Title
+    ${page_content_after_upload}    get text    ${content_after_upload_path}
+    ${page_contents_after_upload}    split to lines    ${page_content_after_upload}
+    remove values from list    ${page_contents_after_upload}    ${EMPTY}
+    log many    @{page_contents_after_upload}
+    ${ninfo}    get length    ${page_contents_after_upload}    #3
+    : FOR    ${nline}    IN RANGE    ${ninfo}
+    \    ${real_info}    get from list    ${page_contents_after_upload}    ${nline}
+    \    run keyword if    ${nline}==${0}    run keyword and continue on failure    should be equal as strings    ${real_info}    ThankYou
+    \    run keyword if    ${nline}==${1}    run keyword and continue on failure    should be equal as strings    ${real_info}    Linesheet file ${file_name_txt} has been successfully uploaded.
+    \    run keyword if    ${nline}==${2}    run keyword and continue on failure    should be equal as strings    ${real_info}    Please contact Client Support toll free at 1.800.775.7571 or email support@7thonline.com with any questions or problems.
+    #    get screenshot on file uploads
+    Capture Page Screenshot    ${UPLOAD_LINESHEET_PNGS_DIR}${/}${file_name}.png
+    #    back to original window
+    Close Window
+    Select Window    ${windows[0]}
+
+Get Page Title
+    wait until page contains element    ${big_title_contains_path}    120
+    ${nTitles}    get matching xpath count    ${big_title_contains_path}
+    ${nTitles}    convert to integer    ${nTitles}
+    ${title}    set variable
+    : FOR    ${index}    IN RANGE    1    ${nTitles + 1}
+    \    ${title_path}    replace string    ${big_title_contains_path}    title    title${index}
+    \    ${p_title}    get text    ${title_path}
+    \    ${title}    catenate    SEPARATOR=    ${title}    ${p_title}
+    [Return]    ${title}
+
+Capture Result On File Uploads
+    [Arguments]    ${upload_file}
+    #    get file real name
+    ${file_split}    split string    ${upload_file}    ${/}
+    ${file_name_txt}    get from list    ${file_split}    -1
+    ${file_name}    fetch from left    ${file_name_txt}    .
+    sleep    1    #ensure the page starts to processing
+    ${windows}    list windows
+    ${nWindows}    get length    ${windows}
+    run keyword if    ${nWindows}>${1}    select window    ${windows[1]}
+    ${page_title_after_upload}    Get Page Title
+    #    get screenshot on file uploads
+    Capture Page Screenshot    ${UPLOAD_LINESHEET_PNGS_DIR}${/}${file_name}.png
+    #    back to original window
+    Close Window
+    Select Window    ${windows[0]}

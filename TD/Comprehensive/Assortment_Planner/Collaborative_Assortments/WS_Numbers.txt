@@ -1,0 +1,74 @@
+*** Settings ***
+Resource          collaborative_assortments_res.txt
+Resource          view_criteria_res.txt
+Resource          copy_assortments_res.txt
+
+*** Test Cases ***
+Filter Worksheet By Template
+    [Setup]    Go To Collaborative Assortments From Navi Menu
+    [Template]    Filter Worksheet with Correct Results
+    2018_1,2018_2
+    ${EMPTY}    Owned by Vendor/Calvin Klein Asia - Peony Cheng
+    2017_1,2018_1    Owned by Vendor/Calvin Klein Asia - Peony Cheng,Calvin Klein Asia - Helen Chu    DIV Group/CKJ,CUW    Status/Bulk sent,Locked by You
+    2017_1,2017_2,2017_3,2017_4,2018_1,2018_2,2018_3,2018_4    Owned by Vendor/Calvin Klein Asia - Peony Cheng,Calvin Klein Asia - Helen Chu
+    [Teardown]
+
+del worksheet
+    del_ws_by_name    auto_test1
+    Comment    del ws by wsid
+
+copy_worksheet
+    &{create_criterias}    create dictionary    planningstage=1-F0    season=SPRING    seasonyear=2019    month=DEC    startingyear=2019
+    ...    totalmonth=1    dept=PAT    division=PATAGONIA    storegroup=System Default - Bulk Cluster    vendorowner=Patagonia - Matt Calawa    buyer=ARG Inline Buyer
+    Go To Collaborative Assortments From Navi Menu
+    ${wsid}    ${vslice}    get wsid info by ws name    auto_test1
+    select ws    ${wsid}    ${vslice}
+    Expand Worksheet    ${wsid}
+    Comment    Copy Assortment    ${wsid}    auto_test2    &{create_criterias}
+    Comment    Copy Selected    1-F0    Patagonia - Linda Collins    CA WH Other Buyer    Zappos Buyer
+    Copy All
+
+create worksheet
+    &{create_criterias}    create dictionary    planningstage=1-F0    season=SPRING    seasonyear=2019    month=DEC    startingyear=2019
+    ...    totalmonth=1    dept=PAT    division=PATAGONIA    storegroup=System Default - Bulk Cluster    vendorowner=Patagonia - Matt Calawa    buyer=ARG Inline Buyer
+    ...    buyer_company=ARG Inline
+    &{create_criterias_oakley}    create dictionary    planningstage=12.SMSPO    season=SPRING    seasonyear=2019    month=DEC    startingyear=2019
+    ...    totalmonth=3    dept=AFA    division=APPAREL    storegroup=System Default - Bulk Cluster    vendorowner=CANADA - AFA - Ca Admin    buyer=PT MITRA ADIPERKASA (MAA)
+    ...    buyer_company=ASIA DIST    productcategory=BASIC
+    &{create_criterias_ck}    create dictionary    planningstage=Local Repl    vendorowner=Calvin Klein Asia - Peony Cheng    buyer=China Ecom Buyer    buyer_company=China Ecom    season=BASIC
+    ...    seasonyear=2019    month=SEP    startingyear=2019    totalmonth=3    dept=CUM    division=CKASIA
+    ...    storegroup=China Ecom WRWSH
+    ${assortment_name}    set variable    auto_test1
+    Go To Collaborative Assortments From Navi Menu
+    Del WS By Name    ${assortment_name}
+    Go To Create Template Page From CA
+    Choose Planningstage Vendor Buyer    &{create_criterias_ck}    #    ${create_criterias.planningstage}    ${create_criterias.vendorowner}    ARG Inline Buyer
+    Potential Error When Create WS
+    choose criterias on CreateSeasonalAssortment page    ${assortment_name}    &{create_criterias_ck}
+    Potential Error When Create WS
+    If set my viewing criteria
+    page should contain    Collaborative    #check the created ws on CA page
+
+Send Bulk WS
+    Go To Collaborative Assortments From Navi Menu
+    #    NB1015=[]
+    ${colors}    create list    100
+    ${styles_colors}    create dictionary    NB1015=${colors}
+    ${assortment_name}    set variable    auto_test1
+    &{create_criterias_ck}    create dictionary    planningstage=Local Repl    vendorowner=Calvin Klein Asia - Peony Cheng    buyer=China Ecom Buyer    buyer_company=China Ecom    season=BASIC
+    ...    seasonyear=2019    month=SEP    startingyear=2019    totalmonth=3    dept=CUM    division=CKASIA
+    ...    storegroup=China Ecom WRWSH
+    ${ws_name}    set variable    ${assortment_name}
+    ${ws_owner}    set variable    ${create_criterias_ck.vendorowner}
+    ${ws_buyer}    set variable    ${create_criterias_ck.buyer}
+    ${ws_time}    get substring    ${create_criterias_ck.seasonyear}    2
+    ${ws_time}    catenate    ${create_criterias_ck.month}    ${ws_time}    #    DEC 19
+    ${wsid}    get wsid by ws name owner and buyer    ${ws_owner}    ${ws_buyer}    ${ws_name}    ${ws_time}
+    ${wsid}    fetch from right    ${wsid}    workid
+    log many    ${wsid}
+    Comment    Add Remove Styles By Basic Search    ${wsid}    BASIC-2018    &{styles_colors}
+    Comment    Share WS
+    Approve WS    ${wsid}
+    Send Bulk Orders    ${wsid}
+
+*** Keywords ***

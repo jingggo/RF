@@ -1,0 +1,12 @@
+*** Keywords ***
+Freeze A Column
+    Get A Cell To Freeze
+	Freeze Pane By Cell Position
+	The Freezed Column Should Be Fixed When Scroll Page
+	
+Remove From Freeze Area
+    Get An Attribute To Remove
+    Open Option Page
+	Remove An Attribute In Option Page
+	Close Option Page
+	The Freezed Column Should Be Fixed When Scroll Page

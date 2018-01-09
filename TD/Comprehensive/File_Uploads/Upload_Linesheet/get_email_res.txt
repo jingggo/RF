@@ -1,0 +1,10 @@
+*** Settings ***
+Resource          upload_actions_res.txt
+
+*** Keywords ***
+Check Result In Email
+    Comment    Get Attachments
+    Comment    Get Email Body
+    Comment    Get Subject
+    Comment    Get To
+    Comment    CC

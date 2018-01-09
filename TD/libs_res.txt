@@ -1,0 +1,5 @@
+*** Settings ***
+Library           Collections
+Library           String
+Library           excelCustomLibrary
+Library           Selenium2Library

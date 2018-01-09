@@ -1,0 +1,134 @@
+*** Settings ***
+Resource          ap_actions_res.txt
+Resource          ../Comprehensive/Assortment_Planner/Collaborative_Assortments/collaborative_assortments_res.txt
+
+*** Keywords ***
+Set ws viewing criteria
+
+Expand Worksheet In Both Envs
+    [Arguments]    ${wsid}
+    switch browser    ${PROD_BROWSER_INDEX}
+    Expand Worksheet    ${wsid}
+    switch browser    ${STAGE_BROWSER_INDEX}
+    Expand Worksheet    ${wsid}
+
+Collapse Worksheet In Both Envs
+    [Arguments]    ${wsid}
+    : FOR    ${tag}    IN    prod    stag
+    \    ${browser_index}    set variable if    '${tag}' == 'prod'    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    Collapse Worksheet    ${wsid}
+
+Get wsids in both envs
+    switch browser    ${PROD_BROWSER_INDEX}
+    ${prod_ws_ids}    Get worksheets list
+    switch browser    ${STAGE_BROWSER_INDEX}
+    ${stag_ws_ids}    Get worksheets list
+    [Return]    ${prod_ws_ids}    ${stag_ws_ids}
+
+Go to ws info page in both envs
+    [Arguments]    ${wsid}
+    ${ws_edit_info_path}    replace string    ${ws_edit_info_path}    {wsid}    ${wsid}
+    switch browser    ${PROD_BROWSER_INDEX}
+    wait until element is visible    ${ws_edit_info_path}
+    click element    ${ws_edit_info_path}
+    Wait until page contains element    ${edit_info_page_title_path}    20
+    switch browser    ${STAGE_BROWSER_INDEX}
+    wait until element is visible    ${ws_edit_info_path}
+    click element    ${ws_edit_info_path}
+    Wait until page contains element    ${edit_info_page_title_path}    20
+
+Go to ws special part both envs
+    [Arguments]    ${compare_part}
+    ${compare_part_titles}    split string    ${compare_part}
+    ${part_txt}    get from list    ${compare_part_titles}    -1
+    ${ca_ws_seasonal_expand_path}    replace string    //tbody[@id='x{wsid}']/tr[2]//a[contains(text(),'${part_txt}')]    {wsid}    ${wsid}    #//tbody[@id='x20024594']/tr[2]//a
+    switch browser    ${PROD_BROWSER_INDEX}
+    wait until element is visible    ${ca_ws_seasonal_expand_path}
+    click element    ${ca_ws_seasonal_expand_path}
+    wait until page does not contain    //big[text()='Collaborative']    20
+    switch browser    ${STAGE_BROWSER_INDEX}
+    wait until element is visible    ${ca_ws_seasonal_expand_path}
+    click element    ${ca_ws_seasonal_expand_path}
+    wait until page does not contain    //big[text()='Collaborative']    20
+
+Go view page all envs
+    [Arguments]    ${wsid}
+    ${ws_seasonl_view_path}    replace string    ${ws_seasonl_view_path}    {wsid}    ${wsid}
+    switch browser    ${PROD_BROWSER_INDEX}
+    click element    ${ws_seasonl_view_path}
+    Wait until page contains element    ${view_page_months_list_path}    120
+    switch browser    ${STAGE_BROWSER_INDEX}
+    click element    ${ws_seasonl_view_path}
+    Wait until page contains element    ${view_page_months_list_path}    120
+
+Go history page in both envs
+    [Arguments]    ${wsid}
+    ${ws_seasonl_history_path}    replace string    ${ws_seasonl_history_path}    {wsid}    ${wsid}
+    switch browser    ${PROD_BROWSER_INDEX}
+    click element    ${ws_seasonl_history_path}
+    Wait until page contains element    ${ws_history_title2_path}    120
+    switch browser    ${STAGE_BROWSER_INDEX}
+    click element    ${ws_seasonl_history_path}
+    Wait until page contains element    ${ws_history_title2_path}    120
+
+Go to history view page in both envs
+    [Arguments]    ${locator}
+    ${compare_to_cur_version_path}    set variable    ${locator}
+    switch browser    ${PROD_BROWSER_INDEX}
+    click element    ${compare_to_cur_version_path}
+    ${history_view_loaded}    run keyword and return status    Wait until page contains element    ${view_page_months_list_path}    120    History View Page Failed To Load.
+    run keyword and continue on failure    Wait until page contains element    ${view_page_months_list_path}    1    History View Page Failed To Load.
+    switch browser    ${STAGE_BROWSER_INDEX}
+    click element    ${compare_to_cur_version_path}
+    ${history_view_loaded}    run keyword and return status    Wait until page contains element    ${view_page_months_list_path}    120    History View Page Failed To Load.
+    run keyword and continue on failure    Wait until page contains element    ${view_page_months_list_path}    1    History View Page Failed To Load.
+    [Return]    ${history_view_loaded}
+
+Go to set viewing criteira page all envs
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    Go To Set Viewing Criteria Page From CA
+    \    wait until page contains element    //big[text()='Criteria']
+
+Select View Month On View Page All Envs
+    [Arguments]    ${ws_month}
+    Switch Browser    ${PROD_BROWSER_INDEX}
+    Select View Month On View Page    ${ws_month}
+    switch browser    ${STAGE_BROWSER_INDEX}
+    Select View Month On View Page    ${ws_month}
+
+Select from dropdown all envs
+    [Arguments]    ${path}    ${label}
+    [Documentation]    Based on "Select from list by value".
+    Switch Browser    ${PROD_BROWSER_INDEX}
+    Select from list by label    ${path}    ${label}
+    click button    view
+    wait until keyword succeeds    120    5s    page should contain element    //option[@selected and text()='${label}']
+    switch browser    ${STAGE_BROWSER_INDEX}
+    Select from list by label    ${path}    ${label}
+    click button    view
+    wait until keyword succeeds    120    5s    page should contain element    //option[@selected and text()='${label}']
+
+Select Groupby On View Page All Envs
+    [Arguments]    ${value}
+    [Documentation]    Based on "Select from list by value".
+    Switch Browser    ${PROD_BROWSER_INDEX}
+    Select Groupby On View Page    ${value}
+    switch browser    ${STAGE_BROWSER_INDEX}
+    Select Groupby On View Page    ${value}
+
+Filter Worksheet all envs
+    [Arguments]    @{filter_hierarchy_criterias}
+    &{filter_hierarchy_criterias}    Get Filter Hierarchy Data    @{filter_hierarchy_criterias}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    Go To Set Viewing Criteria Page From CA
+    \    Clear Viewing Criteria page
+    \    Input Filter Conditions In Viewing Criteria Page    &{filter_hierarchy_criterias}
+
+go to seasonal notes page all envs
+    [Arguments]    ${wsid}
+    : FOR    ${browser_index}    IN    ${PROD_BROWSER_INDEX}    ${STAGE_BROWSER_INDEX}
+    \    switch browser    ${browser_index}
+    \    go to seasonal notes page    ${wsid}

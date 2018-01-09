@@ -1,0 +1,3 @@
+*** Variables ***
+${freeze_path}    xpath=//li[@title='Freeze Pane']
+${fz_class_path}    xpath=//li[@title='Freeze Pane']

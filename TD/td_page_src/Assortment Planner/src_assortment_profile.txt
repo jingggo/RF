@@ -1,0 +1,3 @@
+*** Variables ***
+${set_criteria1_path}    //form[@name='message']//table//input[@name='setcriteria']
+${set_criteria2_path}    //form[@name='message']/input[@name='setcriteria']

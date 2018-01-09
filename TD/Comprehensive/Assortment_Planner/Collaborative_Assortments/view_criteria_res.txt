@@ -1,0 +1,155 @@
+*** Settings ***
+Resource          ../assortment_planner_res.txt
+
+*** Keywords ***
+Input Filter Conditions In Viewing Criteria Page
+    [Arguments]    &{filter_hierarchy_criterias}
+    ${style_numbers_setted}    run keyword and return status    dictionary should contain key    ${filter_hierarchy_criterias}    style_numbers
+    ${po_numbers_setted}    run keyword and return status    dictionary should contain key    ${filter_hierarchy_criterias}    po_numbers
+    ${time_range_setted}    ${time_range}    run keyword and ignore error    get from dictionary    ${filter_hierarchy_criterias}    time_range
+    run keyword if    ${style_numbers_setted}    Input Styles    ${filter_hierarchy_criterias.style_numbers}
+    run keyword if    ${po_numbers_setted}    Input PO    ${filter_hierarchy_criterias.po_numbers}
+    Checkbox View worksheets in folders by month
+    run keyword if    '${time_range_setted}'=='PASS'    Choose Time Range    @{time_range}
+    Choose Filter Hierarchy    &{filter_hierarchy_criterias}
+    Click element    ${view_selected2_path}
+    wait until page does not contain element    //input[@value='Please Wait']
+    ${with_error}    run keyword and return status    page should contain element    //b[@class='error']
+    ${error}    run keyword if    ${with_error}    get text    //b[@class='error']
+    run keyword if    ${with_error}    Fail    ${error}
+    wait until page contains    Collaborative
+    [Return]    ${True}
+
+Input Styles
+    [Arguments]    ${stylenumbers}=${EMPTY}
+    [Documentation]    Default is input nothing
+    return from keyword if    '${stylenumbers}'=='${EMPTY}'
+    input text    ${style_numbers_path}    ${stylenumbers}
+
+Input PO
+    [Arguments]    ${ponumbers}=${EMPTY}
+    [Documentation]    Default is input nothing
+    return from keyword if    '${ponumbers}'=='${EMPTY}'
+    input text    ${po_numbers_path}    ${ponumbers}
+
+Checkbox View worksheets in folders by month
+    [Arguments]    ${view_worksheet_by_month}=N
+    ${view_worksheet_by_month}    get substring    ${view_worksheet_by_month}    0    1
+    ${view_worksheet_by_month}    convert to lowercase    ${view_worksheet_by_month}
+    return from keyword if    '${view_worksheet_by_month}'=='n'
+    select checkbox    //input[@name='view_worksheet_by_month']
+
+Choose Time Range
+    [Arguments]    @{time_list}
+    [Documentation]    Example: 2019_12 \ means the year is 2019 and month is Dec
+    log many    @{time_list}
+    ${cross_year_month_passed}    ${years_text}    run keyword and ignore error    get text    //label[@for='years']
+    run keyword if    '${cross_year_month_passed}'=='PASS'    Choose Time Range If Year Month Crossed    @{time_list}
+    Return from keyword if    '${cross_year_month_passed}'=='PASS'
+    #choose time range    if year month not crossed
+    : FOR    ${year_month}    IN    @{time_list}
+    \    select checkbox    //input[@value='${year_month}']
+
+Choose Time Range If Year Month Crossed
+    [Arguments]    @{time_list}
+    : FOR    ${year_month}    IN    @{time_list}
+    \    ${year_month}    split string    ${year_month}    _
+    \    ${year}    get from list    ${year_month}    0
+    \    ${month}    get from list    ${year_month}    1
+    \    select checkbox    //input[@value='${year}']
+    \    select checkbox    //input[@value='${month}']
+
+Choose Filter Hierarchy
+    [Arguments]    &{filter_hierarchy_criterias}
+    log many    &{filter_hierarchy_criterias}    #    hierarchyattr1    hierarchy_value
+    ${hierarchy_attrs}    get dictionary keys    ${filter_hierarchy_criterias}
+    remove values from list    ${hierarchy_attrs}    time_range    style_numbers    po_numbers
+    Comment    : FOR    ${hierarchy_attr}    ${hierarchy_value}    IN    @{filter_hierarchy_criterias}
+    : FOR    ${index}    ${dic_hierarchy_attr}    IN ENUMERATE    @{hierarchy_attrs}
+    \    ${hierarchy_attr}    get substring    ${dic_hierarchy_attr}    1
+    \    ${index}    set variable    ${index + 1}
+    \    ${filtertablerow_path}    catenate    SEPARATOR=    //tr[@id='    r${index}    ']
+    \    ${hierarchyattr_path}    set variable    ${filtertablerow_path}/td[2]/select
+    \    ${hierarchyvalue_path}    set variable    ${filtertablerow_path}/td[3]
+    \    ${hierarchyadd_path}    set variable    ${filtertablerow_path}/td[4]/input
+    \    select from list by label    ${hierarchyattr_path}    ${hierarchy_attr}    #select from hierarchy attr
+    \    wait until page contains element    ${hierarchyvalue_path}/div
+    \    ${hierarchy_values}    get from dictionary    ${filter_hierarchy_criterias}    ${dic_hierarchy_attr}
+    \    Select From Hierarchyvalues    ${hierarchyvalue_path}    ${hierarchy_values}
+    \    exit for loop if    '${dic_hierarchy_attr}'=='${hierarchy_attrs[-1]}'
+    \    click element    ${hierarchyadd_path}
+    \    wait until page contains element    id=r${index + 1}
+
+Select From Hierarchyvalues
+    [Arguments]    ${hierarchyvalue_path}    ${hierarchy_values}
+    [Documentation]    @{hierarchy_values} is list
+    ${multiCtext_path}    set variable    ${hierarchyvalue_path}//div[@class='multiCtext']
+    ${multiC_on_path}    set variable    ${hierarchyvalue_path}//div[@class='multiC on']
+    ${multiC_off_path}    set variable    ${hierarchyvalue_path}//div[@class='multiC']
+    click element    ${multiCtext_path}    #expand
+    wait until page contains element    ${multiC_on_path}
+    : FOR    ${hierarchy_value}    IN    @{hierarchy_values}
+    \    ${checkbox_path}    catenate    SEPARATOR=    ${multiC_on_path}//label[text()='    ${hierarchy_value}    ']/input
+    \    select checkbox    ${checkbox_path}
+    click element    //big[@class='title1']    #//form[@name='message']    //form[@name='message']    #collapse
+    wait until page contains element    ${multiC_off_path}
+    ${multiCtext_labels}    get text    ${multiCtext_path}
+    ${hierarchy_values_join_X}    evaluate    'X '.join(${hierarchy_values})
+    ${hierarchy_values_join_X}    Catenate    SEPARATOR=    ${hierarchy_values_join_X}    X
+    should be equal as strings    ${multiCtext_labels}    ${hierarchy_values_join_X}    Not select checkboxes for all values.
+
+Get Filter Hierarchy Data
+    [Arguments]    @{hierarchy_criterias}
+    [Documentation]    ${hierarchy_criterias} create list Owned by Buyer/ARG Inline - ARG Inline Buyer Owned by Vendor/Patagonia - Matt Calawa Division/PATAGONIA Department/PAT Style Season/SPRING
+    ...
+    ...    Return dictionary type
+    Comment    ${hierarchy_criterias}    create list    Owned by Buyer/ARG Inline - ARG Inline Buyer,Zappos - Zappos Buyer    Owned by Vendor/Patagonia - Matt Calawa,Patagonia - Linda Collins    Division/PATAGONIA    Department/PAT
+    ...    Style Season/SPRING
+    Comment    ${hierarchy_criterias}    create list    Owned by Vendor/CK Asia - China - Marine Chiu,CK Asia - China - Helen Chung
+    &{filter_hierarchy_criterias}    create dictionary
+    : FOR    ${filter_hierarchy_criteria}    IN    @{hierarchy_criterias}
+    \    ${hierarchy_criteria}    split string    ${filter_hierarchy_criteria}    /
+    \    ${hierarchy_values}    split string    ${hierarchy_criteria[1]}    ,
+    \    ${hierarchy_values}    set variable if    '${hierarchy_criteria[0]}'=='style_numbers' or '${hierarchy_criteria[0]}'=='po_numbers'    ${hierarchy_criteria[1]}    ${hierarchy_values}
+    \    set to dictionary    ${filter_hierarchy_criterias}    ${hierarchy_criteria[0]}    ${hierarchy_values}
+    log many    &{filter_hierarchy_criterias}
+    [Return]    &{filter_hierarchy_criterias}
+
+Clear Viewing Criteria page
+    [Documentation]    To clear all criterias setted before on Viewing Criteria page.
+    ${contained}    run keyword and return status    page should contain    Clear All
+    run keyword if    ${contained}    click link    id=clear    #Clear All
+    return from keyword if    ${contained}
+    Clear Filter Hierarchy
+    Clear Time Range When Filter WS
+
+Clear Filter Hierarchy
+    ${filtertable_path}    set variable    //table[@id='filtertable']
+    ${remove_button_count}    get matching xpath count    //input[@class='b remove']    #remove button
+    ${remove_button_count}    convert to integer    ${remove_button_count}
+    run keyword if    ${remove_button_count}>0    repeat keyword    ${remove_button_count - 1}    click element    //input[@class='b remove']
+    Comment    select from list by label    //select[@name='hierarchyattr1']    ${SPACE}
+
+Clear Time Range When Filter WS
+    [Documentation]    Enable cross year month selection---Set in Company Profile
+    ${cross_year_month_passed}    ${years_text}    run keyword and ignore error    get text    //label[@for='years']
+    Run keyword if    '${cross_year_month_passed}'=='PASS'    Clear Time Range If Year Month Crossed
+    Run keyword unless    '${cross_year_month_passed}'=='PASS'    Clear Time Range If Year Month Full
+
+Clear Time Range If Year Month Crossed
+    Select checkbox    id=years
+    Unselect checkbox    id=years
+    Select checkbox    id=months
+    Unselect checkbox    id=months
+
+Clear Time Range If Year Month Full
+    ${month_checked_path}    set variable    //tr[@class='checkedrowcolor']/td/input[@checked]
+    ${month_checked_count}    get matching xpath count    ${month_checked_path}
+    ${month_checked_count}    convert to integer    ${month_checked_count}
+    Return From Keyword If    ${month_checked_count}==${0}
+    ${year_monthsX}    get element attribute    ${month_checked_path}@id
+    ${year_id}    Fetch From Left    ${year_monthsX}    X
+    Select Checkbox    id=${year_id}
+    Unselect Checkbox    id=${year_id}
+    Clear Time Range If Year Month Full
+    Comment    repeat keyword    ${month_checked_count}    Unselect Checkbox    ${month_checked_path}

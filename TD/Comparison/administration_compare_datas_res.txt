@@ -1,0 +1,16 @@
+*** Settings ***
+Resource          administration_compare_actions_res.txt
+
+*** Keywords ***
+Compare Company Profile Dropdown Datas
+    [Arguments]    @{cp_dd_items}
+    ${cp_dd_items}    get list items    ${cp_dd_path}
+    Comment    ${cp_dd_item}    set variable    ${cp_dd_items[0]}
+    : FOR    ${cp_dd_item}    IN    @{cp_dd_items}
+    \    Select From Company Profile All envs    ${cp_dd_item}
+    \    Compare HTML Content htmls    cp ${cp_dd_item}
+    \    go back all envs
+
+Compare Company Profile Main Datas
+    click link all envs    Open All
+    Compare HTML Content htmls    cp

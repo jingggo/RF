@@ -1,0 +1,16 @@
+*** Variables ***
+${compare_setting_file}    Z:${/}Developer${/}Code Exchange${/}jyang${/}RFProject${/}TD${/}Comparison${/}comparison setting_TD_1227.xlsx
+${compare_result_parent_dir}    E:${/}RFScripts${/}TD${/}TD comparison${/}TD${/}    #Z:${/}QA${/}QA Material${/}TD${/}TD comparison${/}test09${/}
+${compare_setting_sheet}    WS setting
+${compare_sb_setting_sheet}    StyleBank setting
+${compare_ph_setting_sheet}    PH setting
+${compare_accounts_setting_sheet}    CompanyProfile setting
+${compare_ca_setting_sheet}    WS setting
+${compare_store_group_setting_sheet}    StoreGroup setting
+${compare_retailer_profile_setting_sheet}    RetailerProfile setting
+${compare_style_bank_dir}    ${compare_result_parent_dir}SB${/}
+${compare_ca_dir}    ${compare_result_parent_dir}CA${/}
+${compare_retailer_profile_dir}    ${compare_result_parent_dir}RetailerProfile${/}
+${compare_store_group_dir}    ${compare_result_parent_dir}StoreGroup${/}
+${compare_ws_download_dir}    ${compare_result_parent_dir}ws_download${/}
+${compare_ph_dir}    ${compare_result_parent_dir}PH${/}
