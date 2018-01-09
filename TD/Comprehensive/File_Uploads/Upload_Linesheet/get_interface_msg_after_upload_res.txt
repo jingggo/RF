@@ -13,6 +13,7 @@ Check Result On File Uploads With Errors
     ${page_contents_after_upload}    split to lines    ${page_content_after_upload}
     remove values from list    ${page_contents_after_upload}    ${EMPTY}
     log many    @{page_contents_after_upload}
+    Page should not contain    successfully
     ${ninfo}    get length    ${page_contents_after_upload}    #4
     ${page_title}    get from list    ${page_contents_after_upload}    0
     ${notice_errors_with_file_name}    get from list    ${page_contents_after_upload}    1
@@ -42,6 +43,7 @@ Check Result On File Uploads Successfully
     ${page_contents_after_upload}    split to lines    ${page_content_after_upload}
     remove values from list    ${page_contents_after_upload}    ${EMPTY}
     log many    @{page_contents_after_upload}
+    Page should contain    successfully
     ${ninfo}    get length    ${page_contents_after_upload}    #3
     : FOR    ${nline}    IN RANGE    ${ninfo}
     \    ${real_info}    get from list    ${page_contents_after_upload}    ${nline}

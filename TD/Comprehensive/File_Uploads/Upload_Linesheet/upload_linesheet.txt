@@ -77,7 +77,6 @@ Scenario002-New Style Color
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO002}
     Check Result In Email
 
@@ -89,7 +88,6 @@ Scenario003-Color code duplicate with existing color
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO003}
     Check Result In Email
 
@@ -101,7 +99,6 @@ Scenario004-Color des duplicate with existing color
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO004}
     Check Result In Email
 
@@ -113,8 +110,7 @@ Scenario005-Color code and Color Desc Don't Match
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
-    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO004}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO005}
     Check Result In Email
 
 Scenario006-New Size
@@ -125,7 +121,6 @@ Scenario006-New Size
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO006}
     Check Result In Email
 
@@ -137,7 +132,6 @@ Scenario007-Size code duplicate with existing size
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO007}
     Check Result In Email
 
@@ -149,7 +143,6 @@ Scenario008-Size des duplicate with existing size
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO008}
     Check Result In Email
 
@@ -161,8 +154,7 @@ Scenario009-Size Code and Size Desc Don't Match
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
-    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO004}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO009}
     Check Result In Email
 
 Scenario010-Delete some sizes of a style_color
@@ -173,7 +165,6 @@ Scenario010-Delete some sizes of a style_color
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO010}
     Check Result In Email
 
@@ -185,7 +176,6 @@ Scenario011-Delete all sizes of a style_color
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO011}
     Check Result In Email
 
@@ -197,7 +187,6 @@ Scenario012-Delete some color of a style
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO012}
     Check Result In Email
 
@@ -222,6 +211,8 @@ Scenario014-Delete non-existing style_color
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO014}
     Check Result In Email
 
 Scenario015-Color code different from existing record
@@ -232,7 +223,6 @@ Scenario015-Color code different from existing record
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO015}
     Check Result In Email
 
@@ -244,7 +234,6 @@ Scenario016-Color name different from existing record
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO016}
     Check Result In Email
 
@@ -255,6 +244,9 @@ Scenario017-Color code and color des dont match
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    log many    @{actual_scenario_upcs}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO017}
     Check Result In Email
 
 Scenario018-Size code different from existing record
@@ -265,7 +257,6 @@ Scenario018-Size code different from existing record
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO018}
     Check Result In Email
 
@@ -277,7 +268,6 @@ Scenario019-Size name diff from existing record
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO019}
     Check Result In Email
 
@@ -288,6 +278,8 @@ Scenario020-Size code and size des dont match
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO020}
     Check Result In Email
 
 Scenario021-Color Code Duplicate with existing color
@@ -298,7 +290,6 @@ Scenario021-Color Code Duplicate with existing color
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO021}
     Check Result In Email
 
@@ -310,7 +301,6 @@ Scenario022-Color des duplicate with existing color
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO022}
     Check Result In Email
 
@@ -321,6 +311,8 @@ Scenario023-Color code and color des dont match
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO023}
     Check Result In Email
 
 Scenario024-Size code duplicate
@@ -331,7 +323,6 @@ Scenario024-Size code duplicate
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO024}
     Check Result In Email
 
@@ -343,7 +334,6 @@ Scenario025-Size desc duplicate
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO025}
     Check Result In Email
 
@@ -354,6 +344,8 @@ Scenario026-Size code and size des dont match
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO026}
     Check Result In Email
 
 Scenario027-Color code diff from existing record with the same UPC
@@ -364,7 +356,6 @@ Scenario027-Color code diff from existing record with the same UPC
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO027}
     Check Result In Email
 
@@ -376,7 +367,6 @@ Scenario028-Color des diff from existing record with the same UPC
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO028}
     Check Result In Email
 
@@ -387,6 +377,8 @@ Scenario029-Color code duplicate with existing record of another UPC
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO029}
     Check Result In Email
 
 Scenario030-Color des duplicate with existing record of another UPC
@@ -396,30 +388,39 @@ Scenario030-Color des duplicate with existing record of another UPC
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO030}
     Check Result In Email
 
 Scenario031
     [Documentation]    Color Code same as existing record of same UPC, Color Desc duplicate with existing record of another UPC
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*031-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
     ${upload_file}    get from list    ${FILES_TO_UPLOAD}    30
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO031}
     Check Result In Email
 
 Scenario032
     [Documentation]    Color Desc same as existing record of same UPC, Color Code duplicate with existing record of another UPC
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*032-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
     ${upload_file}    get from list    ${FILES_TO_UPLOAD}    31
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO032}
     Check Result In Email
 
 Scenario033-Same UPC diff size code
     [Documentation]    Size Code different from existing record with the same UPC
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*033-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
     ${upload_file}    get from list    ${FILES_TO_UPLOAD}    32
@@ -427,12 +428,12 @@ Scenario033-Same UPC diff size code
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO033}
     Check Result In Email
 
 Scenario034-Same UPC diff size name
     [Documentation]    Size Name different from existing record with the same UPC
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*034-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
     ${upload_file}    get from list    ${FILES_TO_UPLOAD}    33
@@ -440,62 +441,77 @@ Scenario034-Same UPC diff size name
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO034}
     Check Result In Email
 
 Scenario035
     [Documentation]    Size code duplicate with existing record of another UPC
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*035-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
     ${upload_file}    get from list    ${FILES_TO_UPLOAD}    34
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO035}
     Check Result In Email
 
 Scenario036
     [Documentation]    Size des duplicate with existing record of another UPC
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*036-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
     ${upload_file}    get from list    ${FILES_TO_UPLOAD}    35
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO036}
     Check Result In Email
 
 Scenario037
     [Documentation]    Size code same as existing record of same UPC, Size Desc duplicate with existing record of another UPC
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*037-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
     ${upload_file}    get from list    ${FILES_TO_UPLOAD}    36
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO037}
     Check Result In Email
 
 Scenario038
     [Documentation]    Size Desc same as existing record of same UPC, Size Code duplicate with existing record of another UPC
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*038-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
     ${upload_file}    get from list    ${FILES_TO_UPLOAD}    37
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO038}
     Check Result In Email
 
 Scenario039-UPC different from existing record UPC
     [Documentation]    UPC different from existing record UPC
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*039-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
     ${upload_file}    get from list    ${FILES_TO_UPLOAD}    38
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO039}
     Check Result In Email
 
 Scenario 40-UPC already exist for style of another vendor company
     [Documentation]    Only system with multiple-vendor companies would run
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*040-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
@@ -503,23 +519,23 @@ Scenario 40-UPC already exist for style of another vendor company
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
+    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO040}
     Check Result In Email
 
 Scenario 41-UPC already exist for another style
     [Documentation]    UPC already exist for style of another vendor company
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*041-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
     ${upload_file}    get from list    ${FILES_TO_UPLOAD}    40
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
-    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
-    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO041}
-    Check Result In Email
 
 Scenario 42-UPC already exist for another color within the same style
     [Documentation]    Line 1: Upload successfully. Color ‘002 BLUE’ is added to style ‘S042A’. The UPC 4200 is assigned to style ‘S042A’ color ‘002 BLUE’ size ‘S Small’.
+    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*042-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
     ${upload_file}    get from list    ${FILES_TO_UPLOAD}    41
@@ -527,7 +543,6 @@ Scenario 42-UPC already exist for another color within the same style
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO042}
     Check Result In Email
 
@@ -539,7 +554,6 @@ Scenario 43-UPC already exist for another size within the same style
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO043}
     Check Result In Email
 
@@ -551,7 +565,6 @@ Scenario 44-P action-UPC matching existing record
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO044}
     Check Result In Email
 
@@ -563,7 +576,6 @@ Scenario 45-P action-Color Code different from existing record
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO045}
     Check Result In Email
 
@@ -575,7 +587,6 @@ Scenario 46-P action-Color Desc different from existing record
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO046}
     Check Result In Email
 
@@ -587,7 +598,6 @@ Scenario 47-P action-Size Code different from existing record
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO047}
     Check Result In Email
 
@@ -599,7 +609,6 @@ Scenario 48-P action-Size Name different from existing record
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO048}
     Check Result In Email
 
@@ -611,7 +620,6 @@ Scenario 49-P action-UPC different from existing record
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO049}
     Check Result In Email
 
@@ -623,7 +631,6 @@ Scenario 50-P action-UPC already exist for style of another vendor company
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO050}
     Check Result In Email
 
@@ -635,7 +642,6 @@ Scenario 51-P action-UPC already exist for another style
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO051}
     Check Result In Email
 
@@ -647,7 +653,6 @@ Scenario 52-P action-UPC already exist for another color within the same style
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO052}
     Check Result In Email
 
@@ -659,7 +664,6 @@ Scenario 53-P action-UPC already exist for another size within the same style
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO053}
     Check Result In Email
 
@@ -671,7 +675,6 @@ Scenario 54-Delete some Sizes of a style_color
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO054}
     Check Result In Email
 
@@ -697,7 +700,6 @@ Scenario 56-Delete some color of a style
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
     Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO056}
     Check Result In Email
 
