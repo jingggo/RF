@@ -43,6 +43,7 @@ Get Style UPC Page Infos After Upload Linesheet
     [Return]    ${style_upc_page_infos}
 
 Get Styles Short Colors After Upload Linesheet
+    Download Linesheet By Search Styles
 
 Get Style Short Colors After Upload Linesheet
     Click element    \    #Colors
@@ -66,6 +67,7 @@ Get Style Patterns After Upload Linesheet
     Click element    ${sb_style_colors_xpath}    #Colors    Pattern is the eighth column
     ${color_name_pxpath}    Set variable    //div[@class='DTFC_LeftBodyWrapper']//tbody[@role='alert']/tr/td/input[@name='color_name']
     ${pattern_number_pxpath}    Set variable    //div[@class='dataTables_scrollBody']//tbody[@role='alert']/tr/td/input[@name='pattern_number']
+    Wait until keyword succeeds    60 sec    3 sec    Page should contain element    ${color_name_pxpath}
     ${ncolor_name}    Get matching xpath count    ${color_name_pxpath}
     ${ncolor_name}    Convert to integer    ${ncolor_name}
     ${style_colors_patterns}    Create list

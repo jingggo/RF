@@ -11,11 +11,12 @@ Test Upload Existing
     Login 7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${browser_profile_ff_1}
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     Comment    ${upload_file}    set variable    E:${/}RFScripts${/}linesheet_upload_data_ef${/}scenario 1-1.txt
-    ${pre_required_files}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-1.txt    True
+    ${pre_required_files}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    all_prerequire_linesheets.txt    True    #*-1.txt    True
     : FOR    ${upload_file}    IN    @{pre_required_files}
     \    Upload Linesheet    ${upload_file}
     \    Capture Result On File Uploads    ${upload_file}
     Comment    Get all actual style bank result
+    [Teardown]    Close All Browsers
 
 Login
     ${URL}    Set Variable    https://10.125.2.174
@@ -602,8 +603,19 @@ Scenario 50-P action-UPC already exist for style of another vendor company
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
-    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO050}
+    #    Get Styles UPC Page Infos After Upload Linesheet
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank    #Navigate Into Style Bank
+    ${scenario_styles}    Create list    ES050B    ES050C
+    Advanced Search On Style Bank By Style    ${scenario_styles}
+    ${styles_upc_page_infos}    Create list
+    : FOR    ${style}    IN    @{scenario_styles}
+    \    Go To UPC Page    ${style}
+    \    Capture Page Screenshot    ${UPLOAD_LINESHEET_PNGS_DIR}${/}${style}-UPC.png
+    \    ${style_upc_page_infos}    Get Style UPC Page Infos After Upload Linesheet    ${style}
+    \    ${styles_upc_page_infos}    Combine Lists    ${styles_upc_page_infos}    ${style_upc_page_infos}
+    log many    ${styles_upc_page_infos}
+    #
+    Run keyword and continue on failure    lists should be equal    ${styles_upc_page_infos}    ${EXPECTED_SB_SCENARIO050}
     Check Result In Email
 
 Scenario 51-P action-UPC already exist for another style
@@ -613,8 +625,19 @@ Scenario 51-P action-UPC already exist for another style
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
-    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO051}
+    #    Get Styles UPC Page Infos After Upload Linesheet
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank    #Navigate Into Style Bank
+    ${scenario_styles}    Create list    ES051B
+    Advanced Search On Style Bank By Style    ${scenario_styles}
+    ${styles_upc_page_infos}    Create list
+    : FOR    ${style}    IN    @{scenario_styles}
+    \    Go To UPC Page    ${style}
+    \    Capture Page Screenshot    ${UPLOAD_LINESHEET_PNGS_DIR}${/}${style}-UPC.png
+    \    ${style_upc_page_infos}    Get Style UPC Page Infos After Upload Linesheet    ${style}
+    \    ${styles_upc_page_infos}    Combine Lists    ${styles_upc_page_infos}    ${style_upc_page_infos}
+    log many    ${styles_upc_page_infos}
+    #
+    Run keyword and continue on failure    lists should be equal    ${styles_upc_page_infos}    ${EXPECTED_SB_SCENARIO051}
     Check Result In Email
 
 Scenario 52-P action-UPC already exist for another color within the same style
@@ -682,9 +705,8 @@ Scenario 57-Delete all colors of a style
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
-    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
     Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank
-    ${scenario_styles}    Get Scenario Styles From Scenario Files    ${upload_file}
+    ${scenario_styles}    Create List    ES057A
     Advanced Search On Style Bank By Style    ${scenario_styles}
     Run keyword and continue on failure    Page should contain    No styles found.
     Capture Page Screenshot    ${UPLOAD_LINESHEET_PNGS_DIR}${/}scenario057_result.png
@@ -715,7 +737,7 @@ Scenario 60-D action-UPC already exist for style of another vendor company
     ${current_pcompany_id}    Get element attribute    //select[@name='access']/option@value
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*060-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
-    Run keyword unless    ${current_pcompany_id} in ${td_pat_oak_pc_ids}    Pass execution    System Only has a vendor.
+    Run keyword unless    ${current_pcompany_id} in ${TD_PCOMPANY_IDS}    Pass execution    System Only has a vendor.
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_file}    get from list    ${FILES_TO_UPLOAD}    59
     Set test variable    ${upload_file}
@@ -733,9 +755,19 @@ Scenario 61-action-UPC already exist for another style
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
-    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
-    log many    @{actual_scenario_upcs}
-    Run keyword and continue on failure    lists should be equal    ${actual_scenario_upcs}    ${EXPECTED_SB_SCENARIO061}
+    #    Get Styles UPC Page Infos After Upload Linesheet    #get whole upcs
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank    #Navigate Into Style Bank
+    ${scenario_styles}    Create list    ES061B
+    Advanced Search On Style Bank By Style    ${scenario_styles}
+    ${styles_upc_page_infos}    Create list
+    : FOR    ${style}    IN    @{scenario_styles}
+    \    Go To UPC Page    ${style}
+    \    Capture Page Screenshot    ${UPLOAD_LINESHEET_PNGS_DIR}${/}${style}-UPC.png
+    \    ${style_upc_page_infos}    Get Style UPC Page Infos After Upload Linesheet    ${style}
+    \    ${styles_upc_page_infos}    Combine Lists    ${styles_upc_page_infos}    ${style_upc_page_infos}
+    log many    ${styles_upc_page_infos}
+    #
+    Run keyword and continue on failure    lists should be equal    ${styles_upc_page_infos}    ${EXPECTED_SB_SCENARIO061}
     Check Result In Email
 
 Scenario 62-Upload 13 digit UPC with leading 0-existing UPC is 12 digit-UPC match
@@ -1021,7 +1053,7 @@ Scenario 87-Add style_color with_without Short Color Desc
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
-    ${actual_scenario_short_color}    Get Styles Short Colors After Upload Linesheet
+    Comment    ${actual_scenario_short_color}    Get Styles Short Colors After Upload Linesheet
 
 Scenario 88-Assign Short Color Name
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
@@ -1089,7 +1121,7 @@ Scenario 95-Assign Pattern
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_style_colors_patterns}    Get Styles Patterns After Upload Linesheet
-    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO094}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO095}
 
 Scenario 96-Modify Pattern
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
@@ -1099,7 +1131,7 @@ Scenario 96-Modify Pattern
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_style_colors_patterns}    Get Styles Patterns After Upload Linesheet
-    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO094}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO096}
 
 Scenario 97-Delete Pattern
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
@@ -1109,7 +1141,7 @@ Scenario 97-Delete Pattern
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
     ${actual_scenario_style_colors_patterns}    Get Styles Patterns After Upload Linesheet
-    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO094}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO097}
 
 Scenario 98-Pattern Duplicate with that of another style
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
@@ -1118,8 +1150,17 @@ Scenario 98-Pattern Duplicate with that of another style
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
-    ${actual_scenario_style_colors_patterns}    Get Styles Patterns After Upload Linesheet
-    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO094}
+    #
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank    #Navigate Into Style Bank
+    ${scenario_styles}    Create List    ES098A    ES098B    ES098C
+    Advanced Search On Style Bank By Style    ${scenario_styles}
+    ${styles_colors_patterns}    Create list
+    : FOR    ${style}    IN    @{scenario_styles}
+    \    ${style_colors_patterns}    Get Style Patterns After Upload Linesheet    ${style}
+    \    ${styles_colors_patterns}    Combine lists    ${styles_colors_patterns}    ${style_colors_patterns}
+    Log many    ${styles_colors_patterns}
+    #
+    Run keyword and continue on failure    lists should be equal    ${styles_colors_patterns}    ${EXPECTED_SB_SCENARIO098}
 
 Scenario 99-Pattern Duplicate with that of another color within the same style
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
@@ -1129,7 +1170,7 @@ Scenario 99-Pattern Duplicate with that of another color within the same style
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
     ${actual_scenario_style_colors_patterns}    Get Styles Patterns After Upload Linesheet
-    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO094}
+    Run keyword and continue on failure    lists should be equal    ${actual_scenario_style_colors_patterns}    ${EXPECTED_SB_SCENARIO099}
 
 Scenario 100-Pattern exceed 30 digit
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}

@@ -1,0 +1,7 @@
+--exclude=test
+--pythonpath
+D:\Robot\TD\MyLibrary\:D:\JetBrains\PycharmProjects\RFCustomLibraries:E:\RFScripts\CustomLibrary:Z:\Developer\Code Exchange\jyang\RFProject\CustomLibrary
+-C
+off
+-W
+132

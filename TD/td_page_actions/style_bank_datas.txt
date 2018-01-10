@@ -29,7 +29,9 @@ get styles from whole page from PH Style
 
 Get Sorted UPC Infos Of a Style
     [Documentation]    return list per row
-    ${ntr}    get matching xpath count    //table[@class="table4"]/tbody/tr
+    ${upc_tr_pxpath}    Set variable    //table[@class="table4"]/tbody/tr
+    Wait until keyword succeeds    60 sec    3 sec    Page should contain element    ${upc_tr_pxpath}
+    ${ntr}    get matching xpath count    ${upc_tr_pxpath}
     ${ntr}    convert to integer    ${ntr}    #4
     ${size_infos}    create list
     : FOR    ${tr_index}    IN RANGE    ${1}    ${ntr}    #1,2,3
