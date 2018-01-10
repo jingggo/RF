@@ -39,3 +39,5 @@ Process Document
     [Arguments]    ${file_type_value}
     ${locator}    replace string    ${file_uploads_process_document_path}    {file_type_value}    ${file_type_value}
     Click Element    ${locator}
+    Sleep    3 s
+    Wait until page does not contain    Uploading files...

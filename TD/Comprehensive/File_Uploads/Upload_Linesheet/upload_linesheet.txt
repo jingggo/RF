@@ -3,34 +3,6 @@ Resource          upload_actions_res.txt
 Variables         scenarios_expexted_result.py
 
 *** Test Cases ***
-Test Email
-    [Tags]    test
-    Comment    Check Result In Email
-    Comment    ${linesheet_files}    List Directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}
-    Comment    ${pre_required_files}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-1.txt
-    Comment    ${upload_files}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-2.txt
-    Comment    log many    ${pre_required_files}    ${upload_files}
-    Comment    ${styles}    create list    ES001A    ES002A
-    Comment    ${styles_comma}    Evaluate    ','.join(${styles})
-    Comment    log    ${styles_comma}
-    Comment    ${FILES_TO_UPLOAD}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-2.txt    True
-    Comment    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    1
-    Comment    Upload Linesheet    ${upload_file}
-    Comment    Check Result On File Uploads Successfully    ${upload_file}
-    Comment    ${scenario_styles}    Get Scenario Styles From Scenario Files    ${upload_file}
-    Comment    ${scenario_upcs}    Get Scenario UPC Page Infos From Scenario Files    ${upload_file}
-    ${actual_scenario_upcs_1}    Create List    EFES002A    RED    001    SMALL    S
-    ...    ${EMPTY}
-    ${actual_scenario_upcs_2}    Create List    EFES002A    NAVY    002    SMALL    S
-    ...    ${EMPTY}
-    ${actual_scenario_upcs}    Create List    ${actual_scenario_upcs_2}    ${actual_scenario_upcs_1}
-    ${existing_record_file_1}    Create List    EFES002A    RED    001    SMALL    S
-    ...    ${EMPTY}
-    ${existing_record_file}    Create List    ${existing_record_file_1}
-    Evaluate    [@{actual_scenario_upcs}.remove(value) for value in @{existing_record_file}]
-    Comment    Remove Values From list    ${actual_scenario_upcs}    ${existing_record_file[0]}
-    LOG MANY    @{actual_scenario_upcs}
-
 Test Upload Existing
     [Tags]    test
     ${URL}    Set Variable    https://10.125.2.174
@@ -40,7 +12,7 @@ Test Upload Existing
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     Comment    ${upload_file}    set variable    E:${/}RFScripts${/}linesheet_upload_data_ef${/}scenario 1-1.txt
     ${pre_required_files}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-1.txt    True
-    :FOR    ${upload_file}    IN    @{pre_required_files}
+    : FOR    ${upload_file}    IN    @{pre_required_files}
     \    Upload Linesheet    ${upload_file}
     \    Capture Result On File Uploads    ${upload_file}
     Comment    Get all actual style bank result
