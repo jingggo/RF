@@ -8,7 +8,8 @@ Check Result On File Uploads With Errors
     ${windows}    list windows
     ${nWindows}    get length    ${windows}
     run keyword if    ${nWindows}>${1}    select window    ${windows[1]}
-    ${page_title_after_upload}    Get Page Title
+    Wait until page does not contain    Uploading files...
+    Should not Error During Upload
     ${page_content_after_upload}    get text    ${content_after_upload_path}
     ${page_contents_after_upload}    split to lines    ${page_content_after_upload}
     remove values from list    ${page_contents_after_upload}    ${EMPTY}
@@ -38,7 +39,8 @@ Check Result On File Uploads Successfully
     ${windows}    list windows
     ${nWindows}    get length    ${windows}
     run keyword if    ${nWindows}>${1}    select window    ${windows[1]}
-    ${page_title_after_upload}    Get Page Title
+    Wait until page does not contain    Uploading files...
+    Should not Error During Upload
     ${page_content_after_upload}    get text    ${content_after_upload_path}
     ${page_contents_after_upload}    split to lines    ${page_content_after_upload}
     remove values from list    ${page_contents_after_upload}    ${EMPTY}
@@ -83,3 +85,13 @@ Capture Result On File Uploads
     #    back to original window
     Close Window
     Select Window    ${windows[0]}
+
+Should not Error During Upload
+    [Documentation]    Error message in the popped window
+    ${page_title_after_upload}    Get Page Title
+    ${ER-status}    Run keyword and return status    Should not contain    ${page_title_after_upload}    ErrorMessage    ErrorMessage Occurres during upload linesheeets.
+    Return from keyword if    ${ER-status}
+    ${30254-status}    Run keyword and return status    Page should contain    [ER-30254]
+    ${ER-30254}    Set variable    Linesheet upload is in process, please be patient.
+    Run keyword if    ${30254-status}    Fail    ${ER-30254}
+    Fail    Upload Failed.

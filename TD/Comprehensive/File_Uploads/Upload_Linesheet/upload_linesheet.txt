@@ -484,11 +484,12 @@ Scenario039-UPC different from existing record UPC
 
 Scenario 40-UPC already exist for style of another vendor company
     [Documentation]    Only system with multiple-vendor companies would run
+    Wait until keyword succeeds    60 sec    3 sec    Page should contain element    //select[@name='access']/option
+    ${current_pcompany_id}    Get element attribute    //select[@name='access']/option@value
+    Run keyword unless    ${current_pcompany_id} in ${TD_PCOMPANY_IDS}    Pass execution    System Only has a vendor.
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*040-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
-    Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
-    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    39
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
@@ -501,7 +502,6 @@ Scenario 41-UPC already exist for another style
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*041-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
-    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    40
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
@@ -511,7 +511,6 @@ Scenario 42-UPC already exist for another color within the same style
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*042-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
-    ${upload_file}    get from list    ${FILES_TO_UPLOAD}    41
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
@@ -734,10 +733,12 @@ Scenario 59-D action-UPC different from existing record
     Check Result In Email
 
 Scenario 60-D action-UPC already exist for style of another vendor company
+    [Documentation]    Only system with multiple-vendor companies would run
+    Wait until keyword succeeds    60 sec    3 sec    Page should contain element    //select[@name='access']/option
     ${current_pcompany_id}    Get element attribute    //select[@name='access']/option@value
+    Run keyword unless    ${current_pcompany_id} in ${TD_PCOMPANY_IDS}    Pass execution    System Only has a vendor.
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*060-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
-    Run keyword unless    ${current_pcompany_id} in ${TD_PCOMPANY_IDS}    Pass execution    System Only has a vendor.
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_file}    get from list    ${FILES_TO_UPLOAD}    59
     Set test variable    ${upload_file}
