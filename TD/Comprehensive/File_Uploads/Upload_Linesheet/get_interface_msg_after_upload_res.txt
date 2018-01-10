@@ -39,7 +39,7 @@ Check Result On File Uploads Successfully
     ${windows}    list windows
     ${nWindows}    get length    ${windows}
     run keyword if    ${nWindows}>${1}    select window    ${windows[1]}
-    Wait until page does not contain    Uploading files...
+    Wait until page does not contain    Uploading files...    600
     Should not Error During Upload
     ${page_content_after_upload}    get text    ${content_after_upload_path}
     ${page_contents_after_upload}    split to lines    ${page_content_after_upload}
