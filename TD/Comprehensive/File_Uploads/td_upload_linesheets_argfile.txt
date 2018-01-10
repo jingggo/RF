@@ -1,5 +1,5 @@
 --exclude=test
--T -o output.xml -r report.html -l log.html
+--timestampoutputs
 --outputdir Z:\Temp\jyang\RFReport54
 --pythonpath
 D:\Robot\TD\MyLibrary\:D:\JetBrains\PycharmProjects\RFCustomLibraries:E:\RFScripts\CustomLibrary:Z:\Developer\Code Exchange\jyang\RFProject\CustomLibrary
