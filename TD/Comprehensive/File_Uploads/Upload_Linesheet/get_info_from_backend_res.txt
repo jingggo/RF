@@ -43,7 +43,18 @@ Get Style UPC Page Infos After Upload Linesheet
     [Return]    ${style_upc_page_infos}
 
 Get Styles Short Colors After Upload Linesheet
-    Download Linesheet By Search Styles
+    [Arguments]    ${linesheet_fpath}    ${sheet_name}
+    ${nrows}    Get row length    ${linesheet_fpath}    ${sheet_name}
+    ${nrows}    Convert to integer    ${nrows}
+    ${style_nrows}    Evaluate    ${nrows} - 1
+    ${short_clolors}    Create list
+    :FOR    ${rowx}    IN RANGE    1    ${style_nrows + 1}
+    \    ${short_clolor}    Get cell value    ${linesheet_fpath}    ${sheet_name}    ${rowx}    46
+    \    ${style}    Get cell value    ${linesheet_fpath}    ${sheet_name}    ${rowx}    0
+    \    ${style_short_clolor}    Create list    ${style}    ${short_clolor}
+    \    Append to list    ${short_clolors}    ${style_short_clolor}
+    log many    ${short_clolors}
+    [Return]    ${short_clolors}
 
 Get Style Short Colors After Upload Linesheet
     Click element    \    #Colors

@@ -15,7 +15,7 @@ File Type
     [Arguments]    ${file_type}
     [Documentation]    Return file_type_value
     ${file_type}    catenate    Upload    ${file_type}
-    page should contain element    ${file_uploads_file_type_sel_id}
+    Wait until page contains element    ${file_uploads_file_type_sel_id}    30
     Select From List By Label    ${file_uploads_file_type_sel_id}    ${file_type}
     ${file_type_value}    Get Element Attribute    //select/option[text()='${file_type}']@value
     [Return]    ${file_type_value}
@@ -40,3 +40,18 @@ Process Document
     ${locator}    replace string    ${file_uploads_process_document_path}    {file_type_value}    ${file_type_value}
     Click Element    ${locator}
     Sleep    3 s
+
+Switch to uploading page
+    :FOR    ${x}    IN Range    10
+    \    ${windows_list}    List windows
+    \    ${nwindows}    Get length    ${windows_list}
+    \    exit for loop if    ${nwindows}==${2}
+    \    Sleep    3 sec
+    Run keyword if    ${x}==${9}    Fail    Only one window displays in 30 secs.
+    Run keyword if    ${nwindows}==${2}    Select window    ${windows_list[1]}
+
+Wait until uploading files disappear
+    Page should contain    Uploading files...
+    Wait until page does not contain    Uploading files...    600
+    Comment    Select window    ${windows_list[0]}
+    #

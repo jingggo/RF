@@ -1,6 +1,8 @@
 *** Settings ***
+Test Teardown     Close Other Windows
 Resource          upload_actions_res.txt
 Variables         scenarios_expexted_result.py
+Variables         scenarios_expected_emails_result.py
 
 *** Test Cases ***
 Test Upload Existing
@@ -8,20 +10,21 @@ Test Upload Existing
     ${URL}    Set Variable    https://10.125.2.174
     ${USER}    Set Variable    efparent
     ${COMPANY}    Set Variable    Eileen Fisher
+    ${PARENT_COMPANY_ID}    set variable    100100
     Login 7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${browser_profile_ff_1}
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
-    Comment    ${upload_file}    set variable    E:${/}RFScripts${/}linesheet_upload_data_ef${/}scenario 1-1.txt
     ${pre_required_files}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    all_prerequire_linesheets.txt    True    #*-1.txt    True
     : FOR    ${upload_file}    IN    @{pre_required_files}
     \    Upload Linesheet    ${upload_file}
     \    Capture Result On File Uploads    ${upload_file}
-    Comment    Get all actual style bank result
+    Comment    Get all actual style bank result    '${PARENT_COMPANY_ID}'==''
+    ${EMAIL_EXPECTED_WARNINGS_INFO}    Set variable if    '${PARENT_COMPANY_ID}'=='100100'    ${EMAIL_EXPECTED_WARNINGS_INFO_EF}
     [Teardown]    Close All Browsers
 
 Login
-    ${URL}    Set Variable    https://10.125.2.174
-    ${USER}    Set Variable    efparent
-    ${COMPANY}    Set Variable    Eileen Fisher
+    ${URL}    Set Variable    https://10.125.2.174    #https://10.125.2.174    https://10.125.2.173
+    ${USER}    Set Variable    efparent    #efparent    rpreston
+    ${COMPANY}    Set Variable    Eileen Fisher    #Eileen Fisher    OAKLEY - AFA
     Login 7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${browser_profile_ff_1}
     ${FILES_TO_UPLOAD}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-2.txt    True
     Set Global Variable    ${FILES_TO_UPLOAD}
@@ -30,6 +33,7 @@ Login
     Comment    ${ACTUAL_RESULT_FILE}    Set variable    D:${/}learngitt${/}RFProject${/}TD${/}Comprehensive${/}File_Uploads${/}Upload_Linesheet${/}actual_result.txt
     Comment    Set Global Variable    ${ACTUAL_RESULT_FILE}
     Comment    Create File    ${ACTUAL_RESULT_FILE}
+    Set Global Variable    ${USER}
 
 Scenario001-New Style
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
@@ -530,6 +534,7 @@ Scenario 43-UPC already exist for another size within the same style
     Check Result In Email
 
 Scenario 44-P action-UPC matching existing record
+    [Tags]    P
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*044-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
@@ -541,6 +546,7 @@ Scenario 44-P action-UPC matching existing record
     Check Result In Email
 
 Scenario 45-P action-Color Code different from existing record
+    [Tags]    P
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*045-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
@@ -552,6 +558,7 @@ Scenario 45-P action-Color Code different from existing record
     Check Result In Email
 
 Scenario 46-P action-Color Desc different from existing record
+    [Tags]    P
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*046-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
@@ -563,6 +570,7 @@ Scenario 46-P action-Color Desc different from existing record
     Check Result In Email
 
 Scenario 47-P action-Size Code different from existing record
+    [Tags]    P
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*047-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
@@ -574,6 +582,7 @@ Scenario 47-P action-Size Code different from existing record
     Check Result In Email
 
 Scenario 48-P action-Size Name different from existing record
+    [Tags]    P
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*048-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
@@ -585,6 +594,7 @@ Scenario 48-P action-Size Name different from existing record
     Check Result In Email
 
 Scenario 49-P action-UPC different from existing record
+    [Tags]    P
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*049-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
@@ -596,6 +606,7 @@ Scenario 49-P action-UPC different from existing record
     Check Result In Email
 
 Scenario 50-P action-UPC already exist for style of another vendor company
+    [Tags]    P
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*050-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
@@ -618,6 +629,7 @@ Scenario 50-P action-UPC already exist for style of another vendor company
     Check Result In Email
 
 Scenario 51-P action-UPC already exist for another style
+    [Tags]    P
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*051-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
@@ -640,6 +652,8 @@ Scenario 51-P action-UPC already exist for another style
     Check Result In Email
 
 Scenario 52-P action-UPC already exist for another color within the same style
+    [Documentation]    Comment: result not the same with use case
+    [Tags]    P
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*052-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
@@ -651,6 +665,8 @@ Scenario 52-P action-UPC already exist for another color within the same style
     Check Result In Email
 
 Scenario 53-P action-UPC already exist for another size within the same style
+    [Documentation]    Comment: result not the same with use case
+    [Tags]    P
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*053-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
@@ -1047,14 +1063,18 @@ Scenario 86-Size Desc is missing
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads With Errors    ${upload_file}
 
-Scenario 87-Add style_color with_without Short Color Desc
+Scenario 87-Add style_color without Short Color Desc
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${upload_files}    Get matches    ${FILES_TO_UPLOAD}    regexp=.*087-2.txt
     ${upload_file}    Get from list    ${upload_files}    0
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
-    Comment    ${actual_scenario_short_color}    Get Styles Short Colors After Upload Linesheet
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank
+    Go to advanced search page
+    ${report_fpath}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${UL_REPORT_DOWNLOAD_PATH}    ES087A    ${EMPTY}
+    ${actual_scenario_short_color}    Get Styles Short Colors After Upload Linesheet    ${report_fpath}    Linesheet Format 4
+    Lists should be equal    ${actual_scenario_short_color}    ${EXPECTED_SB_SCENARIO087}
 
 Scenario 88-Assign Short Color Name
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
@@ -1063,6 +1083,11 @@ Scenario 88-Assign Short Color Name
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank
+    Go to advanced search page
+    ${report_fpath}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${UL_REPORT_DOWNLOAD_PATH}    ES088A    ${EMPTY}
+    ${actual_scenario_short_color}    Get Styles Short Colors After Upload Linesheet    ${report_fpath}    Linesheet Format 4
+    Lists should be equal    ${actual_scenario_short_color}    ${EXPECTED_SB_SCENARIO088}
 
 Scenario 89-Modify Short Color Name
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
@@ -1071,6 +1096,11 @@ Scenario 89-Modify Short Color Name
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank
+    Go to advanced search page
+    ${report_fpath}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${UL_REPORT_DOWNLOAD_PATH}    ES089A    ${EMPTY}
+    ${actual_scenario_short_color}    Get Styles Short Colors After Upload Linesheet    ${report_fpath}    Linesheet Format 4
+    Lists should be equal    ${actual_scenario_short_color}    ${EXPECTED_SB_SCENARIO089}
 
 Scenario 90-Delete Short Color Name
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
@@ -1079,6 +1109,11 @@ Scenario 90-Delete Short Color Name
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank
+    Go to advanced search page
+    ${report_fpath}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${UL_REPORT_DOWNLOAD_PATH}    ES090A    ${EMPTY}
+    ${actual_scenario_short_color}    Get Styles Short Colors After Upload Linesheet    ${report_fpath}    Linesheet Format 4
+    Lists should be equal    ${actual_scenario_short_color}    ${EXPECTED_SB_SCENARIO090}
 
 Scenario 91-Short Color Name Duplicate with that of another style
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
@@ -1087,6 +1122,11 @@ Scenario 91-Short Color Name Duplicate with that of another style
     Set test variable    ${upload_file}
     Upload Linesheet    ${upload_file}
     Check Result On File Uploads Successfully    ${upload_file}
+    Entry Page Via Navimenu    ${navi_style_bank_path}    Style Bank
+    Go to advanced search page
+    ${report_fpath}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${UL_REPORT_DOWNLOAD_PATH}    ES091A,ES091B,ES091C    ${EMPTY}
+    ${actual_scenario_short_color}    Get Styles Short Colors After Upload Linesheet    ${report_fpath}    Linesheet Format 4
+    Lists should be equal    ${actual_scenario_short_color}    ${EXPECTED_SB_SCENARIO091}
 
 Scenario 92-Short Color Name Duplicate with that of another color within the same style
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
@@ -1224,6 +1264,18 @@ Scenario 105-Yield Unit larger than 99.99
     ${scenario_styles}    Get Scenario Styles From Scenario Files    ${upload_file}
     ${scenario_styles}    remove duplicates    ${scenario_styles}
     Advanced Search On Style Bank By Style    ${scenario_styles}    #    EFES001A
+
+Check all emails
+    Comment    Run    .py    #Get all emails subject    get all attachments
+    Comment    Check Warnings In Emails Attachments
+    Comment    Check Error Data In Emails Attachments
+    Check linesheet upload data in emails attachments
+
+test1
+    [Tags]    tmp
+    ${FILES_TO_UPLOAD}    list directory    E:${/}RFScripts${/}linesheet_upload_data_oak    *-1.txt    True
+    :FOR    ${file}    IN    @{FILES_TO_UPLOAD}
+    \    Copy File    ${file}    Z:${/}QA${/}QA Material${/}TD${/}TD Use Case${/}upload use case${/}linesheet&pos uoplad \ ppt and case${/}linesheet test data oak
 
 *** Keywords ***
 Get all actual style bank result

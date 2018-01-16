@@ -14,7 +14,9 @@ Check Result On File Uploads With Errors
     ${page_contents_after_upload}    split to lines    ${page_content_after_upload}
     remove values from list    ${page_contents_after_upload}    ${EMPTY}
     log many    @{page_contents_after_upload}
-    Page should not contain    successfully
+    ${page_status}    Run keyword and return status    Page should not contain    successfully
+    Run keyword if    ${page_status}==${False}    Close Window
+    Run keyword if    ${page_status}==${False}    Fail    Page should not contain success, but contains.
     ${ninfo}    get length    ${page_contents_after_upload}    #4
     ${page_title}    get from list    ${page_contents_after_upload}    0
     ${notice_errors_with_file_name}    get from list    ${page_contents_after_upload}    1
@@ -27,7 +29,7 @@ Check Result On File Uploads With Errors
     Capture Page Screenshot    ${UPLOAD_LINESHEET_PNGS_DIR}${/}${file_name}.png
     #    back to original window
     Close Window
-    Select Window    ${windows[0]}
+    [Teardown]    run keyword if    ${nWindows}>${1}    Select Window    ${windows[0]}
 
 Check Result On File Uploads Successfully
     [Arguments]    ${upload_file}
@@ -35,17 +37,18 @@ Check Result On File Uploads Successfully
     ${file_split}    split string    ${upload_file}    ${/}
     ${file_name_txt}    get from list    ${file_split}    -1
     ${file_name}    fetch from left    ${file_name_txt}    .
-    sleep    1    #ensure the page starts to processing
+    sleep    3    #ensure the page starts to processing
     ${windows}    list windows
     ${nWindows}    get length    ${windows}
     run keyword if    ${nWindows}>${1}    select window    ${windows[1]}
-    Wait until page does not contain    Uploading files...    600
     Should not Error During Upload
     ${page_content_after_upload}    get text    ${content_after_upload_path}
     ${page_contents_after_upload}    split to lines    ${page_content_after_upload}
     remove values from list    ${page_contents_after_upload}    ${EMPTY}
     log many    @{page_contents_after_upload}
-    Page should contain    successfully
+    ${page_status}    Run keyword and return status    Page should contain    successfully
+    Run keyword if    ${page_status}==${False}    Close Window
+    Run keyword if    ${page_status}==${False}    Fail    Page should success, but does not contain.
     ${ninfo}    get length    ${page_contents_after_upload}    #3
     : FOR    ${nline}    IN RANGE    ${ninfo}
     \    ${real_info}    get from list    ${page_contents_after_upload}    ${nline}
@@ -56,7 +59,8 @@ Check Result On File Uploads Successfully
     Capture Page Screenshot    ${UPLOAD_LINESHEET_PNGS_DIR}${/}${file_name}.png
     #    back to original window
     Close Window
-    Select Window    ${windows[0]}
+    Comment    Select Window    ${windows[0]}
+    [Teardown]    run keyword if    ${nWindows}>${1}    Select Window    ${windows[0]}
 
 Get Page Title
     wait until page contains element    ${big_title_contains_path}    120

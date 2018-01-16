@@ -64,7 +64,6 @@ Choose Filter Hierarchy
     log many    &{filter_hierarchy_criterias}    #    hierarchyattr1    hierarchy_value
     ${hierarchy_attrs}    get dictionary keys    ${filter_hierarchy_criterias}
     remove values from list    ${hierarchy_attrs}    time_range    style_numbers    po_numbers
-    Comment    : FOR    ${hierarchy_attr}    ${hierarchy_value}    IN    @{filter_hierarchy_criterias}
     : FOR    ${index}    ${dic_hierarchy_attr}    IN ENUMERATE    @{hierarchy_attrs}
     \    ${hierarchy_attr}    get substring    ${dic_hierarchy_attr}    1
     \    ${index}    set variable    ${index + 1}

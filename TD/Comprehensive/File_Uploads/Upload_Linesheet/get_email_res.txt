@@ -1,5 +1,7 @@
 *** Settings ***
 Resource          upload_actions_res.txt
+Variables         scenarios_expected_emails_result.py
+Variables         scenarios_expected_emails_error_data_result.py
 
 *** Keywords ***
 Check Result In Email
@@ -8,3 +10,52 @@ Check Result In Email
     Comment    Get Subject
     Comment    Get To
     Comment    CC
+
+Check Warnings In Emails Attachments
+    ${warnings_files}    List directory    E:${/}RFScripts${/}linesheet_emails_attachments_unzip    Warnings of*.txt    True
+    Comment    ${warnings_files}    Get slice from list    ${warnings_files}    \    1
+    :FOR    ${warnings_file}    IN    @{warnings_files}
+    \    ${warnings_file_name}    Split string    ${warnings_file}    ${/}
+    \    ${warnings_file_name}    Get from list    ${warnings_file_name}    -1    #Warnings of scenario 032-2.txt
+    \    ${scenario_num}    Split string    ${warnings_file_name}
+    \    ${scenario_num}    Get from list    ${scenario_num}    -1
+    \    ${scenario_num}    Fetch from left    ${scenario_num}    -    #032
+    \    ${warnings}    Get file    ${warnings_file}
+    \    ${expected_scenario_value}    Get from dictionary    ${EMAIL_EXPECTED_WARNINGS_INFO}    SCENARIO${scenario_num}    #SCENARIO102
+    \    Run keyword and continue on failure    Should be equal as strings    ${warnings}    ${expected_scenario_value}
+
+Check Error Data In Emails Attachments
+    ${error_files}    List directory    E:${/}RFScripts${/}linesheet_emails_attachments_unzip    Error data line of*.txt    True
+    Comment    create error data dictionary
+    :FOR    ${error_data_file}    IN    @{error_files}
+    \    ${warnings_file_name}    Split string    ${error_data_file}    ${/}
+    \    ${warnings_file_name}    Get from list    ${warnings_file_name}    -1    #Error data line of scenario 005-2.txt
+    \    ${scenario_num}    Split string    ${warnings_file_name}
+    \    ${scenario_num}    Get from list    ${scenario_num}    -1    #005-2
+    \    ${scenario_num}    Fetch from left    ${scenario_num}    -    #005
+    \    ${error_data}    Get file    ${error_data_file}
+    \    ${expected_scenario_value}    Get from dictionary    ${EMAIL_EXPECTED_ERROR_DATA_INFO}    SCENARIO${scenario_num}    #SCENARIO102
+    \    Run keyword and continue on failure    Should be equal as strings    ${error_data}    ${expected_scenario_value}
+
+create error data dictionary
+    ${error_files}    List directory    E:${/}RFScripts${/}linesheet_emails_attachments_unzip    Error data line of*.txt    True
+    :FOR    ${warnings_file}    IN    @{error_files}
+    \    ${warnings_file_name}    Split string    ${warnings_file}    ${/}
+    \    ${warnings_file_name}    Get from list    ${warnings_file_name}    -1    #Error data line of scenario 005-2.txt
+    \    ${scenario_num}    Split string    ${warnings_file_name}
+    \    ${scenario_num}    Get from list    ${scenario_num}    -1    #005-2
+    \    ${scenario_num}    Fetch from left    ${scenario_num}    -    #005
+    \    ${content}    Get file    ${warnings_file}
+    \    ${scenario_key}    catenate    SEPARATOR=    '    SCENARIO${scenario_num}    ' : '''
+    \    ${content}    catenate    SEPARATOR=    ${scenario_key}    ${content}    ''',
+    \    Append to file    E:${/}RFScripts${/}error1.txt    ${content}\r\n
+
+Check linesheet upload data in emails attachments
+    ${attached_files}    List directory    E:${/}RFScripts${/}linesheet_emails_attachments_unzip    scenario*.txt    True
+    ${FILES_TO_UPLOAD}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-2.txt    True
+    :FOR    ${remove_index}    IN    59    39
+    \    Remove from list    ${FILES_TO_UPLOAD}    ${remove_index}
+    :FOR    ${upload}    ${a}    IN ZIP    ${FILES_TO_UPLOAD}    ${attached_files}
+    \    ${expected_upload_data}    Get file    ${upload}
+    \    ${attach_upload_data}    Get file    ${a}
+    \    Run keyword and continue on failure    Should be equal as strings    ${attach_upload_data}    ${expected_upload_data}

@@ -71,26 +71,52 @@ go to size range
     wait until page contains element    ${size_profile_size_range_title2_path}
 
 Generate Style Bank Report
-    [Arguments]    ${report_type}    ${store_path}    &{styles_filter_criterias}
+    [Arguments]    ${report_type}    ${report_store_path}    &{styles_filter_criterias}
+    [Documentation]    Report type by label;
+    ...    Report would be generated with a range of random number suffixes;
     Choose Filter Hierarchy    &{styles_filter_criterias}
     Select From List By Label    id=sl1    ${report_type}
     Click element    name=download
     ${download_sequence}    get time    epoch
-    create directory    ${store_path}
+    create directory    ${report_store_path}
     ${random_num}    generate random string    8    [NUMBERS]
-    ${store_path_file}    catenate    SEPARATOR=${/}    ${store_path}    ${user}.do_linesheetDownload_${random_num}.xls
+    ${store_path_file}    catenate    SEPARATOR=${/}    ${report_store_path}    ${user}.do_linesheetDownload_${random_num}.xls
     Download to local    ${store_path_file}
+    [Return]    ${store_path_file}
+
+Generate Style Bank Report By Style
+    [Arguments]    ${report_type}    ${report_store_path}    ${styles_by_comma}    ${upcs_by_comma}    &{styles_filter_criterias}
+    [Documentation]    Report type by label;
+    ...    Report would be generated with current time suffixes;
+    Choose Filter Hierarchy    &{styles_filter_criterias}
+    Input text    ${sb_as_style_input_path}    ${styles_by_comma}    #styles delimit by comma
+    Input text    ${sb_as_upc_input_path}    ${upcs_by_comma}    #upcs delimit by comma
+    Select From List By Label    id=sl1    ${report_type}
+    Click element    name=download    # a processing page poped up, and the selected window is still main
+    @{current_time}    get time    year,month,day,hour,min,sec
+    ${create_time}    Evaluate    ''.join(${current_time})
+    ${report_name_without_spechars}    Remove string    ${report_type}    /
+    ${store_path_file}    catenate    SEPARATOR=${/}    ${report_store_path}    ${user}_${report_name_without_spechars}_${create_time}.xls
+    create directory    ${report_store_path}
+    Comment    Page should not contain error in download page
+    Download to local    ${store_path_file}
+    :FOR    ${x}    IN Range    24    #If download loading page did not disapper, the loading page would close
+    \    ${windows_list}    List windows
+    \    ${nwindows}    Get length    ${windows_list}
+    \    Exit for loop if    ${nwindows}== ${1}
+    \    Sleep    5 sec
+    \    Continue for loop if    ${nwindows}> ${1}
+    \    Select window    ${windows_list[1]}
+    \    close window
+    Select window    ${windows_list[0]}
     [Return]    ${store_path_file}
 
 Advanced Search On Style Bank By Style
     [Arguments]    ${styles}
     [Documentation]    type of styles is list.
+    Go to advanced search page
     ${styles_comma}    Evaluate    ','.join(${styles})
-    Wait Until Page Contains    Advanced Search
-    Click Link    Advanced Search
-    Wait Until Page Contains    Filter Hierarchy
-    Wait Until Page Contains Element    ${sb_as_input_style_path}
-    Input Text    ${sb_as_input_style_path}    ${styles_comma}
+    Input Text    ${sb_as_style_input_path}    ${styles_comma}
     Click Element    ${sb_advanced_search_btn1_path}
     Wait Until Page Contains Element    ${sb_search_criteria_txt_path}
 
@@ -100,3 +126,28 @@ Go To UPC Page
     wait until page contains element    ${upc_locator}
     Click Element    ${upc_locator}
     Wait Until Page Contains Element    ${sb_upc_title1_path}
+
+Go to advanced search page
+    Wait until keyword succeeds    30 sec    3 sec    Page should contain link    Advanced Search
+    Click Link    Advanced Search
+    Wait Until Page Contains Element    ${sb_as_style_input_path}
+    Wait Until Page Contains    Filter Hierarchy
+    Page should contain    Filtered By
+
+Page should not contain error in download page
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    :FOR    ${x}    IN Range    10
+    \    ${windows_list}    List windows
+    \    ${nwindows}    Get length    ${windows_list}
+    \    exit for loop if    ${nwindows}==${2}
+    \    Sleep    3 sec
+    Run keyword if    ${x}==${9}    Fail    Only one window displays in 30 secs.
+    Run keyword if    ${nwindows}==${2}    Select window    ${windows_list[1]}
+    ${download_window}    Run keyword and return status    win wait    Enter name of file to save to…    \    10 sec
+    Return from keyword if    ${download_window}
+    ${txt}    Get text    //html
+    ${error_status}    Run keyword and return status    Page should not contain    ErrorMessage
+    Run keyword if    ${error_status}==${False}    Page should not contain    ErrorMessage
+    Run keyword if    ${error_status}==${False}    Close window
+    Comment    Run keyword and continue on failure    Wait until page does not contain    Downloading Linesheet...    120
+    Select window    ${windows_list[0]}

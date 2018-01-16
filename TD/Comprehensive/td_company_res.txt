@@ -25,6 +25,7 @@ Resource          ../td_page_src/Assortment Planner/src_view_criteria.txt
 Resource          ../td_page_src/eshowroom/src_style_bank.txt
 Resource          ../td_page_actions/style_bank_actions_res.txt
 Resource          ../td_page_actions/style_bank_datas.txt
+Resource          Assortment_Planner/assortment_planner_res.txt
 
 *** Keywords ***
 get parent cmid from db
@@ -349,3 +350,14 @@ log in system and initial
     Comment    ${rename_dic}    get rename dictionary
     Comment    set global variable    ${rename_dic}
     set selenium speed    .2 seconds
+
+Close Other Windows
+    [Documentation]    Close other windows except the main window
+    ${windows}    List windows
+    ${nwindows}    Get length    ${windows}
+    Return from keyword if    ${nwindows}==${1}
+    ${windows}    Get slice from list    ${windows}    1
+    :FOR    ${window_index}    ${window}    IN ENUMERATE    @{windows}
+    \    Select window    new
+    \    Close window
+    Select window    main

@@ -1,11 +1,14 @@
 *** Variables ***
-${sb_as_input_style_path}    //input[@id='Style']
 ${season_year_select_path}    name=seasonandyear
 ${ph_view_option_path}    name=phviewoption
 ${sb_table_top_path}    //table[@id='tabletop']
 ${sb_table_top_next_path}    //table[@id='tabletop']//a[text()='next']
 ${sb_advanced_search_btn1_path}    //form/table[1]//input[@value='Search']
 ${sb_advanced_search_btn2_path}    //form/table[4]//input[@value='Search']
+${sb_as_style_input_path}	//input[@id='Style']
+${sb_as_upc_input_path}	//input[@id='upc']
+${sb_as_reset_btn1_path}	//input[@value='Reset']
+${sb_as_include_ph_checkbox_path}	//input[@name='is_include_ph_style']	#default is uncheck
 ${sb_search_criteria_txt_path}    //b[contains(text(),"Search") and contains(text(),"Criteria:")]
 ${style_tr_path}    //a[text()='{style}']/parent::td/parent::tr
 ${sb_style_link_path}    //a[text()='{style}']/parent::td/parent::tr//a[text()='{style}']

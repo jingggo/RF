@@ -471,7 +471,7 @@ Download to local
     Comment    win wait    Opening 7thOnlineWorksheets.zip    Timeout=1600
     Comment    win active    Opening 7thOnlineWorksheets.zip
     Comment    process wait    \    5
-    win wait    Enter name of file to save to…    \    2400
+    win wait    Enter name of file to save to…    \    1200
     win active    Enter name of file to save to…
     process wait    \    5
     control set text    Enter name of file to save to…    \    Edit1    ${store_path_file}
