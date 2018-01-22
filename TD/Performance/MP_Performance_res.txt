@@ -1,0 +1,20 @@
+*** Settings ***
+Resource          ../Comprehensive/td_company_res.txt
+Resource          ../td_page_actions/mp_list_actions_res.txt
+Resource          ../td_page_actions/doorinfo_actions_res.txt
+
+*** Keywords ***
+Adjust the orders of displayed columns for performance
+    [Arguments]    @{displayed_column_names}
+    [Documentation]    Move up
+    : FOR    ${displayed_column_name}    IN    @{displayed_column_names}
+    \    Adjust order of displayed column    ${displayed_column_name}
+
+Adjust order of displayed column
+    [Arguments]    ${displayed_column_name}
+    [Documentation]    //div[text()='Merchandise Plan DC BOM']
+    ${displayed_column_div_path}    Replace string    //div[text()='{text}']    {text}    ${displayed_column_name}
+    ${displayed_column_tr_path}    Set variable    ${displayed_column_div_path}//parent::td//parent::tr[contains(@class,'selected')]
+    Click element    ${displayed_column_div_path}
+    Wait until page contains element    ${displayed_column_tr_path}    10
+    Click element    ${options_move_up_path}

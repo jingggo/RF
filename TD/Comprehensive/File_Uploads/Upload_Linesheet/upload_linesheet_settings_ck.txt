@@ -1,0 +1,11 @@
+*** Settings ***
+Resource          upload_actions_res.txt
+
+*** Variables ***
+${UPLOAD_LINESHEET_PNGS_DIR}    E:${/}RFScripts${/}linesheet upload ck pngs    # linesheet upload ef pngs
+${UPLOAD_LINESHEET_EF_DATA_DIR}    Z:${/}QA${/}QA Material${/}TD${/}TD Use Case${/}upload use case${/}linesheet&pos uoplad \ ppt and case${/}linesheet test data ck
+${UL_REPORT_DOWNLOAD_PATH}    E:${/}RFScripts${/}UL_REPORT_DOWNLOAD
+${URL}            https://10.125.2.175:85    # https://10.125.2.174
+${USER}           cktest    # efparent,rpreston,
+${COMPANY}        Calvin Klein Asia    # Eileen Fisher,OAKLEY - AFA
+${PARENT_COMPANY_ID}    100440    # 100100,100000

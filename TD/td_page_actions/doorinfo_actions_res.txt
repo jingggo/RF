@@ -1,0 +1,495 @@
+*** Settings ***
+Library           Selenium2Library
+Library           Collections
+Library           String
+Library           OperatingSystem
+Library           AutoItLibrary
+Library           xlrd
+Library           DatabaseLibrary
+Library           excelCustomLibrary
+Library           zkLibrary
+Resource          ../td_page_src/src_login.txt
+Resource          ../td_page_src/src_navigation.txt
+Resource          ../td_page_src/src_file_uploads.txt
+Resource          ../td_page_src/src_zk.txt
+Resource          ../td_page_src/src_doorinfo_option.txt
+Resource          ../td_page_src/src_doorinfo_freeze.txt
+Resource          ../td_page_src/src_doorinfo_notes.txt
+Resource          ../td_page_src/src_doorinfo_modify.txt
+Resource          ../td_page_src/src_doorinfo_download.txt
+Resource          ../td_page_src/src_mp_list.txt
+Resource          ../td_page_src/mp_list_src.txt
+
+*** Variables ***
+@{titleOfIcons}    Freeze Pane    Notes    Options
+
+*** Keywords ***
+fz_panel
+    [Arguments]    ${fz/unfz}
+    ${open/close}    set variable    ${fz/unfz}
+    ${class_@}    get element attribute    xpath=//li[@title='Freeze Pane']@class
+    ${frz_stus}    set variable if    'opened' in '${class_@}'    freezed    unfreezed
+    ${frz_stus}    set variable if    '${frz_stus}'=='unfreezed' and '${open/close}'=='fz'    1    0
+    active_tab1
+    : FOR    ${i}    IN RANGE    0    ${frz_stus}
+    \    click element    xpath=//div[@class='zsblock']//div[text()='AI003-0001']
+    \    click image    ${freeze_path}
+    run keyword if    '${frz_stus}'=='0' and '${open/close}'=='unfz'    click element    ${freeze_path}
+    Wait Until Page Does Not Contain Element    ${Process}
+    wait until page contains element    ${Confirmation_X_button_path}
+
+active_tab1
+    ${pf}    ${style_@}    Run Keyword and ignore error    get element attribute    ${select_stus}@style
+    ${tab_stus}    set variable if    'display: block' in '${style_@}'    tab_active    tab_inactive
+    Run keyword if    '${tab_stus}'=='tab_inactive'    click element    ${Show_one_more_column_path}
+
+scroll_leftMax_pre
+    [Arguments]    ${0/Max}
+    ${leftMax}    execute JavaScript    return document.getElementsByClassName("zsscroll")[0].scrollLeftMax
+    ${left_position}    set variable    ${0/Max}
+    run keyword if    '${left_position}'=='0'    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollLeft="0";
+    run keyword if    '${left_position}'=='Max'    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollLeft="${leftMax}";
+    sleep    1
+    wait until element is not visible    ${scrollInfo}    20
+
+scroll_topMax_pre
+    [Arguments]    ${0/Max}
+    ${topMax}    execute JavaScript    return document.getElementsByClassName("zsscroll")[0].scrollTopMax
+    ${top_position}    set variable    ${0/Max}
+    run keyword if    '${top_position}'=='0'    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollTop="0";
+    run keyword if    '${top_position}'=='Max'    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollTop=${topMax};
+    set selenium speed    1
+    wait until element is not visible    ${scrollInfo}    20
+
+ph_scroll
+    ${topMax}    execute JavaScript    return document.getElementsByClassName("zsscroll")[0].scrollTopMax
+    : FOR    ${i}    IN RANGE    0    ${topMax}
+
+getTotalRows
+    scroll_leftMax_pre    Max
+    ${rows_cnt}    get text    xpath=${col_head_path}[last()]
+    ${totalRows}    convert to integer    ${rows_cnt}
+    scroll_leftMax_pre    0
+    run keyword    return from keyword    ${totalRows}
+
+getTotalColumns
+    scroll_topMax_pre    Max
+    ${headAttributes}    get text    ${scroll_head_attrs}
+    ${totalColumns}    get line count    ${headAttributes}
+    ${totalColumns}    convert to integer    ${totalColumns}
+    scroll_topMax_pre    0
+    run keyword    return from keyword    ${totalColumns}
+
+get each column from list
+    [Arguments]    ${vi_attrs_all}    ${colIndex}
+    [Documentation]    retruned values per column by index
+    ${vi_attrs_all_len}    get length    ${vi_attrs_all}
+    @{getClValues_ori_c}    create list
+    : FOR    ${i}    IN RANGE    1    ${vi_attrs_all_len}
+    \    ${tem}    set variable    ${vi_attrs_all[${i}][${colIndex}]}
+    \    ${tem}    set variable if    "${tem}"=="${None}"    ${EMPTY}    ${tem}
+    \    append to list    ${getClValues_ori_c}    ${tem}
+    [Return]    ${getClValues_ori_c}
+
+stripBlankInList
+    [Arguments]    ${li}
+    ${len}    get length    ${li}
+    : FOR    ${index}    IN RANGE    0    ${len}
+    \    ${sp}    get from list    ${li}    ${index}
+    \    ${sp}    replace string    ${sp}    ${space}    ${empty}
+    \    set list value    ${li}    ${index}    ${sp}
+    [Return]    ${li}
+
+lowercaseInList
+    [Arguments]    ${li}
+    ${len}    get length    ${li}
+    : FOR    ${index}    IN RANGE    0    ${len}
+    \    ${sp}    get from list    ${li}    ${index}
+    \    ${sp}    convert to lowercase    ${sp}
+    \    set list value    ${li}    ${index}    ${sp}
+    return from keyword    ${li}
+
+scroll to get all attrs in doorinfo page
+    Comment    @{vi_attrs_all}    Create List
+    Comment    @{vi_attrs}    Create List
+    Comment    ${ScrollLeftMax}    execute JavaScript    return document.getElementsByClassName("zsscroll")[0].scrollLeftMax;
+    Comment    ${ScrollTopMax}    execute JavaScript    return document.getElementsByClassName("zsscroll")[0].scrollTopMax;
+    Comment    ${scroll_top_length}    set variable    ${0}
+    Comment    ${getLastValue}    set variable    ${0}
+    Comment    ${index}    set variable    ${0}
+    Comment    : FOR    ${item}    IN RANGE    0    100
+    Comment    \    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollLeft=${ScrollLeftMax};
+    Comment    \    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollTop=${scroll_top_length};
+    Comment    \    wait until element is not visible    xpath=//div[@class='zsrendering']
+    Comment    \    @{vi_attrs}    execute JavaScript    var headRow=document.getElementsByClassName("zslefthead")[0].getElementsByClassName("zsleftcell");var scrollValue=document.getElementsByClassName("zsblock")[0].children;var clLen=scrollValue[0].children.length;var getAllValues=new Array;for(var i=0; i<headRow.length; i++){var rowH=headRow[i].textContent-1;getAllValues[i]=new Array;for(var cl=0; cl<28; cl++){getAllValues[i][cl]=scrollValue[i].children[cl].textContent;}}return getAllValues;
+    Comment    \    ${index}    get index from list    ${vi_attrs}    ${getLastValue}
+    Comment    \    ${index}    set variable    ${index + 1}
+    Comment    \    @{vi_attrs_temp}    get slice from list    ${vi_attrs}    ${index}
+    Comment    \    append to list    ${vi_attrs_all}    @{vi_attrs_temp}
+    Comment    \    ${getLastValue}    get from list    ${vi_attrs}    -1
+    Comment    \    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollLeft=0;
+    Comment    \    wait until element is not visible    xpath=//div[@class='zsrendering']
+    Comment    \    exit for loop if    ${scroll_top_length}>${ScrollTopMax}
+    Comment    \    ${scroll_top_length}    set variable    ${scroll_top_length + 1000}
+    Comment    ${lll}    get length    ${vi_attrs_all}
+    Comment    scroll_topMax_pre    0
+    Comment    waitUntilScrollBeDone
+    #per screen    return $("div.zsscroll").scrollLeft()
+    ${scroll_height}    execute javascript    return $("div.zsscroll").height()    #436    get the div height
+    ${scroll_height}    evaluate    ${scroll_height}-30
+    ${scroll_width}    set variable    2000    #    get the div width    return $("div.zsscroll").width()
+    execute javascript    $("div.zsscroll").scrollLeft(${scroll_width})    #scroll left
+    ${scroll_top_left}    set variable    -1    #initial
+    ${zsblock_data_all}    create list
+    : FOR    ${scroll_time}    IN RANGE    100
+    \    ${scroll_top}    evaluate    ${scroll_height}*${scroll_time}    #get the top you need to scroll to
+    \    execute javascript    $("div.zsscroll").scrollTop(${scroll_top})    #scroll to the top
+    \    ${zsblock_data}    execute javascript    return $("div.zsscroll div.zsblock").html();    #get zsblock html per screen
+    \    ${zsblock_data}    get_zs_table_from_html    ${zsblock_data}
+    \    ${zsblock_data_all}    combine lists    ${zsblock_data_all}    ${zsblock_data}
+    \    ${zsblock_data_all}    remove duplicates    ${zsblock_data_all}
+    \    ${scroll_top_left_last}    set variable    ${scroll_top_left}    #get the last time top
+    \    ${scroll_top_left}    execute javascript    return $("div.zsscroll").scrollTop()    #get current top
+    \    exit for loop if    '${scroll_top_left_last}'=='${scroll_top_left}'    #exit if last time top equals to current top
+    log many    @{zsblock_data_all}
+    ${zsblock_data_all_len}    get length    ${zsblock_data_all}
+    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollTop=0;
+    wait until keyword succeeds    2 min    5 sec    wait until element is not visible    ${zsscroll}
+    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollLeft=0;
+    wait until keyword succeeds    2 min    5 sec    wait until element is not visible    ${zsscroll}
+    waitUntilScrollBeDone
+    [Return]    ${zsblock_data_all}
+
+getHideTopHeadAttrs
+    [Documentation]    ${iLeftAttrsUnchecked} @{aLeftUncheckedAttrs} \ \ \ returned
+    open/closePage    open    ${titleOfIcons[2]}
+    ${iLeftAttrsUnchecked}    get matching xpath count    ${options_leftUnchecked}
+    ${iLeftAttrsUnchecked}    convert to integer    ${iLeftAttrsUnchecked}
+    @{aLeftUncheckedAttrs}    create list
+    : FOR    ${i}    IN RANGE    1    ${iLeftAttrsUnchecked + 1}
+    \    ${sLeftUncheckedAttr}    get text    xpath=${options_leftUnchecked}[${i}]
+    \    ${sLeftUncheckedAttr}    strip string    ${sLeftUncheckedAttr}
+    \    append to list    ${aLeftUncheckedAttrs}    ${sLeftUncheckedAttr}
+    set global variable    @{aLeftUncheckedAttrs}
+    set global variable    ${iLeftAttrsUnchecked}
+    open/closePage    close    ${titleOfIcons[2]}
+    return from keyword    ${iLeftAttrsUnchecked}    @{aLeftUncheckedAttrs}
+
+getAllTopHeadAttrs
+    [Documentation]    ${iAllLeftAttrs} @{sAllLeftAttrs} \ \ \ returned
+    open/closePage    open    ${titleOfIcons[2]}
+    ${iAllLeftAttrs}    get matching xpath count    ${options_checkbox_all}
+    ${iAllLeftAttrs}    convert to integer    ${iAllLeftAttrs}
+    ${sAllLeftAttrs}    get text    ${options_attr_with_checkbox}
+    ${sAllLeftAttrs}    strip string    ${sAllLeftAttrs}
+    @{sAllLeftAttrs}    split to lines    ${sAllLeftAttrs}
+    open/closePage    close    ${titleOfIcons[2]}
+    Comment    set global variable    ${iAllLeftAttrs}
+    Comment    set global variable    @{sAllLeftAttrs}
+    return from keyword    ${iAllLeftAttrs}    @{sAllLeftAttrs}
+
+open/closePage
+    [Arguments]    ${open/close}    ${title}
+    ${open/close}    set variable    ${open/close}
+    ${class_attr}    get element attribute    xpath=//li[@title='${title}']@class
+    @{aClass_attr}    split string    ${class_attr}    ${space}
+    ${matCnt}    get match count    ${aClass_attr}    opened
+    ${status}    set variable if    '${matCnt}'=='0'    closed    opened
+    wait until element is enabled    ${options_path}    20
+    Run Keyword if    '${status}'=='closed' and '${open/close}'=='open'    Click Element    ${options_path}
+    Run Keyword if    '${status}'=='opened' and '${open/close}'=='close'    Click Element    ${options_path}
+    sleep    5
+    Wait Until Page Does Not Contain    Processing...
+    wait until page does not contain element    ${Process}
+
+getVisibleTopHeadAttrs
+    [Documentation]    ${iLeftAttrsChecked} @{aLeftCheckedAttrs} returned
+    open/closePage    open    ${titleOfIcons[2]}
+    ${iLeftAttrsChecked}    get matching xpath count    ${options_leftChecked}
+    ${iLeftAttrsChecked}    convert to integer    ${iLeftAttrsChecked}
+    @{aLeftCheckedAttrs}    create list
+    : FOR    ${i}    IN RANGE    1    ${iLeftAttrsChecked + 1}
+    \    ${sLeftCheckedAttr}    get text    xpath=${options_leftChecked}[${i}]
+    \    ${sLeftCheckedAttr}    strip string    ${sLeftCheckedAttr}
+    \    append to list    ${aLeftCheckedAttrs}    ${sLeftCheckedAttr}
+    set global variable    @{aLeftCheckedAttrs}
+    set global variable    ${iLeftAttrsChecked}
+    open/closePage    close    ${titleOfIcons[2]}
+    return from keyword    ${iLeftAttrsChecked}    @{aLeftCheckedAttrs}
+    [Return]    ${iLeftAttrsChecked}    @{aLeftCheckedAttrs}
+
+cmpCorporateDivision
+    [Arguments]    ${headAttrsDownload}    ${headAttrsUi}    ${vi_attrs_all}    ${fpath}    ${sheetName}
+    ${companyNameIndex}    get index from list    ${headAttrsUi}    CompanyName
+    @{attrsOfCorporateDivisionUI}    get each column from list    ${vi_attrs_all}    ${companyNameIndex}
+    @{attrsOfCompanyNameDownload}    get values per col    ${fpath}    ${sheetName}    0
+    remove from list    ${attrsOfCompanyNameDownload}    0
+    @{attrsOfCompanyNameDownload}    stripBlankInList    ${attrsOfCompanyNameDownload}
+    @{attrsOfCorporateDivisionUI}    stripBlankInList    ${attrsOfCorporateDivisionUI}
+    @{attrsOfCompanyNameDownload}    lowercaseInList    ${attrsOfCompanyNameDownload}
+    @{attrsOfCorporateDivisionUI}    lowercaseInList    ${attrsOfCorporateDivisionUI}
+    ${calvinkleinasiaCnt}    get match count    ${attrsOfCorporateDivisionUI}    calvinkleinasia
+    ${ckasiaCnt}    get match count    ${attrsOfCompanyNameDownload}    ckasia
+    should be equal    ${calvinkleinasiaCnt}    ${ckasiaCnt}
+    remove values from list    ${attrsOfCorporateDivisionUI}    calvinkleinasia
+    remove values from list    ${attrsOfCompanyNameDownload}    ckasia
+    ${len}    get length    ${attrsOfCompanyNameDownload}
+    : FOR    ${index}    IN RANGE    0    ${len}
+    \    ${sDownload}    get from list    ${attrsOfCompanyNameDownload}    ${index}
+    \    ${sUi}    get from list    ${attrsOfCorporateDivisionUI}    ${index}
+    \    should contain    ${sUi}    ${sDownload}
+
+getDataFromDB
+    connect to database using custom params    cx_Oracle    'appbeta','sol','10.125.2.233/map7app'
+    @{data}    query    select c.corporate_division,cd.door_num,cd.door_name,cd.region,cd.stock_category,cd.comp_indicator,cd.climate,cd.country,cd.dc from company c, company_door cd where c.parent_company_id=cd.company_id and c.parent_company_id=100440 and cd.created_company_id=c.company_id;
+    disconnect from database
+
+compare from list
+    [Arguments]    ${item1}    ${item2}
+    ${len}    get length    ${item1}
+    ${incorrect_ori}    create dictionary
+    ${incorrect_tar}    create dictionary
+    : FOR    ${i}    IN RANGE    ${0}    ${len}
+    \    ${ori}    get from list    ${item1}    ${i}
+    \    ${tar}    get from list    ${item2}    ${i}
+    \    run keyword if    '${ori}' != '${tar}'    set to dictionary    ${incorrect_ori}    ${i + 2}    ${ori}
+    \    run keyword if    '${ori}' != '${tar}'    set to dictionary    ${incorrect_tar}    ${i + 2}    ${tar}
+    log many    ${incorrect_ori}
+    log many    ${incorrect_tar}
+    ${len_1}    get length    ${incorrect_ori}
+    run keyword if    '${len_1}'!='0'    Fail
+
+active_tab
+    ${pf}    ${style_@}    Run Keyword and ignore error    get element attribute    ${select_stus}@style
+    ${tab_stus}    set variable if    'display: block' in '${style_@}'    tab_active    tab_inactive
+    Run keyword if    '${tab_stus}'=='tab_inactive'    click element    ${Show_one_more_column_path}
+
+scroll left until attr visible
+    [Arguments]    ${select_hatttr}
+    execute Javascript    document.getElementsByClassName("zsscroll")[0].scrollLeft=0;
+    ${leftMax}    execute JavaScript    return document.getElementsByClassName("zsscroll")[0].scrollLeftMax
+    sleep    2
+    ${index}    set variable    ${0}
+    : FOR    ${item}    IN RANGE    0    1000
+    \    ${top_hattrs}    get text    ${top_head_attrs}
+    \    ${top_hattrs}    strip string    ${top_hattrs}
+    \    @{top_hattrs}    split to lines    ${top_hattrs}
+    \    exit for loop if    u'${select_hatttr}' in @{top_hattrs}
+    \    ${index}    set variable    ${index + 300}
+    \    execute Javascript    document.getElementsByClassName("zsscroll")[0].scrollLeft=${index};
+    \    waitUntilScrollBeDone
+    \    wait until keyword succeeds    2 min    5 sec    wait until element is not visible    ${zsscroll}
+    \    exit for loop if    ${index}>${leftMax}
+    capture page screenshot
+
+Attrs In Which Block
+    [Arguments]    ${head_attr}
+    ${status}    ${sValuesInLeftFz}    run keyword and ignore error    get text    xpath=//div[@class='zsleftblock']
+    ${blockOrLeftblock}    set variable if    '${status}'=='FAIL'    zsblock    zsleftblock
+    ${dbcheck}    set variable if    '${status}'=='FAIL'    zsscroll    zslefti
+    @{aValuesInLeftFz}    run keyword if    '${status}'=='PASS'    split to lines    ${sValuesInLeftFz}
+    ${iMatchCnt}    get match count    ${aValuesInLeftFz}    ${head_attr}
+    ${blockOrLeftblock}    set variable if    '${iMatchCnt}'=='0'    zsblock    zsleftblock
+    ${dbcheck}    set variable if    '${iMatchCnt}'=='0'    zsscroll    zslefti
+    [Return]    ${blockOrLeftblock}    ${dbcheck}
+
+getDisplayedAttrsFromAllAttrs
+    [Arguments]    @{allAttrs}
+    ${firstTopHead_visible}    get text    xpath=//div[@class='zstopblock']
+    ${firstTopHead_visible}    get line    ${firstTopHead_visible}    0
+    ${headTop_all}    get from list    ${vi_attrs_all}    0
+    ${index_firstAttrVisible}    get index from list    ${headTop_all}    ${firstTopHead_visible}
+    @{aRequireAttrs_real}    create list
+    ${len}    get length    ${allAttrs}
+    : FOR    ${i}    IN RANGE    0    ${len}
+    \    ${aRequireAttr_each}    get from list    ${allAttrs}    ${i}
+    \    ${index_aRequireAttr_each}    get index from list    ${headTop_all}    ${aRequireAttr_each}
+    \    run keyword if    ${index_aRequireAttr_each}>=${index_firstAttrVisible}    append to list    ${aRequireAttrs_real}    ${aRequireAttr_each}
+    return from keyword    @{aRequireAttrs_real}
+
+option_page_checked_at_user_level
+    login7thonline    ${env}    chrome    superduper    wuhan02
+    entry page via navimenu    ${DoonInfoLink_path}    ${Confirmation_X_button_path}
+    open/closePage    open    ${titleOfIcons[2]}
+    wait until element is enabled    ${options_attr_right}
+    ${attrs_right}    get text    ${options_attr_right}
+    open/closePage    close    ${titleOfIcons[2]}
+    close window
+    switch Browser    1
+    [Return]    ${attrs_right}
+
+click to display cursor
+    [Arguments]    ${locator}
+    Comment    ${sTxtBefore}    set variable
+    Comment    ${sTxtAfter}    set variable
+    Comment    : FOR    ${clickCnt}    IN RANGE    0    10
+    Comment    \    click element    ${leftSecondRow_path}
+    Comment    \    ${sTxtBefore}    execute JavaScript    return ${getValueInCursor}
+    Comment    \    click element    ${leftThirdRow_path}
+    Comment    \    ${sTxtAfter}    execute JavaScript    return ${getValueInCursor}
+    Comment    \    ${p_f}    ${r}    run keyword and ignore error    should not be equal    ${sTxtBefore}
+    ...    ${sTxtAfter}
+    Comment    \    exit for loop if    '${p_f}'=='PASS'
+    #${selected_attrs1}    execute JavaScript
+    Selenium2Library.mouse down    ${locator}
+    Selenium2Library.mouse up    ${locator}
+    Selenium2Library.mouse down    ${locator}
+    Selenium2Library.mouse up    ${locator}
+
+getAllAttrs
+    @{vi_attrs_all}    Create List
+    @{vi_attrs}    Create List
+    ${scroll_top_length}    set variable    ${0}
+    ${getLastValue}    set variable    ${0}
+    ${index}    set variable    ${0}
+    : FOR    ${item}    IN RANGE    0    100
+    \    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollLeft=${leftMax};
+    \    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollTop=${scroll_top_length};
+    \    waitUntilScrollBeDone
+    \    @{vi_attrs}    execute JavaScript    var headRow=document.getElementsByClassName("zslefthead")[0].getElementsByClassName("zsleftcell");var scrollValue=document.getElementsByClassName("zsblock")[0].children;var clLen=scrollValue[0].children.length;var getAllValues=new Array;for(var i=0; i<headRow.length; i++){var rowH=headRow[i].textContent-1;getAllValues[i]=new Array;for(var cl=0; cl<clLen; cl++){getAllValues[i][cl]=scrollValue[i].children[cl].textContent;}}return getAllValues;
+    \    ${index}    get index from list    ${vi_attrs}    ${getLastValue}
+    \    ${index}    set variable    ${index + 1}
+    \    @{vi_attrs_temp}    get slice from list    ${vi_attrs}    ${index}
+    \    append to list    ${vi_attrs_all}    @{vi_attrs_temp}
+    \    ${getLastValue}    get from list    ${vi_attrs}    -1
+    \    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollLeft=0;
+    \    waitUntilScrollBeDone
+    \    exit for loop if    ${scroll_top_length}>${topMax}
+    \    ${scroll_top_length}    set variable    ${scroll_top_length + 1200}
+    comment    log many    @{vi_attrs_all}
+    set global variable    @{vi_attrs_all}
+
+activeTheEditCell
+    [Arguments]    ${blockOrLeftblock}    ${real_index}
+    active_tab1
+    : FOR    ${i}    IN RANGE    0    100
+    \    ${cursorFocusTxt_ori}    execute JavaScript    return document.getElementsByClassName('zsfocus')[0].value
+    \    click element    xpath=//div[@class='${blockOrLeftblock}']/div[2]/div[${real_index+1}]
+    \    ${cursorFocusTxt_tar}    execute JavaScript    return document.getElementsByClassName('zsfocus')[0].value
+    \    ${stus}    ${return}    run keyword and ignore error    should be equal    ${cursorFocusTxt_ori}    ${cursorFocusTxt_tar}
+    \    exit for loop if    '${stus}'=='PASS'
+
+download file from web
+    [Arguments]    ${iconToClickPath}
+    [Documentation]    ${fpath} returned
+    click image    ${iconToClickPath}    #${AccountGrouptoRetailerDownload_path}    ${account_group_assignment_download_path}    ${account_group_download_path}
+    win wait    Enter name of file to save to…
+    win active    Enter name of file to save to…
+    process wait    \    2
+    ${downloadFileName}    control get text    Enter name of file to save to…    \    Edit1
+    ${path}    set variable    ${CURDIR}\\downloadFile\\
+    ${fpath}    set variable    ${path}${downloadFileName}
+    control set Text    Enter name of file to save to…    \    Edit1    ${fpath}
+    control click    Enter name of file to save to…    \    Button1
+    wait until created    ${fpath}    20 seconds
+    [Return]    ${fpath}
+
+get head attrs via option
+    click element    ${options_path}
+    wait until page contains    Select Columns to Display
+    Comment    @{aAll}    execute JavaScript    return document.getElementsByClassName("z-listbox-body")[0].textContent
+    Comment    @{aSelect}    execute JavaScript    return document.getElementsByClassName("z-listbox-body")[1].textContent
+    ${sAll}    get text    //div[@class='z-listbox-header']//following-sibling::div[@class='z-listbox-body']
+    ${sSelect}    get text    //div[@class='z-window-header' and contains(text(),'Order')]//following-sibling::div[@class='z-window-content']
+    ${sAll}    strip string    ${sAll}
+    @{aAll}    split to lines    ${sAll}
+    @{aSelect}    split to lines    ${sSelect}
+    click element    ${options_path}
+    sleep    1
+    wait until page does not contain    Processing...
+    wait until element is enabled    ${Show_sheets_path}
+    [Return]    ${aAll}    ${aSelect}
+
+get hide count of doorinfo
+    click element    ${options_path}
+    wait until page contains    Select Columns to Display
+    ${hideCnt}    get matching xpath count    ${options_attr_with_checkbox_unchecked}
+    ${hideCnt}    convert to integer    ${hideCnt}
+    click element    ${options_path}
+    wait until page does not contain    Processing...
+    [Return]    ${hideCnt}
+
+click mouse to select the cell
+    [Arguments]    ${locator}
+    wait until keyword succeeds    20 sec    3 sec    Selenium2Library.mouse down    ${locator}
+    wait until keyword succeeds    20 sec    3 sec    Selenium2Library.mouse up    ${locator}
+    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollTop=0;
+    wait until keyword succeeds    20 sec    3 sec    Selenium2Library.mouse down    ${locator}
+    wait until keyword succeeds    20 sec    3 sec    Selenium2Library.mouse up    ${locator}
+    Comment    click element    ${locator}
+    Comment    click element    ${locator}
+    capture page screenshot
+
+unfzPre
+    ${freeze_status}    create list
+    ${matchCnt}    get matching xpath count    //div[@class='zslefti']/div
+    ${frz_stus}    set variable if    '${matchCnt}'=='1'    unfreezed    freezed
+    append to list    ${freeze_status}    ${frz_stus}
+    ${element_attr}    get element attribute    ${freeze_path}@class
+    ${freeze_button_status}    set variable if    'opened' in '${element_attr}'    freezed    unfreezed
+    append to list    ${freeze_status}    ${freeze_button_status}
+    log many    ${freeze_status}
+    ${rangeNum}    set variable if    'freezed' in ${freeze_status}    1    0
+    : FOR    ${i}    IN RANGE    0    ${rangeNum}
+    \    click element    ${freeze_path}
+    \    sleep    1
+    \    wait until keyword succeeds    2 min    3 sec    wait until page does not contain element    ${Process}
+    \    wait until element is visible    ${Show_sheets_path}
+    capture page screenshot    unfz
+
+scroll to get titles
+    wait until keyword succeeds    2 min    2 sec    wait until page does not contain element    ${Process}
+    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollTop=0;
+    wait until keyword succeeds    2 min    5 sec    wait until element is not visible    ${zsscroll}
+    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollLeft=0;
+    wait until keyword succeeds    2 min    5 sec    wait until element is not visible    ${zsscroll}
+    ${ScrollLeftMax}    execute JavaScript    return document.getElementsByClassName("zsscroll")[0].scrollLeftMax;
+    ${ScrollTopMax}    execute JavaScript    return document.getElementsByClassName("zsscroll")[0].scrollTopMax;
+    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollLeft=${ScrollLeftMax};
+    wait until keyword succeeds    2 min    5 sec    wait until element is not visible    ${zsscroll}
+    capture page screenshot
+    ${titles_visible}    get text    ${titles_in_scroll_path}
+    ${titles_visible_cnt}    get line count    ${titles_visible}
+    ${titles_visible}    split to lines    ${titles_visible}
+    @{vi_attrs}    execute JavaScript    var headRow=document.getElementsByClassName("zslefthead")[0].getElementsByClassName("zsleftcell");var scrollValue=document.getElementsByClassName("zsblock")[0].children;var clLen=scrollValue[0].children.length;var getAllValues=new Array;for(var i=0; i<headRow.length; i++){var rowH=headRow[i].textContent-1;getAllValues[i]=new Array;for(var cl=0; cl<clLen; cl++){getAllValues[i][cl]=scrollValue[i].children[cl].textContent;}}return getAllValues;
+    ${titles_all}    get from list    ${vi_attrs}    ${0}
+    ${last_title}    get from list    ${titles_all}    -1
+    run keyword if    '${last_title}'==''    remove from list    ${titles_all}    -1
+    ${titles_unvisible}    create list
+    : FOR    ${value_unvisible}    IN    @{titles_all}
+    \    run keyword if    '${value_unvisible}' not in ${titles_visible}    append to list    ${titles_unvisible}    ${value_unvisible}
+    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollTop=0;
+    wait until keyword succeeds    2 min    5 sec    wait until element is not visible    ${zsscroll}
+    execute JavaScript    document.getElementsByClassName("zsscroll")[0].scrollLeft=0;
+    wait until keyword succeeds    2 min    5 sec    wait until element is not visible    ${zsscroll}
+    log many    ${titles_all}    ${titles_visible}    ${titles_unvisible}
+    #for patagoina seems sometime get text cannot word
+    [Return]    ${titles_all}    ${titles_visible}    ${titles_unvisible}
+
+go to doorinfo from home page
+    ${isHome}    get matching xpath count    ${company_info_path}
+    ${isHome}    convert to integer    ${isHome}
+    run keyword if    ${isHome} > 0    entry page via navimenu    ${DoonInfoLink_path}    ${Confirmation_X_button_path}
+
+diff user type to save to back to home page in doorinfo page
+    [Documentation]    This keyword is applied to different user types. For admin user, saveclose button would be used and for nonadmon user, X button would be userd.
+    run keyword if    '${usertype}' != 'Non Admin'    click element    ${save_close_path}
+    run keyword if    '${usertype}' == 'Non Admin'    click element    ${Confirmation_X_button_path}
+    wait until keyword succeeds    2 min    2 sec    wait until page does not contain element    ${Process}
+    run keyword if    '${usertype}' == 'Non Admin'    run keyword and continue on failure    page should not contain element    ${zErrorMsgBox}
+    wait until keyword succeeds    2 min    2 sec    wait until page contains    Welcome
+
+open close option page
+    [Arguments]    ${open/close}    ${title}
+    ${open/close}    set variable    ${open/close}
+    ${class_attr}    get element attribute    xpath=//li[@title='${title}']@class
+    @{aClass_attr}    split string    ${class_attr}    ${space}
+    ${matCnt}    get match count    ${aClass_attr}    opened
+    ${status}    set variable if    '${matCnt}'=='0'    closed    opened
+    wait until element is enabled    ${options_path}    20
+    Run Keyword if    '${status}'=='closed' and '${open/close}'=='open'    Click Element    ${options_path}
+    Run Keyword if    '${status}'=='opened' and '${open/close}'=='close'    Click Element    ${options_path}
+    Wait Until Page Does Not Contain    Processing...
+    wait until page does not contain element    ${Process}
+    Run Keyword if    '${status}'=='closed' and '${open/close}'=='open'    wait until element is visible    ${title_options_open_path}    20
+    Run Keyword if    '${status}'=='opened' and '${open/close}'=='close'    wait until element is not visible    ${title_options}

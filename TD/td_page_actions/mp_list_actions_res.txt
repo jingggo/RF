@@ -1,0 +1,206 @@
+*** Settings ***
+Resource          ap_actions_res.txt
+Resource          doorinfo_actions_res.txt
+
+*** Keywords ***
+Set Default On MP List Page By Name
+    [Arguments]    ${cmplanid}    ${planattributeid}
+    ${mp_list_plan_level_tr_path}    Replace string    ${mp_list_plan_level_tr_rpath}    {mp_plan_id}    ${cmplanid}-${planattributeid}
+    ${is_plan_level_default}    Run keyword and return status    Page should contain element    ${mp_list_plan_level_tr_path}/td[last()]/b[text()='Yes']
+    Return from keyword if    ${is_plan_level_default}
+    Set Default On Mp List Page By ID    ${cmplanid}    ${planattributeid}
+
+Set Default On Mp List Page By ID
+    [Arguments]    ${corporate_mp_id}    ${plan_level_id}
+    ${mp_list_plan_level_tr_path}    Replace string    ${mp_list_plan_level_tr_rpath}    {mp_plan_id}    ${corporate_mp_id}-${plan_level_id}
+    ${is_plan_level_default}    Run keyword and return status    Page should contain element    ${mp_list_plan_level_tr_path}/td[last()]/b[text()='Yes']
+    Return from keyword if    ${is_plan_level_default}
+    Comment    ${td_mp_path}    Replace String    //td[contains(@onclick,'x776')]    x776    ${corporate_mp_id}
+    Comment    ${imgid}    Catenate    SEPARATOR=    x    ${corporate_mp_id}    img
+    Comment    ${mp_img_path}    Replace String    //img[@id='{imgid}']    {imgid}    ${imgid}    #//img[@id='x776img']
+    Comment    ${mp_img_class}    Get element attribute    ${mp_img_path}@class
+    Expand MP List Corporate Img    ${corporate_mp_id}
+    ${id_value}    Set variable    ${corporate_mp_id}-${plan_level_id}
+    Select checkbox    //input[@value='${id_value}']
+    Wait until page contains element    //input[@value='${id_value}']//parent::td//parent::tr[@class='checkedrowcolor']    20
+    Click element    //input[@name='setdefault']
+    Wait until page does not contain element    //input[@value='${id_value}']//parent::td//parent::tr[@class='checkedrowcolor']    20
+    Wait until element contains    //input[@value='${id_value}']//parent::td//parent::tr/td[last()]    Yes    20
+
+Go to Corporate MP By ID
+    [Arguments]    ${mp_plan_level_id}    # 776-1925
+    [Documentation]    eg:
+    ...    oak: 776-1925;
+    ...    pat: 1016-1968;
+    ${mp_tr_path}    Set variable    //input[@value='${mp_plan_level_id}']//parent::td//parent::tr
+    Page should contain element    ${mp_tr_path}
+    Click element    ${mp_tr_path}/td[3]
+    Sleep    2
+    Wait until page does not contain element    //div[@class='z-apply-loading-indicator']    10 min    #
+    Wait until page does not contain    Processing...    10 min
+    Page should not contain    Processing...
+    Sleep    1
+    Warning after entry MP
+
+Go to ZK Menu Options
+    ${options_text}    Get text    //div[@class='z-page']/div[1]/div[3]/div/div[3]/div/div/div/div[5]/div/div/div/div[2]/div/div[4]    #[contains(@style,'display')]
+    ${options_text}    Convert to string    ${options_text}
+    ${is_options_displayed}    Run keyword and return status    Should be equal as strings    ${options_text}    ${EMPTY}
+    Return from keyword if    ${is_options_displayed}==${False}
+    Click element    ${z_menubar_options_path}
+    Wait until keyword succeeds    30 sec    3 sec    Page should contain element    //div[@class='z-page']/div[1]/div[3]/div/div[3]/div/div/div/div[5]/div/div/div/div[2]/div/div[4][contains(@style,'height')]
+
+Save On ZK Menu Options
+    Click element    ${z_menubar_options_path}
+    Sleep    3
+     Wait Until Page Does Not Contain Element    ${z_apply_loading_path}    10 min
+
+Select MP S1 Name
+    [Arguments]    ${source1}
+    ${s1_select_id}    Execute Javascript    return $("select.fakeSelect")[0].id;
+    Select from list by label    ${s1_select_id}    ${source1}
+
+Select MP S2 Name
+    [Arguments]    ${source2}
+    ${s2_select_id}    Execute Javascript    return $("select.fakeSelect")[1].id;
+    Select from list by label    ${s2_select_id}    ${source2}
+
+Check 5 top columns to display
+    [Arguments]    @{column_names}
+    : FOR    ${column_name}    IN    @{column_names}
+    \    Check a column to display    ${column_name}
+
+Check a column to display
+    [Arguments]    ${column_name}
+    [Documentation]    Element is span
+    ...
+    ...    Selected columns to display single column Path: //div[contains(text(),'Merchandise Plan Avg. Cost Receipts') and span[@id]]
+    #    Column is displayed
+    ${col_div}    Replace string    //div[contains(text(),'{col}') and span[@id]]    {col}    ${column_name}
+    ${col_tr}    Set variable    ${col_div}//parent::td//parent::tr
+    ${col_tr_class}    Get element attribute    ${col_tr}@class
+    ${is_col_selected}    Run keyword and return status    Should contain    ${col_tr_class}    selected
+    Return from keyword if    ${is_col_selected}
+    : FOR    ${i}    IN RANGE    1    5
+    \    ${is_succeed}    Run keyword and return status    Click element    ${col_div}//span    #select item
+    \    Exit for loop if    ${is_succeed}
+    \    Execute Javascript    $("div.z-listbox-header").siblings().eq(1).scrollTop(500*${i})    #scroll the slide bar
+    [Teardown]    Execute Javascript    $("div.z-listbox-header").siblings().eq(1).scrollTop(0)
+
+Change Year Month in Options Page
+    [Arguments]    ${year}=${EMPTY}    ${month}=${EMPTY}
+    [Documentation]    Pat:2015-2021;JanFebMarAprMayJunJulAugSepOctNovDec
+    ${year_id}    Execute Javascript    return $("select.z-select")[4].id;
+    ${month_id}    Execute Javascript    return $("select.z-select")[5].id;
+    Run keyword unless    '${year}'=='${EMPTY}'    Select from list by label    ${year_id}
+    Run keyword unless    '${month}'=='${EMPTY}'    Select from list by label    ${month_id}
+
+Switch to MP page by time label
+    [Arguments]    ${time}
+    [Documentation]    Pat: "Fiscal Year \ \ \ 2017 \ \ \ 2018Planning Seasons \ \ \ 2016-FALL \ \ \ 2017-SPRING \ \ \ 2017-FALLFiscal Quarters \ \ \ 2017-Q1 \ \ \ 2017-Q2 \ \ \ 2017-Q3 \ \ \ 2017-Q4 \ \ \ 2018-Q1 \ \ \ 2018-Q2 \ \ \ 2018-Q3 \ \ \ 2018-Q4Calendar Months \ \ \ 2016-MAY \ \ \ 2016-JUN \ \ \ 2016-JUL \ \ \ 2016-AUG \ \ \ 2016-SEP \ \ \ 2016-OCT \ \ \ 2016-NOV \ \ \ 2016-DEC \ \ \ 2017-JAN \ \ \ 2017-FEB \ \ \ 2017-MAR \ \ \ 2017-APR \ \ \ 2017-MAY \ \ \ 2017-JUN \ \ \ 2017-JUL \ \ \ 2017-AUG \ \ \ 2017-SEP \ \ \ 2017-OCT \ \ \ 2017-NOV \ \ \ 2017-DEC \ \ \ 2018-JAN \ \ \ 2018-FEB \ \ \ 2018-MAR \ \ \ 2018-APR"
+    ${time_id}    Execute Javascript    return $("select.z-select")[1].id;
+    ${all_text}    Execute Javascript    return $("select.z-select")[1].textContent;
+    Select from list by label    ${time_id}    ${time}
+    Click element    //button[text()='View']
+    Sleep    1
+    Wait until page does not contain    Processing...
+
+Cost MP view
+    ${is_process}    Run keyword and return status    Page should not contain element    ${z_apply_processing_path}
+    Run keyword if    ${is_process}==${False}    Wait until page contains element    ${mp_menubar_cost_path}
+    Page should contain element    ${mp_menubar_cost_path}
+    Click element    ${mp_menubar_cost_path}
+    Sleep    1
+
+Retail MP view
+    ${is_process}    Run keyword and return status    Page should not contain element    ${z_apply_processing_path}
+    Run keyword if    ${is_process}==${False}    Wait until page contains element    ${mp_menubar_retail_path}
+    Page should contain element    ${mp_menubar_retail_path}
+    Click element    ${mp_menubar_retail_path}
+    Sleep    1
+
+Units MP View
+    ${is_process}    Run keyword and return status    Page should not contain element    ${z_apply_processing_path}
+    Run keyword if    ${is_process}==${False}    Wait until page contains element    ${mp_menubar_units_path}
+    Page should contain element    ${mp_menubar_units_path}
+    Click element    ${mp_menubar_units_path}
+    Sleep    1
+
+Expand lowest attribute node
+
+Collapse lowest attribute node
+
+Switch to MP Quarter page
+
+Switch to MP Season page
+
+Lock Plan
+    [Arguments]    ${lock_month}
+    Click element    ${mp_menubar_lock_path}
+    Wait until page contains element    Please set the End Month for the MP months you would like to lock.
+    ${lock_select_id}    Get element attribute    //div[@class='z-panelchildren z-panelchildren-noheader z-panelchildren-noborder']//select[@class='z-select']@id
+    Comment    ${lock_select_id}    Execute Javascript
+    Select from list by label    ${lock_select_id}    ${lock_month}
+    Click element    //button[@value='Submit']    #submit
+    Comment    Wait until page contains element
+    Comment    Wait until element contains    \    Warning
+    Log    ${z_error_window_ok_btn_path}
+    Wait until page contains element    ${z_error_window_ok_btn_path}
+    Click element    ${z_error_window_ok_btn_path}
+    Sleep    5
+    Wait until page does not contain    Processing...    5 min
+
+Unlock Plan
+    Lock Plan
+
+Switch to MP Year page
+
+Save close ZK
+    ${is_process}    Run keyword and return status    Page should not contain element    ${z_apply_processing_path}
+    Run keyword if    ${is_process}==${False}    Wait until page contains element    ${z_menubar_saveclose_path}
+    Page should contain element    ${z_menubar_saveclose_path}
+    Click element    ${z_menubar_saveclose_path}
+    Sleep    1
+
+Clear MP List Default
+    Page should contain    MPList
+    ${is_plan_level_set_default}    Run keyword and return status    Page should contain element    ${mp_list_plan_default_path}
+    Return from keyword if    ${is_plan_level_set_default}==${False}    #if no default plan level, return None
+    ${default_mp_plan_id}    Get element attribute    ${mp_list_plan_default_path}//parent::td//precede-sibling::td[3]/input@value
+    ${cmplanid}    ${planattributeid}    Split string    ${default_mp_plan_id}    -
+    #expand toggle img
+    Expand MP List Corporate Img    ${cmplanid}
+    #check the default plan level and undefault
+    Select checkbox    //input[@value='${cmplanid}-${planattributeid}']
+    Click element    ${mp_list_clear_default_path}
+    Page should contain element    ${mp_list_plan_default_path}
+
+Get MP ID
+    [Arguments]    ${corporate_mp_name}
+    log    1
+
+Get Plan Level ID
+    [Arguments]    ${plan_level}
+    log    1
+
+Warning after entry MP
+    ${is_warn}    Run keyword and return status    page should not contain    Warning
+    Return from keyword if    ${is_warn}
+    ${warning_msg}    Get text    //div[text()='Warning']//following-sibling::div
+    Run keyword if    'OK' in '${warning_msg}'    Click element    //div[text()='Warning']//following-sibling::div//button[text()='OK']
+    Run keyword if    'Read Only' in '${warning_msg}'    Click element    //div[text()='Warning']//following-sibling::div//button[text()='Read Only']
+    Wait until page does not contain    Warning
+    Wait until page does not contain    Processing...
+    Sleep    2
+
+MP Populate
+    [Arguments]    ${time}    ${source}
+    Select from list by label
+    Wait
+
+Expand MP List Corporate Img
+    [Arguments]    ${cmplanid}
+    ${toggle_img_path}    Set variable    //img[@id='x${cmplanid}img']
+    ${plus_or_minus}    Get element attribute    ${toggle_img_path}@class    #plus means collapse; minus meas expand
+    Run keyword if    '${plus_or_minus}'=='plus'    Click element    ${toggle_img_path}
+    Page should contain element    //img[@id='x${cmplanid}img' and @class='minus']

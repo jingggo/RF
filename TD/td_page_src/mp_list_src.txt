@@ -1,0 +1,4 @@
+*** Variables ***
+${mp_list_plan_level_tr_rpath}	//input[@value='{mp_plan_id}']//parent::td//parent::tr
+${mp_list_plan_default_path}	//b[text()='Yes']
+${mp_list_clear_default_path}	//input[@name='cleardefault']

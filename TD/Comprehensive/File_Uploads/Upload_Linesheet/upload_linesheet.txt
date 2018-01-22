@@ -3,14 +3,15 @@ Test Teardown     Close Other Windows
 Resource          upload_actions_res.txt
 Variables         scenarios_expexted_result.py
 Variables         scenarios_expected_emails_result.py
+Resource          upload_linesheet_settings_ck.txt
 
 *** Test Cases ***
 Test Upload Existing
     [Tags]    test
-    ${URL}    Set Variable    https://10.125.2.174
-    ${USER}    Set Variable    efparent
-    ${COMPANY}    Set Variable    Eileen Fisher
-    ${PARENT_COMPANY_ID}    set variable    100100
+    Comment    ${URL}    Set Variable    https://10.125.2.174
+    Comment    ${USER}    Set Variable    efparent
+    Comment    ${COMPANY}    Set Variable    Eileen Fisher
+    Comment    ${PARENT_COMPANY_ID}    set variable    100100
     Login 7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${browser_profile_ff_1}
     Entry Page Via Navimenu    ${admin_fileupload}    ${file_uploads_file_type_sel_id}
     ${pre_required_files}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    all_prerequire_linesheets.txt    True    #*-1.txt    True
@@ -22,9 +23,9 @@ Test Upload Existing
     [Teardown]    Close All Browsers
 
 Login
-    ${URL}    Set Variable    https://10.125.2.174    #https://10.125.2.174    https://10.125.2.173
-    ${USER}    Set Variable    efparent    #efparent    rpreston
-    ${COMPANY}    Set Variable    Eileen Fisher    #Eileen Fisher    OAKLEY - AFA
+    Comment    ${URL}    Set Variable    https://10.125.2.174    #https://10.125.2.174    https://10.125.2.173
+    Comment    ${USER}    Set Variable    efparent    #efparent    rpreston
+    Comment    ${COMPANY}    Set Variable    Eileen Fisher    #Eileen Fisher    OAKLEY - AFA
     Login 7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${browser_profile_ff_1}
     ${FILES_TO_UPLOAD}    list directory    ${UPLOAD_LINESHEET_EF_DATA_DIR}    *-2.txt    True
     Set Global Variable    ${FILES_TO_UPLOAD}
@@ -1074,6 +1075,8 @@ Scenario 87-Add style_color without Short Color Desc
     Go to advanced search page
     ${report_fpath}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${UL_REPORT_DOWNLOAD_PATH}    ES087A    ${EMPTY}
     ${actual_scenario_short_color}    Get Styles Short Colors After Upload Linesheet    ${report_fpath}    Linesheet Format 4
+    Sort list    ${actual_scenario_short_color}
+    Sort list    ${EXPECTED_SB_SCENARIO087}
     Lists should be equal    ${actual_scenario_short_color}    ${EXPECTED_SB_SCENARIO087}
 
 Scenario 88-Assign Short Color Name
@@ -1273,9 +1276,12 @@ Check all emails
 
 test1
     [Tags]    tmp
-    ${FILES_TO_UPLOAD}    list directory    E:${/}RFScripts${/}linesheet_upload_data_oak    *-1.txt    True
-    :FOR    ${file}    IN    @{FILES_TO_UPLOAD}
-    \    Copy File    ${file}    Z:${/}QA${/}QA Material${/}TD${/}TD Use Case${/}upload use case${/}linesheet&pos uoplad \ ppt and case${/}linesheet test data oak
+    Comment    Remove Decimals In Files    E:${/}RFScripts${/}linesheet_upload_data_ck1    E:${/}RFScripts${/}linesheet_upload_data_ck_remove_decimals
+    Copy Files To Destination Dir    Z:${/}QA${/}QA Material${/}TD${/}TD Use Case${/}upload use case${/}linesheet&pos uoplad \ ppt and case${/}linesheet test data pat${/}    Z:${/}QA${/}QA Material${/}TD${/}TD Use Case${/}upload use case${/}linesheet&pos uoplad \ ppt and case${/}linesheet test data pat1${/}    *-1.txt
+    Comment    Combine    *-1.txt    E:${/}RFScripts${/}linesheet_upload_data_ck_remove_decimals
+    Comment    Copy Files To Destination Dir    *-2.txt
+    Comment    Combine    all.txt
+    [Teardown]    log    hello
 
 *** Keywords ***
 Get all actual style bank result
@@ -1286,3 +1292,42 @@ Get all actual style bank result
     \    ${actual_scenario_upcs}    Get Styles UPC Page Infos After Upload Linesheet
     \    ${actual_scenario_upcs}    convert to string    ${actual_scenario_upcs}
     \    Append to file    ${CURDIR}${/}ACTUAL_RESULT.txt    ${actual_scenario_upcs}\r\n
+
+Copy Files To Destination Dir
+    [Arguments]    ${source_dir}    ${target_dir}    ${regexp}
+    ${FILES_TO_UPLOAD}    list directory    ${source_dir}    ${regexp}    True
+    : FOR    ${file}    IN    @{FILES_TO_UPLOAD}
+    \    Copy File    ${file}    ${target_dir}
+
+Remove Decimals In Files
+    [Arguments]    ${source_dir}    ${target_dir}
+    ${FILES}    list directory    ${source_dir}    *.txt    True
+    Create Directory    ${target_dir}
+    : FOR    ${file}    IN    @{FILES}
+    \    ${file_c}    Get File    ${file}
+    \    ${file_path_split}    Split string    ${file}    ${/}
+    \    ${file_name}    Get from list    ${file_path_split}    -1
+    \    #    Remove string using regexp    ${file_c}    \.\d\d
+    \    ${file_lines}    Split to lines    ${file_c}
+    \    Remove Decimals In Lines    ${file_lines}    ${target_dir}${/}${file_name}
+
+Remove Decimals In Lines
+    [Arguments]    ${lines}    ${fpath}
+    : FOR    ${line}    IN    @{lines}
+    \    ${r_string}    Remove Decimals In Line    ${line}
+    \    Append to file    ${fpath}    ${r_string}\r\n
+    [Teardown]
+
+Remove Decimals In Line
+    [Arguments]    ${line}
+    ${words}    Split string    ${line}    \t
+    ${upc}    Get from list    ${words}    1
+    ${size_code}    Get from list    ${words}    8
+    ${upc}    Fetch from left    ${upc}    .
+    ${size_code}    Fetch from left    ${size_code}    .
+    Remove from list    ${words}    8
+    Remove from list    ${words}    1
+    Insert into list    ${words}    1    ${upc}
+    Insert into list    ${words}    8    ${size_code}
+    ${r_string}    Evaluate    '\t'.join(${words})
+    [Return]    ${r_string}

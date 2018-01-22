@@ -1,8 +1,4 @@
 *** Settings ***
-Library           Selenium2Library
-Resource          ../2__common_defined_keywords/2__home_page.txt
-Library           Collections
-Resource          2__navigation_menu.txt
 
 *** Variables ***
 ${map_check_path}    id=mapcheck
@@ -24,48 +20,3 @@ ${pathOfDownload}    E:\\RFScripts\\TD_comprehensive\\downloadFile
 ${scuritySheet}    TD_security
 
 *** Keywords ***
-login7thonline
-    [Arguments]    ${url}    ${browserType}    ${username}    ${company}    ${browserProfile}= ${browser_profile_ff_1}
-    ${browserIndex}    Open Browser    ${url}    ${browserType}    \    \    ${EMPTY}
-    ...    ${browserProfile}
-    run keyword if    '${browserType}'=='ie'    click link    Continue to this website (not recommended).
-    wait until element is visible    id=loginwrapper    25    The server at ${url} is unavailable currently.
-    Maximize Browser Window
-    Input Text    ${username_path}    ${username}
-    Input Password    ${psd_path}    ${password}
-    ${isMapVisible}    run keyword and return status    element should be visible    ${map_check_path}
-    run keyword if    ${isMapVisible}    Select Checkbox    ${map_check_path}
-    click element    ${log_in_button_path}
-    Wait Until Page Does Not Contain Element    loginform
-    ${isWarnVisible}    run keyword and return status    Page Should Contain    Warning:    #${status} would be PASS or FAIL
-    Run Keyword if    ${isWarnVisible}    Click Element    ${Yes_button}
-    ${isUserUnloginBefore}    run keyword and return status    element should be visible    ${IagreeBtnPath}
-    run keyword if    ${isUserUnloginBefore}    register and change password    wuhan02    wuhan02
-    Wait until element is enabled    ${navigation_menu_path}    ${timeout}    The navigation menu bar is unavailale.
-    select company    ${username}    ${company}
-    [Return]    ${browserIndex}
-
-select company
-    [Arguments]    ${user}    ${companyName}
-    ${isSingleCom}    run keyword and return status    page should contain element    id=corporate-text
-    ${isFor}    set variable if    ${isSingleCom}    1    0
-    ${allCompaniesForLoginUser}    create list    ${companyName}
-    : FOR    ${i}    IN RANGE    ${isFor}
-    \    wait until keyword succeeds    2 min    2 sec    click element    id=corporate-text
-    \    wait until element is visible    name=access    20 seconds
-    \    ${allCompaniesForUser}    get text    id=corporate-select
-    \    ${allCompaniesForLoginUser}    split to lines    ${allCompaniesForUser}
-    \    ${companyStatus}    run keyword and return status    select from list by label    name=access    ${companyName}
-    \    run keyword if    '${companyStatus}' =='False'    FAIL    company: '${companyName}' doesn't belong to user: '${user}'. Please change correct company.
-    \    wait until keyword succeeds    2 min    2 sec    wait until element is visible    ${navigation_menu_path}    ${timeout}
-    set global variable    ${allCompaniesForLoginUser}
-
-register and change password
-    [Arguments]    ${oldPsd}    ${newPsd}    ${email}=fake@7thonline.cn
-    click element    ${IagreeBtnPath}
-    wait until element is visible    id=cpasswordwrapper
-    input password    xpath=//input[@name='oldpassword']    ${oldPsd}
-    input password    xpath=//input[@name='password']    ${newPsd}
-    input password    xpath=//input[@name='reenterpassword']    ${newPsd}
-    input text    xpath=//input[@name='email']    ${email}
-    click element    xpath=//input[@name='submit']

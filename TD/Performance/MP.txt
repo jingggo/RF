@@ -1,0 +1,68 @@
+*** Settings ***
+Resource          MP_Performance_res.txt
+
+*** Test Cases ***
+1-Options
+    ${corporate_mp_id}    set variable    1016    #    776
+    ${plan_level_id}    set variable    1968    #    1925
+    Set test variable    ${corporate_mp_id}
+    Set test variable    ${plan_level_id}    #    rpreston    OAKLEY - AFA
+    Login7thonline    https://10.125.2.173    ff    mdefranco    Patagonia    ${browser_profile_ff_1}
+    Entry page via navimenu    //a[contains(@href,'zkreplace') and text()='MP List']    MP List
+    Comment    ${corporate_mp_id}    Get MP ID    ${corporate_mp_name}
+    Comment    ${plan_level_id}    Get Plan Level ID    ${plan_level}
+    Set Default On MP List Page By Name    ${corporate_mp_id}    ${plan_level_id}    #    ${CORPORATE_MP_NAME}    ${PLAN_LEVEL}
+    Go to Corporate MP By ID    ${corporate_mp_id}-${plan_level_id}
+    Go to ZK Menu Options
+    Select MP S1 Name    Forecast
+    Comment    Save On ZK Menu Options
+    Comment    Go to ZK Menu Options
+    Select MP S2 Name    LY Corporate Merchandise Plan
+    Comment    Save On ZK Menu Options
+    Comment    Go to ZK Menu Options
+    Check 5 top columns to display    Change % Cost Rec/Sales    Change % Receipts    Change % Retail Rec/Sales    Change % Sales    Merchandise Plan Account Group Adjustments
+    Comment    Save On ZK Menu Options
+    Comment    Go to ZK Menu Options
+    Adjust the orders of displayed columns for performance    Merchandise Plan Account Group Adjustments
+    Comment    Go to ZK Menu Options
+    Change Year Month in Options Page    2016    May
+    Save On ZK Menu Options
+    Switch to MP page by time label    2018-FEB
+    Lock Plan    2016-May
+    Unlock Plan
+    Cost MP view
+    Comment    Expand lowest attribute node
+    Retail MP view
+    Comment    Collapse lowest attribute node
+    Switch to MP page by time label    2018-Q1
+    Units MP View
+    Switch to MP page by time label    2018-SPRING
+    Unlock Plan
+    Switch to MP page by time label    2018
+    Save close ZK
+    Clear MP List Default
+    Close All Browsers
+
+2-Populate
+    Log_in
+    Comment    Set Default On MP List Page By Name    ${CORPORATE_MP_NAME}    ${PLAN_LEVEL}
+    Go to Corporate MP By ID    ${corporate_mp_id}-${plan_level_id}
+    MP Populate    month
+    MP Populate    Quarter
+    MP Populate    Season
+    MP Populate    Year
+    MP Populate    Month
+    MP Populate    Quarter
+    MP Populate    Season
+    MP Populate    Year
+    MP Populate    Month
+    MP Populate    Quarter
+    MP Populate    Season
+    MP Populate    Year
+    MP Populate    Month
+    MP Populate    Quarter
+    MP Populate    Season
+    MP Populate    Year
+    Save close ZK
+    Clear MP List Default    ${corporate_mp_id}-${plan_level_id}
+    Close All Browsers

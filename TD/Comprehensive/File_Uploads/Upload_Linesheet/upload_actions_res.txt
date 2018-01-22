@@ -1,6 +1,5 @@
 *** Settings ***
 Resource          upload_linesheet_action_res.txt
-Resource          upload_linesheet_settings.txt
 Resource          get_email_res.txt
 Resource          get_info_from_backend_res.txt
 Resource          get_interface_msg_after_upload_res.txt
@@ -42,7 +41,7 @@ Process Document
     Sleep    3 s
 
 Switch to uploading page
-    :FOR    ${x}    IN Range    10
+    : FOR    ${x}    IN RANGE    10
     \    ${windows_list}    List windows
     \    ${nwindows}    Get length    ${windows_list}
     \    exit for loop if    ${nwindows}==${2}

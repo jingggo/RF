@@ -8,7 +8,7 @@ Check Result On File Uploads With Errors
     ${windows}    list windows
     ${nWindows}    get length    ${windows}
     run keyword if    ${nWindows}>${1}    select window    ${windows[1]}
-    Wait until page does not contain    Uploading files...
+    Wait until page does not contain    Uploading files...    120
     Should not Error During Upload
     ${page_content_after_upload}    get text    ${content_after_upload_path}
     ${page_contents_after_upload}    split to lines    ${page_content_after_upload}
@@ -41,6 +41,7 @@ Check Result On File Uploads Successfully
     ${windows}    list windows
     ${nWindows}    get length    ${windows}
     run keyword if    ${nWindows}>${1}    select window    ${windows[1]}
+    Wait until page does not contain    Uploading files...    120
     Should not Error During Upload
     ${page_content_after_upload}    get text    ${content_after_upload_path}
     ${page_contents_after_upload}    split to lines    ${page_content_after_upload}
@@ -98,4 +99,7 @@ Should not Error During Upload
     ${30254-status}    Run keyword and return status    Page should contain    [ER-30254]
     ${ER-30254}    Set variable    Linesheet upload is in process, please be patient.
     Run keyword if    ${30254-status}    Fail    ${ER-30254}
+    ${exception-status}    Run keyword and return status    Page should contain    site error
+    ${site-error}    Set variable    [ER-10001] A site error has occurred, please contact Client Support toll free at 1-800-775-7571.
+    Run keyword if    ${exception-status}    Fail    ${site-error}
     Fail    Upload Failed.
