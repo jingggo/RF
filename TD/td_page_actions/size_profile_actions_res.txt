@@ -1,0 +1,5 @@
+*** Settings ***
+Resource          ../Comprehensive/td_company_res.txt
+
+*** Keywords ***
+ph

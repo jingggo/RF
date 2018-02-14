@@ -27,3 +27,14 @@ Remove Titles From File
     Comment    ${file_contents}    convert to list    ${file_contents}
     Comment    ${sub_file}    Evaluate    "\r\n".join(${file_contents})
     Create File    ${upload_file}    ${sub_file}
+
+Upload Style Image
+    [Arguments]    ${upload_file}    ${zipfile}
+    ${file_type_value}    File Type    Style Image
+    File Name    ${file_type_value}    ${upload_file}
+    Delimiter    ${file_type_value}    tab
+    Zip File    ${file_type_value}    ${zipfile}
+    Process Document    ${file_type_value}
+    Switch to uploading page
+    Wait until uploading files disappear
+    #

@@ -1,0 +1,15 @@
+*** Variables ***
+${URL}            https://10.125.2.173
+${USER}           superelle
+${COMPANY}        Patagonia
+${no-style-found}    No styles found.
+${REPORT_STORE_PATH}    Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+${PARENT_COMPANY_ID}    100240
+${APPBETA}        'appbeta','sol','10.125.2.237/opti7app'
+${POSBETA}        'appbeta','sol','10.125.2.237/opti7pos'
+@{COLOR_INFO_SCROLL_BODY_INPUT_NAMES}    vendor_color_code    nrf_color_code    color_group    pattern_number    start_ship_date    product_stop_date    standardcost
+...               transfer_price    whsl    low_cost    msrp    low_retail    product_team    material_type
+...               replen_indicator    color_category    color_type    color_info    color_indicator    factory    outlet_style_indicator
+...               ly_style_number    ly_color_code
+@{COLOR_INFO_SCROLL_BODY_LIST_NAMES}    colorFamilyList    accountexclusive    multi_channel_ind
+@{PRODUCT_REQUIRED_ATTRIBUTES_NAMES}    stylenum    seasonid    year    classname    department    productgroup    category

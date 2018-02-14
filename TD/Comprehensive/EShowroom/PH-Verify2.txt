@@ -1,0 +1,199 @@
+*** Settings ***
+Suite Setup       Login7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${EMPTY}    # ${browser_profile_ff_1}
+Suite Teardown    #Close All Browsers
+Force Tags        PH-Verify
+Resource          ../../td_page_actions/style_bank_actions_res.txt
+Resource          style_bank_test_data_ef.txt
+Variables         style_bank_test_variables_ef.py
+Resource          ../../td_page_actions/ph_styles_actions_res.txt
+Variables         ph_verify_ef.py
+
+*** Test Cases ***
+
+*** Keywords ***
+Check Match Colors page info
+    [Arguments]    ${ph_style}    ${matched_style}    ${ph_colors_season_year}    ${matched_colors_season_year}
+    Page should contain    MatchColors
+    Comment    Placeholder #: PH-AT-VE-007    Matching EF Style: PH-AT-MA-006
+    ${main_text}    Get text    //form[contains(@action,'do_vendorPlaceholderMatchColorUpdate')]
+    ${main_texts}    Split to lines    ${main_text}
+    ${ph_style_info}    Get from list    ${main_texts}    1
+    ${ph_style_info}    Replace string    ${ph_style_info}    u'\xa0'    ${SPACE}
+    Run keyword and continue on failure    Should be equal as strings    ${ph_style_info}    Placeholder #: ${ph_style}
+    ${matched_style_info}    Get from list    ${main_texts}    2
+    ${matched_style_info}    Replace string    ${matched_style_info}    u'\xa0'    ${SPACE}
+    Run keyword and continue on failure    Should be equal as strings    ${matched_style_info}    Matching EF Style: ${matched_style}
+    Comment    Table title and button
+    Run keyword and continue on failure    Table row should contain    css=table.table1    1    Placeholder Color
+    Run keyword and continue on failure    Table row should contain    css=table.table1    1    Matching Color Fashion Season-Year
+    Run keyword and continue on failure    Page should contain button    Save
+    Comment    verified colors and matching colors
+    ${tr_count}    Get matching xpath count    //table[@class='table1']/tbody/tr
+    ${tr_count}    Convert to integer    ${tr_count}
+    ${verified_color_count}    Evaluate    ${tr_count} - 1
+    ${real_verified_color_count}    Get length    ${ph_colors_season_year}
+    Run keyword and continue on failure    Should be equal as integers    ${verified_color_count}    ${real_verified_color_count}
+    ${some_ph_color_info}    Get from list    ${ph_colors_season_year}    0
+    ${ph_season}    Get from dictionary    ${some_ph_color_info}    season    #the ph style colors' season and year are the same
+    ${ph_year}    Get from dictionary    ${some_ph_color_info}    year
+    ${real_matching_colors_items}    Create list
+    ${real_unmatching_colors_items}    Create list
+    : FOR    ${matched_colors_season_year}    IN    @{matched_colors_season_year}
+    \    ${matched_color_code}    Get from dictionary    ${matched_colors_season_year}    color_code
+    \    ${matched_color_name}    Get from dictionary    ${matched_colors_season_year}    color_name
+    \    ${matched_color_season}    Get from dictionary    ${matched_colors_season_year}    season
+    \    ${matched_color_year}    Get from dictionary    ${matched_colors_season_year}    year
+    \    ${real_matching_colors_item}    Set variable    ${matched_color_code} ${matched_color_name} - ${matched_color_season} ${matched_color_year}
+    \    ${is_season_year_matched}    Run keyword and return status    Should be equal as strings    ${ph_season}-${ph_year}    ${matched_color_season}-${matched_color_year}
+    \    Run keyword if    ${is_season_year_matched}    Append to list    ${real_matching_colors_items}    ${real_matching_colors_item}
+    \    Run keyword unless    ${is_season_year_matched}    Append to list    ${real_unmatching_colors_items}    ${real_matching_colors_item}
+    ${real_matching_colors_items_len}    Get length    ${real_matching_colors_items}    #if length of matched items is 0, means no year season matched, then unmatched year season would dispaly
+    ${real_colors_items_option}    Set variable if    ${real_matching_colors_items_len}==${0}    ${real_unmatching_colors_items}    ${real_matching_colors_items}
+    Append to list    ${real_colors_items_option}    Remain as PH    Delete Color
+    Log    ${real_colors_items_option}
+    : FOR    ${i}    ${ph_color_season_year}    IN ENUMERATE    @{ph_colors_season_year}
+    \    ${ph_color_code}    Get from dictionary    ${ph_color_season_year}    color_code
+    \    ${ph_color_name}    Get from dictionary    ${ph_color_season_year}    color_name
+    \    ${ph_color_season}    Get from dictionary    ${ph_color_season_year}    season
+    \    ${ph_color_year}    Get from dictionary    ${ph_color_season_year}    year
+    \    ${ph_color}    Get table cell    css=table.table1    2    1    #&nbsp;001&nbsp;BLACK&nbsp;
+    \    ${separater}    Get table cell    css=table.table1    2    2    #&nbsp;<b>=</b>&nbsp;
+    \    ${matched_color_season_year}    Get selected list label    //table[@class='table1']/tbody/tr[${i+2}]//select    #001&nbsp;BLACK - SPRING 2018&nbsp;
+    \    ${ph_color}    Replace string    ${ph_color}    u'\xa0'    ${SPACE}
+    \    ${separater}    Replace string    ${separater}    u'\xa0'    ${SPACE}
+    \    ${matched_color_season_year}    Replace string    ${matched_color_season_year}    u'\xa0'    ${SPACE}
+    \    Run keyword and continue on failure    Should be equal as strings    ${ph_color}    ${SPACE}${ph_color_code} ${ph_color_name}${SPACE}
+    \    Run keyword and continue on failure    Should be equal as strings    ${separater}    ${SPACE}=${SPACE}
+    \    ${matched_colors_items}    Get list items    //table[@class='table1']/tbody/tr[${i+2}]//select
+    \    ${matched_colors_items}    Evaluate    [l.replace("&nbsp; ","${SPACE}") for l in ${matched_colors_items}]
+    \    ${matched_colors_items}    Evaluate    [l.strip() for l in ${matched_colors_items}]
+    \    Run keyword and continue on failure    Lists should be equal    ${matched_colors_items}    ${real_colors_items_option}    #colors with matched season year would display
+    \    ${is_color_season_year_matched}    Run keyword and return status    List should contain value    ${matched_colors_items}    ${ph_color_code} ${ph_color_name} - ${ph_color_season} ${ph_color_year}
+    \    Run keyword if    ${is_color_season_year_matched}    Run keyword and continue on failure    Should be equal as strings    ${matched_color_season_year}    ${ph_color_code} ${ph_color_name} - ${ph_color_season} ${ph_color_year}${SPACE}
+    \    #not exactly know the order of list items, so if color of year season matched, script would check its default label. if not matched, script should ignore
+
+Check thank you page after ph verified
+    [Arguments]    ${real_thank_you_style_color_info}    # ${ph_style} | ${ph_color_code} | ${ph_color_name} | ${matched_style} | ${matched_color_code} | ${matched_color_name}
+    Page should contain    The following placeholders were converted into styles:
+    ${thank_page_titles}    Execute javascript    var result=[];$("div.notabcontent th").each(function(){result.push($(this).text()); });return result;
+    ${thank_page_titles}    Evaluate    [l.strip(u'\xa0') for l in ${thank_page_titles}]
+    ${expected_titles}    Create list    Placeholder #    Color Code    Color Description    ${EMPTY}    EF Style
+    ...    Color Code    Color Description
+    Run keyword and continue on failure    Lists should be equal    ${thank_page_titles}    ${expected_titles}
+    ${thank_page_style_info}    Execute javascript    var result=[];$("div.notabcontent td").each(function(){result.push($(this).text()); });return result;
+    ${thank_page_style_info}    Evaluate    [l.strip(u'\xa0') for l in ${thank_page_style_info}]
+    Comment    ${real_thank_you_style_color_info}    Create list    ${ph_style}    ${ph_color_code}    ${ph_color_name}    to
+    ...    ${matched_style}    ${matched_color_code}    ${matched_color_name}
+    Run keyword and continue on failure    Lists should be equal    ${thank_page_style_info}    ${real_thank_you_style_color_info}
+    #    [u'PH-AT-VE-006', u'001', u'BLACK', u'to', u'PH-AT-MA-006', u'001', u'BLACK']
+
+Select ph style by search
+    [Arguments]    ${ph_style}    ${season_year}
+    Select from season and year dropdown    ${season_year}
+    Input text    ${ph_search_style_path}    ${ph_style}
+    Click button    Search
+    Wait until page does not contain element    ${wait_button}
+    Table column should contain    css=table.table1    2    ${ph_style}
+    ${style_id}    Get value    //td[contains(text(),'${ph_style}')]/preceding-sibling::td/input
+    Select checkbox    //input[@value='${style_id}']
+    [Return]    ${style_id}
+
+Thank you page PH verified
+    [Arguments]    ${ph_style}    ${real_ph_colors_info}    ${matched_style}    ${matched_colors_info}
+    Page should contain    The following placeholders were converted into styles:
+    ${thank_page_titles}    Execute javascript    var result=[];$("div.notabcontent th").each(function(){result.push($(this).text()); });return result;
+    ${thank_page_titles}    Evaluate    [l.strip(u'\xa0') for l in ${thank_page_titles}]
+    ${expected_titles}    Create list    Placeholder #    Color Code    Color Description    ${EMPTY}    EF Style
+    ...    Color Code    Color Description
+    Run keyword and continue on failure    Lists should be equal    ${thank_page_titles}    ${expected_titles}
+    ${thank_page_style_info}    Execute javascript    var result=[];$("div.notabcontent td").each(function(){result.push($(this).text()); });return result;
+    ${thank_page_style_info}    Evaluate    [l.strip(u'\xa0') for l in ${thank_page_style_info}]    #    [u'PH-AT-VE-006', u'001', u'BLACK', u'to', u'PH-AT-MA-006', u'001', u'BLACK']
+    ${thank_page_style_info_len}    Get length    ${thank_page_style_info}
+    ${thank_page_style_info_rowx}    Evaluate    ${thank_page_style_info_len}/6    #6 items per row
+    ${init}    Set variable    ${0}
+    ${convert_style_infos}    Create List
+    : FOR    ${rowx}    IN RANGE    ${thank_page_style_info_rowx}
+    \    ${thank_page_style_info_row}    Get slice from list    ${thank_page_style_info}    ${init}    ${init+7}
+    \    ${thank_page_style_info_row}    Evaluate    '-'.join(${thank_page_style_info_row})
+    \    ${init}    Set variable    ${init+7}
+    \    Append to list    ${convert_style_infos}    ${thank_page_style_info_row}
+    Log    ${convert_style_infos}
+    ${real_ph_colors}    Create list
+    : FOR    ${real_ph_color_info}    ${matched_color_info}    IN ZIP    ${real_ph_colors_info}    ${matched_colors_info}
+    \    ${ph_color_code}    Get from dictionary    ${real_ph_color_info}    color_code
+    \    ${phl_color_name}    Get from dictionary    ${real_ph_color_info}    color_name
+    \    ${real_color_code}    Get from dictionary    ${matched_color_info}    color_code
+    \    ${real_color_name}    Get from dictionary    ${matched_color_info}    color_name
+    \    ${real_color_info_row}    Catenate    SEPARATOR=-    ${ph_style}    ${ph_color_code}    ${phl_color_name}
+    \    ...    to    ${matched_style}    ${real_color_code}    ${real_color_name}
+    \    Append to list    ${real_ph_colors}    ${real_color_info_row}
+    Log    ${real_ph_colors}
+    Run keyword and continue on failure    Lists should be equal    ${convert_style_infos}    ${real_ph_colors}    Lists are wrong on ThankYou page.
+
+Copy on PH style page
+    [Arguments]    ${src_style}    ${src_color_season_year}    ${tar_style}    ${tar_colors_season_year}
+    [Timeout]
+    ${src_season}    Get from dictionary    ${src_color_season_year}    season
+    ${src_year}    Get from dictionary    ${src_color_season_year}    year
+    ${src_color_code}    Get from dictionary    ${src_color_season_year}    color_code
+    ${src_color_name}    Get from dictionary    ${src_color_season_year}    color_name
+    ${tar_color_season_year}    Get from list    ${tar_colors_season_year}    0
+    ${tar_season}    Get from dictionary    ${tar_color_season_year}    season
+    ${tar_year}    Get from dictionary    ${tar_color_season_year}    year
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to advanced search on style bank
+    Input text    id=Style    ${tar_style}
+    Click search button
+    ${is_ph_style_exist}    Run keyword and return status    Table column should contain    css=table.table1    2    ${tar_style}
+    Return from keyword if    ${is_ph_style_exist}
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    ${style_id}    Select ph style by search    ${src_style}    ${src_season}-${src_year}
+    Click link    //a[contains(@href,'styleid=${style_id}') and text()='Copy']
+    Sleep    0.2
+    Wait until page contains    CopyToPlaceHolder    10
+    Input text    name=stylenum    ${tar_style}
+    Run keyword unless    '${src_season}'=='${tar_season}'    Select from list by label    name=seasonid    ${tar_season}
+    Run keyword unless    '${src_year}'=='${tar_year}'    Select from list by label    id=year    ${tar_year}
+    : FOR    ${i}    ${create_ph_color}    IN ENUMERATE    @{tar_colors_season_year}
+    \    ${tar_color_code}    Get from dictionary    ${create_ph_color}    color_code
+    \    ${tar_color_name}    Get from dictionary    ${create_ph_color}    color_name
+    \    Run keyword unless    '${src_color_code}'=='${tar_color_code}'    Input text    //div[@class='DTFC_LeftBodyWrapper']//tbody/tr[${i+1}]/td[2]/input    ${tar_color_code}
+    \    Run keyword unless    '${src_color_code}'=='${tar_color_code}'    Input text    //div[@class='dataTables_scroll']//table[@id='mt']//tbody/tr[${i+1}]//input[@name='nrfcolorcode']    ${EMPTY}
+    \    Run keyword unless    '${src_color_name}'=='${tar_color_name}'    Input text    //div[@class='DTFC_LeftBodyWrapper']//tbody/tr[${i+1}]/td[3]/input    ${tar_color_name}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page contains    PlaceHolderStyles
+
+Thank you page with PH verified and Delete
+    [Arguments]    ${ph_style}    ${real_ph_colors_info}    ${matched_style}    ${matched_colors_info}
+    Page should contain    The following placeholders were converted into styles:
+    ${thank_page_titles}    Execute javascript    var result=[];$("div.notabcontent th").each(function(){result.push($(this).text()); });return result;
+    ${thank_page_titles}    Evaluate    [l.strip(u'\xa0') for l in ${thank_page_titles}]
+    ${expected_titles}    Create list    Placeholder #    Color Code    Color Description    ${EMPTY}    EF Style
+    ...    Color Code    Color Description
+    Run keyword and continue on failure    Lists should be equal    ${thank_page_titles}    ${expected_titles}
+    ${thank_page_style_info}    Execute javascript    var result=[];$("div.notabcontent td").each(function(){result.push($(this).text()); });return result;
+    ${thank_page_style_info}    Evaluate    [l.strip(u'\xa0') for l in ${thank_page_style_info}]    #    [u'PH-AT-VE-006', u'001', u'BLACK', u'to', u'PH-AT-MA-006', u'001', u'BLACK']
+    ${thank_page_style_info_len}    Get length    ${thank_page_style_info}
+    ${thank_page_style_info_rowx}    Evaluate    ${thank_page_style_info_len}/6    #6 items per row
+    ${init}    Set variable    ${0}
+    ${convert_style_infos}    Create List
+    : FOR    ${rowx}    IN RANGE    ${thank_page_style_info_rowx}
+    \    ${thank_page_style_info_row}    Get slice from list    ${thank_page_style_info}    ${init}    ${init+7}
+    \    ${thank_page_style_info_row}    Evaluate    '-'.join(${thank_page_style_info_row})
+    \    ${init}    Set variable    ${init+7}
+    \    Append to list    ${convert_style_infos}    ${thank_page_style_info_row}
+    Log    ${convert_style_infos}
+    ${real_ph_colors}    Create list
+    : FOR    ${real_ph_color_info}    ${matched_color_info}    IN ZIP    ${real_ph_colors_info}    ${matched_colors_info}
+    \    ${ph_color_code}    Get from dictionary    ${real_ph_color_info}    color_code
+    \    ${phl_color_name}    Get from dictionary    ${real_ph_color_info}    color_name
+    \    ${real_color_code}    Get from dictionary    ${matched_color_info}    color_code
+    \    ${real_color_name}    Get from dictionary    ${matched_color_info}    color_name
+    \    ${real_color_info_row}    Catenate    SEPARATOR=-    ${ph_style}    ${ph_color_code}    ${phl_color_name}
+    \    ...    to    ${matched_style}    ${real_color_code}    ${real_color_name}
+    \    Append to list    ${real_ph_colors}    ${real_color_info_row}
+    Log    ${real_ph_colors}
+    Run keyword and continue on failure    Lists should be equal    ${convert_style_infos}    ${real_ph_colors}    Lists are wrong on ThankYou page.

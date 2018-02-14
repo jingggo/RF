@@ -1,0 +1,9 @@
+*** Variables ***
+${size_profile_vertical_sequences_jquery}    var result=[];$("table#size input[name='sequence']").each(function(){result.push($(this).val()); }); return result;
+${size_profile_horizontal_sequences_jquery}    var result=[];$("table#desc input[name='sizesequence']").each(function(){result.push($(this).val()); }); return result;
+${size_profile_vertical_size_sequence_xpath_by_value}    //input[@name='sequence' and @value='{sequence}']
+${size_profile_horizontal_size_sequence_xpath_by_value}    //input[@name='sizesequence' and @value='{sequence}']
+${create_size_range_name_path}    name=sizerangename
+${size_range_company_sizes_values_jquery}    var result=[];$("table.table4 input[name='selectedcompanysizeids']").each(function(){result.push($(this).val()); }); return result;
+${size_range_company_size_xpath_by_value}    //input[@name='selectedcompanysizeids' and @value='{value}']
+${size_range_name_checkbox_xpath_by_value}    //input[@name='sizerangeids' and @value='{value}']

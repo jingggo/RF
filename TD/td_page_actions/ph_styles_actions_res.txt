@@ -1,0 +1,105 @@
+*** Settings ***
+Resource          ../Comprehensive/td_company_res.txt
+Resource          style_bank_actions_res.txt
+Resource          ../td_page_src/eshowroom/src_ph_style.txt
+
+*** Keywords ***
+Create PH Style On Interface
+    [Arguments]    ${style_num}    ${year}    ${season}    ${classname}    ${department}    ${division}
+    ...    ${groupcategory}    ${color_descs}    ${color_codes}
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Select from season and year dropdown    ${season}-${year}
+    Input text    name=searchstr    ${style_num}
+    Click Search Button
+    ${is_exist}    Run keyword and return status    Page should not contain    No placeholder styles found.
+    Return from keyword if    ${is_exist}
+    Click element    //input[@value='Add New Placeholder']
+    Wait until page contains    PlaceHolderInfo
+    Wait until element is visible    name=stylenum
+    Input text    name=stylenum    ${style_num}
+    Select from list by label    name=seasonid    ${season}
+    Select from list by label    id=year    ${year}
+    Select from list by label    id=classname    ${classname}
+    Select from list by label    id=department    ${department}
+    Select from list by label    id=division    ${division}
+    Select from list by label    id=groupcategory    ${groupcategory}
+    ${color_count}    Get length    ${color_descs}
+    : FOR    ${c_row}    IN RANGE    ${color_count}
+    \    ${tr_i}    Evaluate    ${c_row}+1
+    \    ${color_code}    Get from list    ${color_codes}    ${c_row}
+    \    ${color_desc}    Get from list    ${color_descs}    ${c_row}
+    \    Input text    //div[@class='DTFC_LeftBodyWrapper']//tbody/tr[${tr_i}]/td[2]/input    ${color_code}
+    \    Input text    //div[@class='DTFC_LeftBodyWrapper']//tbody/tr[${tr_i}]/td[3]/input    ${color_desc}
+    Click element    id=savestyleinfo
+    Run keyword and ignore error    Wait until page does not contain element    //input[@value='Please Wait']    15
+
+Delete AreYouSure page
+    Wait until page contains    AreYouSure?    #Are you sure page
+    Page should contain button    Delete
+    Page should contain button    Cancel
+    Page should contain    You have chosen to delete placeholder style(s)/color(s). If this is correct, please click the Delete button.
+    Page should contain    If this is not correct, please click the Cancel button.
+    Page should contain    Note: Only the placeholder color(s) selected will be deleted, not the real colors or styles.    #new line
+    Click button    Delete
+    Wait until page does not contain element    ${wait_button}
+    Page should contain    ThankYou
+    Page should contain    All selected placeholder styles have been deleted.
+
+Delete AreYouSure page Cancel
+    Wait until page contains    AreYouSure?    #Are you sure page
+    Page should contain button    Delete
+    Page should contain button    Cancel
+    Page should contain    You have chosen to delete placeholder style(s)/color(s). If this is correct, please click the Delete button.
+    Page should contain    If this is not correct, please click the Cancel button.
+    Page should contain    Note: Only the placeholder color(s) selected will be deleted, not the real colors or styles.    #new line
+    Click button    Cancel
+    Wait until page does not contain element    ${wait_button}
+    Page should not contain    ErrorMessage
+
+Edit on place holder color info page
+    [Arguments]    ${style_number}    ${colors}    ${season}    ${year}    ${issharetochild}=${False}    &{other_attributes_with_locator}
+    Page should contain    PlaceHolderColorInfo
+    Input text    name=stylenum    ${style_number}
+    Select from list by label    name=seasonid    ${season}
+    Select from list by label    name=year    ${year}
+    ${color_names}    Get dictionary keys    ${colors}
+    : FOR    ${color_index}    ${color_name}    IN ENUMERATE    @{color_names}
+    \    ${color_code}    Get from dictionary    ${colors}    ${color_name}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorcode']    ${color_code}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorname']    ${color_name}
+    \    #Unselect checkbox    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='issharetochild']
+
+Thank you page PH verified as Delete Color
+    [Arguments]    ${ph_style}    ${real_ph_colors_info}
+    Wait until page contains    ThankYou
+    Run keyword and continue on failure    Page should contain    The following placeholders are deleted:
+    ${thank_page_titles}    Execute javascript    var result=[];$("div.notabcontent th").each(function(){result.push($(this).text()); });return result;
+    ${thank_page_titles}    Evaluate    [l.strip(u'\xa0') for l in ${thank_page_titles}]
+    ${expected_titles}    Create list    Placeholder #    Color Code    Color Description
+    Run keyword and continue on failure    Lists should be equal    ${thank_page_titles}    ${expected_titles}
+    ${thank_page_style_info}    Execute javascript    var result=[];$("div.notabcontent td").each(function(){result.push($(this).text()); });return result;
+    ${thank_page_style_info}    Evaluate    [l.strip(u'\xa0') for l in ${thank_page_style_info}]
+    ${real_ph_colors}    Create list
+    : FOR    ${real_ph_color_info}    IN    @{real_ph_colors_info}
+    \    ${real_color_code}    Get from dictionary    ${real_ph_color_info}    color_code
+    \    ${real_color_name}    Get from dictionary    ${real_ph_color_info}    color_name
+    \    Append to list    ${real_ph_colors}    ${ph_style}    ${real_color_code}    ${real_color_name}
+    Log    ${real_ph_colors}
+    Run keyword and continue on failure    Lists should be equal    ${thank_page_style_info}    ${real_ph_colors}
+
+Thank you page PH verified as reamin as PH
+    [Arguments]    ${ph_style}    ${real_ph_colors_info}
+    Wait until page contains    ThankYou
+    Run keyword and continue on failure    Page should contain    The following placeholders will remain as placeholders:
+    ${thank_page_titles}    Execute javascript    var result=[];$("div.notabcontent th").each(function(){result.push($(this).text()); });return result;
+    ${thank_page_titles}    Evaluate    [l.strip(u'\xa0') for l in ${thank_page_titles}]
+    ${expected_titles}    Create list    Placeholder #    Color Code    Color Description
+    Run keyword and continue on failure    Lists should be equal    ${thank_page_titles}    ${expected_titles}
+    ${thank_page_style_info}    Execute javascript    var result=[];$("div.notabcontent td").each(function(){result.push($(this).text()); });return result;
+    ${thank_page_style_info}    Evaluate    [l.strip(u'\xa0') for l in ${thank_page_style_info}]
+    ${real_ph_colors}    Create list
+    : FOR    ${real_ph_color_info}    IN    @{real_ph_colors_info}
+    \    ${real_color_code}    Get from dictionary    ${real_ph_color_info}    color_code
+    \    ${real_color_name}    Get from dictionary    ${real_ph_color_info}    color_name
+    \    Append to list    ${real_ph_colors}    ${ph_style}    ${real_color_code}    ${real_color_name}
+    Run keyword and continue on failure    Lists should be equal    ${thank_page_style_info}    ${real_ph_colors}

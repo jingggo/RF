@@ -1,0 +1,28 @@
+*** Settings ***
+Library           String
+Library           Collections
+Library           OperatingSystem
+
+*** Test Cases ***
+f
+    ${file_content}    Get File    D:${/}learngitt${/}RFProject${/}TD${/}Comprehensive${/}EShowroom${/}Style_Bank-Report without PH.txt
+    ${new_file}    Set variable    D:${/}learngitt${/}RFProject${/}TD${/}Comprehensive${/}EShowroom${/}Style_Bank-Report without PH-New.txt
+    Create file    ${new_file}
+    ${file_contents}    Split to lines    ${file_content}
+    ${testcase_index}    Get index from list    ${file_contents}    *** Test Cases ***
+    ${test_case_lines}    Get slice from list    ${file_contents}    ${testcase_index + 1}
+    :FOR    ${line}    IN    @{test_case_lines}
+    \    log    ${line}
+    \    ${line_len}    Get length    ${line}
+    \    Continue for loop if    ${line_len}==${0}
+    \    ${chars}    Convert to list    ${line}
+    \    ${first_char}    Get from list    ${chars}    0
+    \    ${is_test_name}    run keyword and return status    should be equal as strings    ${first_char}    ${SPACE}
+    \    Run keyword if    ${is_test_name}    Append to file    ${new_file}    ${line}\r\n
+    \    Continue for loop if    ${is_test_name}
+    \    ${test_num}    Fetch from left    ${line}    -
+    \    ${new_test_num}    Evaluate    ${test_num}+42
+    \    ${test_num}    Convert to string    ${test_num}
+    \    ${new_test_num}    Convert to string    ${new_test_num}
+    \    ${new_line}    Replace string    ${line}    ${test_num}    ${new_test_num}
+    \    Run keyword unless    ${is_test_name}    Append to file    ${new_file}    ${new_line}\r\n

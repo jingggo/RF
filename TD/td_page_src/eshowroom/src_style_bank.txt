@@ -5,12 +5,17 @@ ${sb_table_top_path}    //table[@id='tabletop']
 ${sb_table_top_next_path}    //table[@id='tabletop']//a[text()='next']
 ${sb_advanced_search_btn1_path}    //form/table[1]//input[@value='Search']
 ${sb_advanced_search_btn2_path}    //form/table[4]//input[@value='Search']
-${sb_as_style_input_path}	//input[@id='Style']
-${sb_as_upc_input_path}	//input[@id='upc']
-${sb_as_reset_btn1_path}	//input[@value='Reset']
-${sb_as_include_ph_checkbox_path}	//input[@name='is_include_ph_style']	#default is uncheck
+${sb_as_style_input_path}    //input[@id='Style']
+${sb_as_upc_input_path}    //input[@id='upc']
+${sb_as_reset_btn1_path}    //input[@value='Reset']
+${sb_as_include_ph_checkbox_path}    //input[@name='is_include_ph_style']    #default is uncheck
 ${sb_search_criteria_txt_path}    //b[contains(text(),"Search") and contains(text(),"Criteria:")]
+${sb_add_new_style_btn}    //input[@value='Add New Style']
+${sb_remove_style_btn}    //input[@value='Remove Style']
+${sb_vire_images_btn}    //input[@value='View Images']
+${sb_archive_btn}    //input[@value='Archive']
 ${style_tr_path}    //a[text()='{style}']/parent::td/parent::tr
+${style_table_tr_count_path}    //table[@class='table1']/tbody/tr[1]/following-sibling::tr
 ${sb_style_link_path}    //a[text()='{style}']/parent::td/parent::tr//a[text()='{style}']
 ${sb_style_copy_path}    //a[text()='{style}']/parent::td/parent::tr//a[text()='Copy']
 ${sb_style_copy_ph_path}    //a[text()='{style}']/parent::td/parent::tr//a[contains(text(),'PH')]
@@ -28,3 +33,14 @@ ${size_profile_horizontal_sequence_path}    //a[contains(@href,'CompanySizeSeque
 ${size_profile_horizontal_title3_path}    //big[@class='title3' and text()='Horizontal']
 ${size_profile_size_range_path}    //a[contains(@href,'sizeRange')]
 ${size_profile_size_range_title2_path}    //big[@class='title2' and text()='Range']
+${style_info_add_colors}    name=saveandaddcolors
+${please_wait_button}    //input[@value='Please Wait']
+${wait_button}    //input[@value='Wait']
+${existed_color_name_count_path}    //input[@name='color_name' and not(@value='')]
+${color_info_scroll_table_path}    //table[@id='Tcolorinfo']
+${color_info_right_body_table_path}    //div[@class='DTFC_RightBodyWrapper']/table
+${color_info_left_body_table_path}    //div[@class='DTFC_LeftBodyWrapper']/table
+${style_colors_code_desc_jquery}    var result=[];$("div.DTFC_LeftWrapper input[type='text']").each(function(){result.push($(this).val()); });return result;
+${style_colors_descs_jquery}    var result=[];$("div.DTFC_LeftWrapper input[name='colorname']").each(function(){result.push($(this).val()); });return result;
+${style_colors_codes_jquery}    var result=[];$("div.DTFC_LeftWrapper input[name='colorcode']").each(function(){result.push($(this).val()); });return result;
+${fb_td_text_xpath}	//td[@id='{fb}']/following-sibling::td[1]

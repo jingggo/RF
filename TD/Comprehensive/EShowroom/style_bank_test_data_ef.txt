@@ -1,0 +1,23 @@
+*** Variables ***
+${URL}            https://10.125.2.174
+${USER}           efparent
+${COMPANY}        Eileen Fisher
+${no-style-found}    No styles found.
+${REPORT_STORE_PATH}    Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+${PARENT_COMPANY_ID}    100020
+${APPBETA}        'appbeta','sol','10.125.2.221/auto1app'
+${POSBETA}        'appbeta','sol','10.125.2.221/auto1pos'
+@{COLOR_INFO_SCROLL_BODY_INPUT_NAMES}    vendor_color_code    nrf_color_code    color_group    pattern_number    start_ship_date    product_stop_date    standardcost
+...               transfer_price    whsl    low_cost    msrp    low_retail    product_team    material_type
+...               replen_indicator    color_category    color_type    color_info    color_indicator    factory    outlet_style_indicator
+...               ly_style_number    ly_color_code
+@{COLOR_INFO_SCROLL_BODY_LIST_NAMES}    colorFamilyList    accountexclusive    multi_channel_ind
+@{PRODUCT_REQUIRED_ATTRIBUTES_NAMES}    stylenum    seasonid    year    classname    department    division
+@{EXPECTED_STYLE_BANK_STYLEATTRIBUTES}    *EF Style:    *Fashion Season:    *Year:    zReserve05:    Description:    Fabrication:    Eco Tier:
+...               zReserve10:    zReserve11:    Story:    *Style Classification:    zReserve14:    *Department:    *Division:
+...               Main Material:    zReserve13:    Material Parent Group:    Size Scale:    Main Material Content:    Material Class:    zReserve30:
+...               zReserve31:    zReserve34:    zReserve15:    Factory:    Last Modified:    Modified by:
+@{EXPECTED_STYLE_BANK_COLORATTRIBUTES}    Color Code    *Color Description    Color# NRF    zReserve25    zReserve35    L/S Page Title    zReserve23
+...               zReserve37    Estimated Cost    zReserve41    Wholesale Price    Low Cost    Retail Price    Low Retail
+...               Customer Account Code    Delivery    Main Sew venue    COO    zReserve43    Share to Child
+@{EXPECTED_COLORINFO_STYLEATTRIBUTES}    *Existing EF Style:    *Fashion Season:    *Year:

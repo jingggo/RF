@@ -1,0 +1,2 @@
+*** Variables ***
+${ph_search_style_path}	name=searchstr

@@ -1,0 +1,382 @@
+*** Settings ***
+Suite Setup       Login7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${EMPTY}
+Default Tags      size-profile
+Resource          ../../td_page_actions/style_bank_actions_res.txt
+Resource          ../../td_page_src/eshowroom/src_size_profile.txt
+Resource          style_bank_test_data_ef.txt
+
+*** Test Cases ***
+SizeProfile-Clean sequence
+    [Documentation]    Clear the order input or input empty to the sort order input box. [ER-20234] "" is not a valid value for sort order. Please re-enter. Thank You.
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    Page should contain button    Submit
+    ${vertical_sequences}    Execute javascript    ${size_profile_vertical_sequences_jquery}
+    ${vertical_sequences_len}    Get length    ${vertical_sequences}
+    Run keyword if    ${vertical_sequences_len}==${0}    Fail    No size.
+    ${random_sequence}    Evaluate    random.sample(${vertical_sequences},1)    random
+    ${random_sequence}    Get from list    ${random_sequence}    0
+    ${size_profile_vertical_size_sequence_xpath}    Replace string    ${size_profile_vertical_size_sequence_xpath_by_value}    {sequence}    ${random_sequence}
+    Clear element text    ${size_profile_vertical_size_sequence_xpath}
+    Click button    Submit
+    Sleep    1
+    Wait until page does not contain element    ${wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-20234] "" is not a valid value for sort order. Please re-enter. Thank You.
+    Click button    Back
+
+SizeProfile-Modify sequence-Enter letter
+    [Documentation]    [ER-20234] "" is not a valid value for sort order. Please re-enter. Thank You.
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    Page should contain button    Submit
+    ${vertical_sequences}    Execute javascript    ${size_profile_vertical_sequences_jquery}
+    ${vertical_sequences_len}    Get length    ${vertical_sequences}
+    Run keyword if    ${vertical_sequences_len}==${0}    Fail    No size.
+    ${random_sequence}    Evaluate    random.sample(${vertical_sequences},1)    random
+    ${random_sequence}    Get from list    ${random_sequence}    0
+    ${rand_str}    Generate random string    1    [LETTERS]
+    ${size_profile_vertical_size_sequence_xpath}    Replace string    ${size_profile_vertical_size_sequence_xpath_by_value}    {sequence}    ${random_sequence}
+    Input text    ${size_profile_vertical_size_sequence_xpath}    ${rand_str}
+    Click button    Submit
+    Sleep    1
+    Wait until page does not contain element    ${wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-20234] "${rand_str}" is not a valid value for sort order. Please re-enter. Thank You.
+    Click button    Back
+
+SizeProfile-Modify sequence-Enter existing sequence
+    [Documentation]    [ER-10128] All sequence numbers must be unique. Sequence number "2" appears more than once. Please alter your sequence numbers.
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    Page should contain button    Submit
+    ${vertical_sequences}    Execute javascript    ${size_profile_vertical_sequences_jquery}
+    ${vertical_sequences_len}    Get length    ${vertical_sequences}
+    Run keyword if    ${vertical_sequences_len}==${0}    Fail    No size.
+    ${random_sequences}    Evaluate    random.sample(${vertical_sequences},2)    random    #20,30
+    ${random_sequence}    Get from list    ${random_sequences}    0    #20
+    ${existing_sequence}    Get from list    ${random_sequences}    1    #30
+    ${size_profile_vertical_size_sequence_xpath}    Replace string    ${size_profile_vertical_size_sequence_xpath_by_value}    {sequence}    ${random_sequence}
+    Input text    ${size_profile_vertical_size_sequence_xpath}    ${existing_sequence}
+    Click button    Submit
+    Sleep    1
+    Wait until page does not contain element    ${wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-10128] All sequence numbers must be unique. Sequence number "${existing_sequence}" appears more than once.${SPACE}${SPACE}Please alter your sequence numbers.
+    Click button    Back
+
+SizeProfile-Modify sequence-Enter new sequence
+    [Documentation]    Save successfully.
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    Page should contain button    Submit
+    ${vertical_sequences}    Execute javascript    ${size_profile_vertical_sequences_jquery}
+    ${vertical_sequences_len}    Get length    ${vertical_sequences}
+    Run keyword if    ${vertical_sequences_len}==${0}    Fail    No size.
+    ${max_sequence}    Get from list    ${vertical_sequences}    -1
+    ${new_sequence}    Evaluate    ${max_sequence}+10
+    ${random_sequence}    Evaluate    random.sample(${vertical_sequences},1)    random
+    ${random_sequence}    Get from list    ${random_sequence}    0
+    ${random_size}    Get text    //input[@value='${random_sequence}']/parent::td/following::td[1]
+    ${random_dimension}    Get text    //input[@value='${random_sequence}']/parent::td/following::td[2]
+    ${size_profile_vertical_size_sequence_xpath}    Replace string    ${size_profile_vertical_size_sequence_xpath_by_value}    {sequence}    ${random_sequence}
+    Input text    ${size_profile_vertical_size_sequence_xpath}    ${new_sequence}    #update the random sequence to the max sequence
+    Click button    Submit
+    Sleep    1
+    Wait until page does not contain element    ${wait_button}
+    Wait until page contains    ThankYou
+    #check
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    ${result_random_size}    Get text    //input[@value='${new_sequence}']/parent::td/following::td[1]
+    ${result_random_dimension}    Get text    //input[@value='${new_sequence}']/parent::td/following::td[2]
+    Run keyword and continue on failure    Should be equal as strings    ${result_random_size}    ${random_size}
+    Run keyword and continue on failure    Should be equal as strings    ${result_random_dimension}    ${random_dimension}
+
+SizeProfile-Copy from a text
+    [Documentation]    Save successfully.
+    log    copy
+
+SizeSequence-Clean sequence
+    [Documentation]    Clear the order input or input empty to the sort order input box. [ER-10127] Sequence number "" is not a valid number, Please enter a valid number for the Sequence and re-submit. Thank you.
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    Page should contain element    ${size_profile_horizontal_sequence_path}
+    Click element    ${size_profile_horizontal_sequence_path}
+    Wait until page contains    SizeHorizontalSequence    10
+    Page should contain button    Submit
+    #Action
+    ${horizontal_sequences}    Execute javascript    ${size_profile_horizontal_sequences_jquery}
+    ${horizontal_sequences_len}    Get length    ${horizontal_sequences}
+    Run keyword if    ${horizontal_sequences_len}==${0}    Fail    No size.
+    ${random_sequence}    Evaluate    random.sample(${horizontal_sequences},1)    random
+    ${random_sequence}    Get from list    ${random_sequence}    0
+    ${size_profile_horizontal_size_sequence_xpath}    Replace string    ${size_profile_horizontal_size_sequence_xpath_by_value}    {sequence}    ${random_sequence}
+    Clear element text    ${size_profile_horizontal_size_sequence_xpath}
+    Click button    Submit
+    Sleep    1
+    Wait until page does not contain element    ${wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-10127] Sequence number "" is not a valid number, Please enter a valid number for the Sequence and re-submit.${SPACE}${SPACE}Thank you.
+    Click button    Back
+
+SizeSequence-Modify sequence-Enter letter
+    [Documentation]    [ER-10127] Sequence number "x" is not a valid number, Please enter a valid number for the Sequence and re-submit. Thank you.
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    Page should contain element    ${size_profile_horizontal_sequence_path}
+    Click element    ${size_profile_horizontal_sequence_path}
+    Wait until page contains    SizeHorizontalSequence    10
+    Page should contain button    Submit
+    #Action
+    ${horizontal_sequences}    Execute javascript    ${size_profile_horizontal_sequences_jquery}
+    ${horizontal_sequences_len}    Get length    ${horizontal_sequences}
+    Run keyword if    ${horizontal_sequences_len}==${0}    Fail    No size.
+    ${random_sequence}    Evaluate    random.sample(${horizontal_sequences},1)    random
+    ${random_sequence}    Get from list    ${random_sequence}    0
+    ${rand_str}    Generate random string    1    [LETTERS]
+    ${size_profile_horizontal_size_sequence_xpath}    Replace string    ${size_profile_horizontal_size_sequence_xpath_by_value}    {sequence}    ${random_sequence}
+    Input text    ${size_profile_horizontal_size_sequence_xpath}    ${rand_str}
+    Click button    Submit
+    Sleep    1
+    Wait until page does not contain element    ${wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-10127] Sequence number "${rand_str}" is not a valid number, Please enter a valid number for the Sequence and re-submit.${SPACE}${SPACE}Thank you.
+    Click button    Back
+
+SizeSequence-Modify sequence-Enter existing sequence
+    [Documentation]    [ER-10128] All sequence numbers must be unique. Sequence number "2" appears more than once. Please alter your sequence numbers.
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    Page should contain element    ${size_profile_horizontal_sequence_path}
+    Click element    ${size_profile_horizontal_sequence_path}
+    Wait until page contains    SizeHorizontalSequence    10
+    Page should contain button    Submit
+    #Action
+    ${horizontal_sequences}    Execute javascript    ${size_profile_horizontal_sequences_jquery}
+    ${horizontal_sequences_len}    Get length    ${horizontal_sequences}
+    Run keyword if    ${horizontal_sequences_len}==${0}    Fail    No size.
+    ${random_sequences}    Evaluate    random.sample(${horizontal_sequences},2)    random    #20,30
+    ${random_sequence}    Get from list    ${random_sequences}    0    #20
+    ${existing_sequence}    Get from list    ${random_sequences}    1    #30
+    ${size_profile_horizontal_size_sequence_xpath}    Replace string    ${size_profile_horizontal_size_sequence_xpath_by_value}    {sequence}    ${random_sequence}
+    Input text    ${size_profile_horizontal_size_sequence_xpath}    ${existing_sequence}
+    Click button    Submit
+    Sleep    1
+    Wait until page does not contain element    ${wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-10128] All sequence numbers must be unique. Sequence number "${existing_sequence}" appears more than once.${SPACE}${SPACE}Please alter your sequence numbers.
+    Click button    Back
+
+SizeSequence-Modify sequence-Enter new sequence
+    [Documentation]    Save successfully.
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    Page should contain element    ${size_profile_horizontal_sequence_path}
+    Click element    ${size_profile_horizontal_sequence_path}
+    Wait until page contains    SizeHorizontalSequence    10
+    Page should contain button    Submit
+    #Action
+    ${horizontal_sequences}    Execute javascript    ${size_profile_horizontal_sequences_jquery}
+    ${horizontal_sequences_len}    Get length    ${horizontal_sequences}
+    Run keyword if    ${horizontal_sequences_len}==${0}    Fail    No size.
+    ${max_sequence}    Get from list    ${horizontal_sequences}    -1
+    ${new_sequence}    Evaluate    ${max_sequence}+10
+    ${random_sequence}    Evaluate    random.sample(${horizontal_sequences},1)    random
+    ${random_sequence}    Get from list    ${random_sequence}    0
+    ${random_size}    Get text    //input[@value='${random_sequence}']/parent::td/following::td[1]
+    ${random_dimension}    Get text    //input[@value='${random_sequence}']/parent::td/following::td[2]
+    ${size_profile_horizontal_size_sequence_xpath}    Replace string    ${size_profile_horizontal_size_sequence_xpath_by_value}    {sequence}    ${random_sequence}
+    Input text    ${size_profile_horizontal_size_sequence_xpath}    ${new_sequence}    #update the random sequence to the max sequence
+    Click button    Submit
+    Sleep    1
+    Wait until page does not contain element    ${wait_button}
+    Wait until page contains    ThankYou
+    #check
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    Page should contain element    ${size_profile_horizontal_sequence_path}
+    Click element    ${size_profile_horizontal_sequence_path}
+    Wait until page contains    SizeHorizontalSequence    10
+    Page should contain button    Submit
+    ${result_random_size}    Get text    //input[@value='${new_sequence}']/parent::td/following::td[1]
+    ${result_random_dimension}    Get text    //input[@value='${new_sequence}']/parent::td/following::td[2]
+    Run keyword and continue on failure    Should be equal as strings    ${result_random_size}    ${random_size}
+    Run keyword and continue on failure    Should be equal as strings    ${result_random_dimension}    ${random_dimension}
+    #    max number would be fixed.    Example the max sequence is 500    update to 510, save successfully    re-check, find max sequence is still 500
+
+SizeSequence-Copy from a text
+    [Documentation]    Save successfully.
+    log    copy
+
+SizeRange-New size range
+    [Documentation]    Success
+    ${new_size_range_name}    Set variable    AT-sizerange-name
+    ${new_size_range_name_upper}    Convert to uppercase    ${new_size_range_name}
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    Page should contain link    Size Scale
+    Click link    Size Scale
+    Wait until page contains    SizeRange    10
+    Page should contain button    New Size Scale
+    #Action    Submit without input size scale name
+    Click button    New Size Scale
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    CreateSizeRange
+    Page should contain button    Submit
+    Click button    Submit
+    Wait until page contains    ErrorMessage    5
+    Page should contain    [ER-30274] Please enter a Size Scale name.
+    Click button    Back
+    #Action    Select random company sizes
+    Wait until page contains    CreateSizeRange
+    Input text    ${create_size_range_name_path}    ${new_size_range_name}
+    ${company_sizes_values}    Execute javascript    ${size_range_company_sizes_values_jquery}
+    ${company_sizes_values_len}    Get length    ${company_sizes_values}
+    ${selected_sizes_count}    Evaluate    random.randint(0,${company_sizes_values_len})    random
+    ${selected_sizes_values}    Evaluate    random.sample(${company_sizes_values},${selected_sizes_count})    random
+    : FOR    ${selected_size_value}    IN    @{selected_sizes_values}
+    \    ${size_range_company_size_xpath}    Replace string    ${size_range_company_size_xpath_by_value}    {value}    ${selected_size_value}
+    \    Select checkbox    ${size_range_company_size_xpath}
+    Click button    Submit
+    Wait until page contains    SizeRange    10
+    Page should not contain    ErrorMessage
+    Page should contain link    ${new_size_range_name_upper}
+    #Check
+    Click link    ${new_size_range_name_upper}
+    Sleep    1
+    Wait until page contains    EditSizeRange
+
+SizeRange-Del not-associated with style bank
+    [Documentation]    Delete successfully
+    ${new_size_range_name}    Set variable    AT-sizerange-name
+    ${new_size_range_name_upper}    Convert to uppercase    ${new_size_range_name}
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    Page should contain link    Size Scale
+    Click link    Size Scale
+    Wait until page contains    SizeRange    10
+    Page should contain button    New Size Scale
+    #Action    Delect
+    Page should contain link    ${new_size_range_name_upper}
+    ${size_range_href}    Get element attribute    //a[text()='${new_size_range_name_upper}']@href
+    ${size_range_value}    Fetch from right    ${size_range_href}    sizerangeid=    #sizerangeid=10241
+    ${size_range_name_checkbox_xpath}    Replace string    ${size_range_name_checkbox_xpath_by_value}    {value}    ${size_range_value}
+    Select checkbox    ${size_range_name_checkbox_xpath}
+    Click button    Delete Selected
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    AreYouSure?
+    Page should contain    Are you sure that you want to delete the following Size Scale(s)?
+    Table cell should contain    css=table.table1    2    1    ${new_size_range_name_upper}
+    Page should contain button    Yes
+    Click button    Yes
+    Wait until page contains    ThankYou
+    Page should contain    All selected Size Scale(s) have been deleted.
+    ${all_text}    Get text    //div[@class='notabcontent']
+    Page should contain button    Finished
+    Click button    Finished
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    SizeRange
+    Page should not contain link    ${new_size_range_name_upper}
+
+SizeRange-Del associated with style bank
+    [Documentation]    Canot del
+    #    go to style bank    to get an used size range
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    ${existing_styles_count}    Get matching xpath count    ${style_table_tr_count_path}
+    ${existing_styles_count}    Convert to integer    ${existing_styles_count}
+    Run keyword if    ${existing_styles_count}==${0}    Fail    No styles in the style bank
+    ${random_style_rowx}    Evaluate    random.randint(1,${existing_styles_count})    random
+    ${random_style}    Get text    ${style_table_tr_count_path}[${random_style_rowx}]/td[2]
+    ${sb_sp_style_info_path}    Replace string    ${sb_style_info_path}    {style}    ${random_style}
+    Click element    ${sb_sp_style_info_path}
+    Sleep    1
+    Wait until page contains    StyleInfo
+    ${existing_size_range_name}    Get selected list label    name=sizerangeid    #M7 (XXS-XXL)
+    ${existing_size_range_value}    Get selected list value    name=sizerangeid    #10160
+    #    go to size profile    to delete the size range
+    ${new_size_range_name_upper}    Convert to uppercase    ${existing_size_range_name}
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    Page should contain link    Size Scale
+    Click link    Size Scale
+    Wait until page contains    SizeRange    10
+    Page should contain button    New Size Scale
+    #Action    Delect
+    Page should contain link    ${new_size_range_name_upper}
+    ${size_range_name_checkbox_xpath}    Replace string    ${size_range_name_checkbox_xpath_by_value}    {value}    ${existing_size_range_value}
+    Select checkbox    ${size_range_name_checkbox_xpath}
+    Click button    Delete Selected
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    AreYouSure?
+    Page should contain    Are you sure that you want to delete the following Size Scale(s)?
+    Table cell should contain    css=table.table1    2    1    ${new_size_range_name_upper}
+    Page should contain button    Yes
+    Click button    Yes
+    Wait until page contains    ThankYou
+    Page should contain    The following Size Scale(s) have not been deleted because they are associated with styles in the style bank.
+    Page should contain    ${new_size_range_name_upper}
+    Page should contain button    Finished
+    Click button    Finished
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    SizeRange
+    Page should contain link    ${new_size_range_name_upper}
+
+SizeRange-Edit size range associated with style bank
+    [Documentation]    The size range in style bank will update too.
+    ${rs}    Generate random string    4
+    ${update_size_range_name}    Set variable    AT-size range-${rs}
+    ${update_size_range_name_upper}    Convert to uppercase    ${update_size_range_name}
+    #    go to style bank    to get an used size range
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    ${existing_styles_count}    Get matching xpath count    ${style_table_tr_count_path}
+    ${existing_styles_count}    Convert to integer    ${existing_styles_count}
+    Run keyword if    ${existing_styles_count}==${0}    Fail    No styles in the style bank
+    ${random_style_rowx}    Evaluate    random.randint(1,${existing_styles_count})    random
+    ${random_style}    Get text    ${style_table_tr_count_path}[${random_style_rowx}]/td[2]
+    ${sb_sp_style_info_path}    Replace string    ${sb_style_info_path}    {style}    ${random_style}
+    Click element    ${sb_sp_style_info_path}
+    Sleep    1
+    Wait until page contains    StyleInfo
+    ${existing_size_range_name}    Get selected list label    name=sizerangeid    #M7 (XXS-XXL)
+    ${existing_size_range_value}    Get selected list value    name=sizerangeid    #10160
+    #    go to size profile    to delete the size range
+    ${new_size_range_name_upper}    Convert to uppercase    ${existing_size_range_name}
+    Entry page via navimenu    ${navi_size_profile_path}    SizeVerticalSequence
+    Page should contain    SizeVerticalSequence
+    Page should contain link    Size Scale
+    Click link    Size Scale
+    Wait until page contains    SizeRange    10
+    Page should contain button    New Size Scale
+    #Action    Modify    change size range name
+    Page should contain link    ${new_size_range_name_upper}
+    ${size_range_name_checkbox_xpath}    Replace string    ${size_range_name_checkbox_xpath_by_value}    {value}    ${existing_size_range_value}
+    Click link    ${new_size_range_name_upper}
+    Sleep    1
+    Wait until page contains    EditSizeRange    10
+    Page should contain button    Submit
+    Input text    ${create_size_range_name_path}    ${update_size_range_name}
+    Click button    Submit
+    Sleep    1
+    Wait until page contains    Warning    10
+    Page should contain    You have modified the Size Scale name from "${existing_size_range_name}" to "${update_size_range_name_upper}". This will change the Size Scale name from all styles that are associated with this Size Scale. The sizes of the styles with this Size Scale will not be changed in the Style Bank. Would you like to proceed?
+    Page should contain button    Yes
+    Click button    Yes
+    Sleep    1
+    Wait until page does not contain element    ${wait_button}
+    Wait until page contains    SizeRange
+    Page should contain link    ${update_size_range_name_upper}
+    #check in style bank
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Click element    ${sb_sp_style_info_path}
+    Sleep    1
+    Wait until page contains    StyleInfo
+    ${size_range_name_in_style_bank_after_modified}    Get selected list label    name=sizerangeid
+    Should be equal as strings    ${size_range_name_in_style_bank_after_modified}    ${update_size_range_name_upper}
+    Pass execution    Source Size range: '${existing_size_range_name}' was updated to '${update_size_range_name_upper}' successfully.

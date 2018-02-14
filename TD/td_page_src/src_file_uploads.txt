@@ -5,14 +5,15 @@ Resource          src_public_html.txt
 
 *** Variables ***
 ${file_uploads_file_type_sel_id}    id=theSelect
-${file_uploads_file_name_path}    //div[@class='hidden${SPACE}is{file_type_value}']//input[@name='uploadfile']    # //div[@class='hidden is2']//input[@class='finput']//input[@class='finput']
-${file_uploads_delimiter_path}    //div[@class='hidden${SPACE}is{file_type_value}']//input[@value='{value}']
-${file_uploads_process_document_path}    //div[@class='hidden${SPACE}is{file_type_value}']//input[@value='Process Document']
+${file_uploads_file_name_path}    //div[contains(@class,'is{file_type_value}')]//input[@name='uploadfile']    # //div[@class='hidden is2']//input[@class='finput']//input[@class='finput']
+${file_uploads_delimiter_path}    //div[contains(@class,'is{file_type_value}')]//input[@value='{value}']    # //div[@class='hidden${SPACE}is{file_type_value}']
+${file_uploads_process_document_path}    //div[contains(@class,'is{file_type_value}')]//input[@type='submit']
 ${content_after_upload_path}    //big[@class='title1']//parent::div
 ${file_type_list}    xpath=//select[@id='theSelect']
 ${thankMsg_path}    xpath=//div[@id='content']
 ${viewSelectedLr}    xpath=//input[@value='View Selected']
 ${FilterHierarchy}    Filter Hierarchy
+${file_zip_file_name_path}    //div[contains(@class,'is{file_type_value}')]//input[@name='zipfile']
 
 *** Keywords ***
 choose type to upload

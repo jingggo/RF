@@ -16,6 +16,8 @@ ${accessDisplayPath}    xpath=//select[contains(@style,'display')]
 ${childCpPath}    //optgroup[@label='Business Unit']//option
 ${navi_accounts_door_info_path}    //li[@id='tdaccounts']//following-sibling::li[3]/a
 ${navi_style_bank_path}    //li[@class='navtitle' and span[text()='eShowroom']]//following-sibling::li//a[contains(@href,'StyleBank')]
+${navi_ph_styles_path}    //li[@class='navtitle' and span[text()='eShowroom']]//following-sibling::li//a[contains(@href,'PlaceholderStyleList')]
+${navi_size_profile_path}    //li[@class='navtitle' and span[text()='eShowroom']]//following-sibling::li//a[contains(@href,'CompanySize')]
 
 *** Keywords ***
 change company level

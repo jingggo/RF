@@ -87,12 +87,17 @@ Select From Hierarchyvalues
     ${multiC_off_path}    set variable    ${hierarchyvalue_path}//div[@class='multiC']
     click element    ${multiCtext_path}    #expand
     wait until page contains element    ${multiC_on_path}
+    ${filter_value_count}    Get matching xpath count    ${multiC_on_path}//label[1]/following-sibling::label
+    ${filter_all_values_count}    Convert to integer    ${filter_value_count}
+    ${filter_values_count}    Get length    ${hierarchy_values}
     : FOR    ${hierarchy_value}    IN    @{hierarchy_values}
     \    ${checkbox_path}    catenate    SEPARATOR=    ${multiC_on_path}//label[text()='    ${hierarchy_value}    ']/input
     \    select checkbox    ${checkbox_path}
     click element    //big[@class='title1']    #//form[@name='message']    //form[@name='message']    #collapse
     wait until page contains element    ${multiC_off_path}
     ${multiCtext_labels}    get text    ${multiCtext_path}
+    Run keyword if    '${filter_all_values_count}'=='${filter_values_count}'    Should be equal as strings    ${multiCtext_labels}    All Selected
+    Return from keyword if    '${filter_all_values_count}'=='${filter_values_count}'
     ${hierarchy_values_join_X}    evaluate    'X '.join(${hierarchy_values})
     ${hierarchy_values_join_X}    Catenate    SEPARATOR=    ${hierarchy_values_join_X}    X
     should be equal as strings    ${multiCtext_labels}    ${hierarchy_values_join_X}    Not select checkboxes for all values.

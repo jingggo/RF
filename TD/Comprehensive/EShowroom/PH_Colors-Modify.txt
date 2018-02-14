@@ -1,0 +1,982 @@
+*** Settings ***
+Suite Setup       Login7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${EMPTY}    # ${browser_profile_ff_1}
+Resource          ../../td_page_actions/style_bank_actions_res.txt
+Resource          style_bank_test_data_ef.txt
+Variables         style_bank_test_variables_ef.py
+Resource          ../../td_page_actions/ph_styles_actions_res.txt
+
+*** Test Cases ***
+PlaceHolderColorInfo-Check
+    [Documentation]    [ER-80080] ACS Color 125 with Color Name 125-BLACK/RED cannot be added for Style# - Fabric Code 11112, since ACS Color 110 with Color Name 125-BLACK/RED
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain element    ${season_year_select_path}
+    ${default_season_year}    Get selected list label    ${season_year_select_path}    #FALL-2018
+    ${default_PlaceHolderStyles_year}    Fetch from right    ${default_season_year}    -
+    ${default_PlaceHolderStyles_season}    Fetch from left    ${default_season_year}    -
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    text and buttons
+    Run keyword and continue on failure    Page should contain    [ *Required fields ]
+    Run keyword and continue on failure    Page should contain    Last Modified:
+    Run keyword and continue on failure    Page should contain    Modified by:
+    Run keyword and continue on failure    Page should contain button    Save Style Info
+    Run keyword and continue on failure    Page should contain button    More Colors
+    Comment    require attributes    Require is color desc
+    ${style_level_required_attributes_count}    Get matching xpath count    //b[@class='required']
+    Run keyword and continue on failure    Should be equal as integers    ${style_level_required_attributes_count}    3
+    ${color_level_required_attributes_count}    Get matching xpath count    //th[@class='required']
+    Run keyword and continue on failure    Should be equal as integers    ${color_level_required_attributes_count}    1
+    ${style_required_attributes}    Execute javascript    var result=[];$("b.required").each(function(){result.push($(this).text()); });return result;
+    Run keyword and continue on failure    Lists should be equal    ${style_required_attributes}    ${EXPECTED_COLORINFO_STYLEATTRIBUTES}
+    ${color_level_required}    Get text    css=th.required    #color desc
+    ${color_level_required_first_char}    Get substring    ${color_level_required}    0    1
+    Run keyword and continue on failure    Should be equal as strings    ${color_level_required_first_char}    *    Color level required attribute does not start with *
+    Comment    thead titles
+    ${color_attributes}    Execute javascript    var result=[];$("table#mt th").each(function(){result.push($(this).text()); });return result;
+    Remove values from list    ${color_attributes}    ${EMPTY}    ${SPACE}
+    Remove values from list    ${color_attributes}    \xa0    #There are blank titles at color attributes text's front and end, so remove it
+    Log    ${color_attributes}
+    Run keyword and continue on failure    Lists should be equal    ${color_attributes}    ${EXPECTED_STYLE_BANK_COLORATTRIBUTES}
+    ${default_color_rows}    Get matching xpath count    //input[@name='deletecolorid']
+    Run keyword and continue on failure    Should be equal as integers    ${default_color_rows}    6    Default Color rows is not 6.
+    Comment    Default selected season year
+    Run keyword and continue on failure    List selection should be    name=seasonid    ${default_PlaceHolderStyles_season}
+    Run keyword and continue on failure    List selection should be    name=year    ${default_PlaceHolderStyles_year}
+    Comment    textbox should be Blank    Other Attributes default display should be blank
+    ${style_value}    Get value    name=stylenum
+    Run keyword and continue on failure    Should be empty    ${style_value}
+    ${input_text_default_values}    Execute javascript    var result=[];$("input[type='text']").each(function(){result.push($(this).val()); });return result;    #blank input include style, color, size level
+    ${input_text_blank_match_count}    Get count    ${input_text_default_values}    ${EMPTY}
+    Run keyword and continue on failure    Should be equal as integers    ${input_text_blank_match_count}    91    Default count of blank Textareas is not 91.
+    Run keyword and continue on failure    List selection should be    name=materialtype    ${SPACE}
+    Run keyword and continue on failure    List selection should be    name=productteam    ${SPACE}
+    Run keyword and continue on failure    List selection should be    name=vendorcolorfamily    ${SPACE}
+    Run keyword and continue on failure    List selection should be    name=replenishmentindicator    ${SPACE}
+    Run keyword and continue on failure    Checkbox should not be selected    name=issharetochild
+
+Add-Color-style only exist in sb 1
+    [Documentation]    Can create a new ph style
+    ${style_number}    Generate random string    10
+    ${colors}    Create dictionary    BLACK=001    RED=002
+    ${season}    Set variable    FALL
+    ${year}    Set variable    2018
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain element    ${season_year_select_path}
+    ${default_season_year}    Get selected list label    ${season_year_select_path}    #FALL-2018
+    ${default_PlaceHolderStyles_year}    Fetch from right    ${default_season_year}    -
+    ${default_PlaceHolderStyles_season}    Fetch from left    ${default_season_year}    -
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Input text    name=stylenum    ${style_number}
+    Select from list by label    name=seasonid    ${season}
+    Select from list by label    name=year    ${year}
+    ${color_names}    Get dictionary keys    ${colors}
+    : FOR    ${color_index}    ${color_name}    IN ENUMERATE    @{color_names}
+    \    ${color_code}    Get from dictionary    ${colors}    ${color_name}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorcode']    ${color_code}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorname']    ${color_name}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage    10
+    Page should contain    [ER-30145] Style ${style_number} does not exist in the system.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+
+Add-Color-style only exist in sb 2
+    ${style_number}    Set variable    EEFTO-T0330M    #style in style bank
+    ${colors}    Create dictionary    RED=001    #new color name and color code    color_name=color_code    length of color code less than 4
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain element    ${season_year_select_path}
+    ${default_season_year}    Get selected list label    ${season_year_select_path}    #FALL-2018
+    ${default_PlaceHolderStyles_year}    Fetch from right    ${default_season_year}    -
+    ${default_PlaceHolderStyles_season}    Fetch from left    ${default_season_year}    -
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Input text    name=stylenum    ${style_number}
+    ${color_names}    Get dictionary keys    ${colors}
+    : FOR    ${color_index}    ${color_name}    IN ENUMERATE    @{color_names}
+    \    ${color_code}    Get from dictionary    ${colors}    ${color_name}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorcode']    ${color_code}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorname']    ${color_name}
+    Click button    Save Style Info    #cost    00:04:42.518
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderStyles    10
+    Run keyword and continue on failure    Table column should contain    css=table.table1    2    ${style_number}
+    Run keyword and continue on failure    Table column should contain    css=table.table1    2    ${color_code}
+    Run keyword and continue on failure    Table column should contain    css=table.table1    3    ${color_name}
+    ${ph_color_row_text}    Get text    //tr[td[contains(text(),'${color_code}')]]
+    ${ph_color_row_text}    Split string    ${ph_color_row_text}    #color code, color name, created by and modified by
+
+Add-Color-style only exist in sb 3
+    ${style_number}    Set variable    EEFTO-T0330M    #style in style bank
+    ${colors}    Create dictionary    ATCOLORN=WHIT    #color name not in sb    color code in sb    color_name=color_code
+    ${color_name_exist_in_sb}    Set variable    ATCOLORN
+    ${season}    Set variable    FALL    #season-year in sb
+    ${year}    Set variable    2018
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain element    ${season_year_select_path}
+    ${default_season_year}    Get selected list label    ${season_year_select_path}    #FALL-2018
+    ${default_PlaceHolderStyles_year}    Fetch from right    ${default_season_year}    -
+    ${default_PlaceHolderStyles_season}    Fetch from left    ${default_season_year}    -
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Input text    name=stylenum    ${style_number}
+    Select from list by label    name=seasonid    ${season}
+    Select from list by label    name=year    ${year}
+    ${color_names}    Get dictionary keys    ${colors}
+    : FOR    ${color_index}    ${color_name}    IN ENUMERATE    @{color_names}
+    \    ${color_code}    Get from dictionary    ${colors}    ${color_name}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorcode']    ${color_code}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorname']    ${color_name}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage    10
+    Page should contain    [ER-30382] This Style/Color combination ${style_number} - ${color_name_exist_in_sb} already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+
+Add-Color-style only exist in sb 4
+    ${style_number}    Set variable    EEFTO-T0330M    #style in style bank
+    ${colors}    Create dictionary    ATCOLORN=WHIT    #color name not in sb    color code in sb
+    ${color_name_exist_in_sb}    Set variable    ATCOLORN
+    ${season}    Set variable    RESORT    #season-year not in sb
+    ${year}    Set variable    2018
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain element    ${season_year_select_path}
+    ${default_season_year}    Get selected list label    ${season_year_select_path}    #FALL-2018
+    ${default_PlaceHolderStyles_year}    Fetch from right    ${default_season_year}    -
+    ${default_PlaceHolderStyles_season}    Fetch from left    ${default_season_year}    -
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Input text    name=stylenum    ${style_number}
+    Select from list by label    name=seasonid    ${season}
+    Select from list by label    name=year    ${year}
+    ${color_names}    Get dictionary keys    ${colors}
+    : FOR    ${color_index}    ${color_name}    IN ENUMERATE    @{color_names}
+    \    ${color_code}    Get from dictionary    ${colors}    ${color_name}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorcode']    ${color_code}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorname']    ${color_name}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    NewStyle    10
+    Page should contain    Warning: This is a New Style for this Fashion Season-Year combo please either populate this fields from a current Fashion Season-Year combo with data or enter the data by hand.
+
+Add-Color-style only exist in sb 5
+    ${style_number}    Set variable    EEFTO-T0330M    #style in style bank
+    ${colors}    Create dictionary    BLACK=002    #color name in sb    color code not in sb
+    ${color_name_exist_in_sb}    Set variable    BLACK
+    ${season}    Set variable    FALL    #season-year in sb
+    ${year}    Set variable    2018
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain element    ${season_year_select_path}
+    ${default_season_year}    Get selected list label    ${season_year_select_path}    #FALL-2018
+    ${default_PlaceHolderStyles_year}    Fetch from right    ${default_season_year}    -
+    ${default_PlaceHolderStyles_season}    Fetch from left    ${default_season_year}    -
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Input text    name=stylenum    ${style_number}
+    Select from list by label    name=seasonid    ${season}
+    Select from list by label    name=year    ${year}
+    ${color_names}    Get dictionary keys    ${colors}
+    : FOR    ${color_index}    ${color_name}    IN ENUMERATE    @{color_names}
+    \    ${color_code}    Get from dictionary    ${colors}    ${color_name}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorcode']    ${color_code}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorname']    ${color_name}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage    10
+    Page should contain    [ER-30382] This Style/Color combination ${style_number} - ${color_name_exist_in_sb} already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+
+Add-Color-style only exist in sb 6
+    ${style_number}    Set variable    EEFTO-T0330M    #style in style bank
+    ${colors}    Create dictionary    BLACK=002    #color name in sb    color code not in sb
+    ${color_name_exist_in_sb}    Set variable    BLACK
+    ${season}    Set variable    RESORT    #season-year not in sb
+    ${year}    Set variable    2018
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain element    ${season_year_select_path}
+    ${default_season_year}    Get selected list label    ${season_year_select_path}    #FALL-2018
+    ${default_PlaceHolderStyles_year}    Fetch from right    ${default_season_year}    -
+    ${default_PlaceHolderStyles_season}    Fetch from left    ${default_season_year}    -
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Input text    name=stylenum    ${style_number}
+    Select from list by label    name=seasonid    ${season}
+    Select from list by label    name=year    ${year}
+    ${color_names}    Get dictionary keys    ${colors}
+    : FOR    ${color_index}    ${color_name}    IN ENUMERATE    @{color_names}
+    \    ${color_code}    Get from dictionary    ${colors}    ${color_name}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorcode']    ${color_code}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorname']    ${color_name}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage    10
+    Page should contain    [ER-30123] Please enter a EF Style that exists in the Style Bank.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+
+Add-Color-style only exist in sb 7
+    [Documentation]    [ER-30382] This Style/Color combination EEFTO-T0330M - BLACK already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    ...
+    ...    Condition:
+    ...    Style color exist in style bank,and its season year in style bank
+    ${style_number}    Set variable    EEFTO-T0330M    #style in style bank
+    ${colors}    Create dictionary    BLACK=BLACK    RED=RED    #color name BLACK exist, but RED does not exist
+    ${color_name_exist_in_sb}    Set variable    BLACK
+    ${season}    Set variable    SPRING    #year-season not in sb    FALL-2018    SPRING-2018
+    ${year}    Set variable    2018
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain element    ${season_year_select_path}
+    ${default_season_year}    Get selected list label    ${season_year_select_path}    #FALL-2018
+    ${default_PlaceHolderStyles_year}    Fetch from right    ${default_season_year}    -
+    ${default_PlaceHolderStyles_season}    Fetch from left    ${default_season_year}    -
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Input text    name=stylenum    ${style_number}
+    Select from list by label    name=seasonid    ${season}
+    Select from list by label    name=year    ${year}
+    ${color_names}    Get dictionary keys    ${colors}
+    : FOR    ${color_index}    ${color_name}    IN ENUMERATE    @{color_names}
+    \    ${color_code}    Get from dictionary    ${colors}    ${color_name}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorcode']    ${color_code}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorname']    ${color_name}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage    10
+    Page should contain    [ER-30382] This Style/Color combination ${style_number} - ${color_name_exist_in_sb} already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+    #    Is modified area should maintain    currently not maintain
+    Comment    check ph color not created
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Select from list by label    ${season_year_select_path}    ${season}-${year}
+    Click button    View
+    Sleep    1
+    Wait until page does not contain element    ${wait_button}
+    Input text    name=searchstr    ${style_number}
+    Click button    Search
+    Sleep    1
+    Wait until page does not contain element    ${wait_button}
+    Page should contain    No placeholder styles found.
+
+Add-Color-style only exist in sb 8
+    ${style_number}    Set variable    EEFTO-T0330M    #style in style bank
+    ${colors}    Create dictionary    BLACK=BLACK    #color name and code exist
+    ${color_name_exist_in_sb}    Set variable    BLACK
+    ${season}    Set variable    RESORT    #year-season not in sb    FALL-2018    SPRING-2018
+    ${year}    Set variable    2018
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain element    ${season_year_select_path}
+    ${default_season_year}    Get selected list label    ${season_year_select_path}    #FALL-2018
+    ${default_PlaceHolderStyles_year}    Fetch from right    ${default_season_year}    -
+    ${default_PlaceHolderStyles_season}    Fetch from left    ${default_season_year}    -
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Input text    name=stylenum    ${style_number}
+    Select from list by label    name=seasonid    ${season}
+    Select from list by label    name=year    ${year}
+    ${color_names}    Get dictionary keys    ${colors}
+    : FOR    ${color_index}    ${color_name}    IN ENUMERATE    @{color_names}
+    \    ${color_code}    Get from dictionary    ${colors}    ${color_name}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorcode']    ${color_code}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorname']    ${color_name}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Comment    Wait until page contains    ErrorMessage    10
+    Comment    Page should contain    [ER-30382] This Style/Color combination ${style_number} - ${color_name_exist_in_sb} already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    Comment    Page should contain button    Back
+    Comment    Click button    Back
+    Comment    Wait until page contains    PlaceHolderColorInfo
+
+Add-Color-style only exist in ph 1
+    Comment    Exist condition
+    ${PH-AT-001}    Set variable    PH-AT-001
+    ${exist_colors}    Create dictionary    BLACK=001
+    ${exist_ph_year}    Set variable    2018
+    ${exist_ph_season}    Set variable    SPRING
+    Comment    Create condition
+    ${new_colors}    Create dictionary    RED=003
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    ${is_ph_style_season_year}    Run keyword and continue on failure    List selection should be    ${season_year_select_path}    ${exist_ph_season}-${exist_ph_year}
+    Run keyword unless    ${is_ph_style_season_year}    Select from season and year dropdown    ${exist_ph_season}-${exist_ph_year}
+    Comment    Page should contain    ${PH-AT-001}    #make sure the ph style exist    if sort of the ph style exceed 100, than must click next page
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-001}    ${new_colors}    ${exist_ph_season}    ${exist_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    ${confirm_text}    Get text    css=div.maincontent
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30123] Please enter a EF Style that exists in the Style Bank.
+    Click button    Back
+
+Add-Color-style only exist in ph 2
+    Comment    Exist condition
+    ${PH-AT-001}    Set variable    PH-AT-001
+    ${exist_colors}    Create dictionary    BLACK=001
+    ${exist_ph_year}    Set variable    2018
+    ${exist_ph_season}    Set variable    SPRING
+    Comment    Create condition
+    ${new_colors}    Create dictionary    BLUE=004
+    ${new_ph_year}    Set variable    2019
+    ${new_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    ${is_ph_style_season_year}    Run keyword and continue on failure    List selection should be    ${season_year_select_path}    ${exist_ph_season}-${exist_ph_year}
+    Run keyword unless    ${is_ph_style_season_year}    Select from season and year dropdown    ${exist_ph_season}-${exist_ph_year}
+    Comment    Page should contain    ${PH-AT-001}    #make sure the ph style exist    if sort of the ph style exceed 100, than must click next page
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-001}    ${new_colors}    ${new_ph_season}    ${new_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30123] Please enter a EF Style that exists in the Style Bank.
+    Click button    Back
+
+Add-Color-style only exist in ph 3
+    Comment    Exist condition
+    ${PH-AT-001}    Set variable    PH-AT-001
+    ${exist_colors}    Create dictionary    BLACK=001
+    ${exist_ph_year}    Set variable    2018
+    ${exist_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    ${is_ph_style_season_year}    Run keyword and continue on failure    List selection should be    ${season_year_select_path}    ${exist_ph_season}-${exist_ph_year}
+    Run keyword unless    ${is_ph_style_season_year}    Select from season and year dropdown    ${exist_ph_season}-${exist_ph_year}
+    Comment    Page should contain    ${PH-AT-001}    #make sure the ph style exist    if sort of the ph style exceed 100, than must click next page
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-001}    ${exist_colors}    ${exist_ph_season}    ${exist_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30123] Please enter a EF Style that exists in the Style Bank.
+    Click button    Back
+
+Add-Color-style only exist in ph 4
+    Comment    Exist condition
+    ${PH-AT-001}    Set variable    PH-AT-001
+    ${exist_colors}    Create dictionary    BLACK=001
+    ${exist_ph_year}    Set variable    2018
+    ${exist_ph_season}    Set variable    SPRING
+    Comment    Create condition
+    ${new_ph_year}    Set variable    2019
+    ${new_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    ${is_ph_style_season_year}    Run keyword and continue on failure    List selection should be    ${season_year_select_path}    ${exist_ph_season}-${exist_ph_year}
+    Run keyword unless    ${is_ph_style_season_year}    Select from season and year dropdown    ${exist_ph_season}-${exist_ph_year}
+    Comment    Page should contain    ${PH-AT-001}    #make sure the ph style exist    if sort of the ph style exceed 100, than must click next page
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-001}    ${exist_colors}    ${new_ph_season}    ${new_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30123] Please enter a EF Style that exists in the Style Bank.
+    Click button    Back
+
+Add-Color-style both exist in ph and sb 1
+    Comment    Exist condition
+    ${PH-AT-001}    Set variable    PH-SB-AT-001-T3
+    ${exist_sb_colors}    Create dictionary    BLACK=001    WHITE=002    #001 belongs to FALL-2018    002 belongs to SPRING-2018
+    ${exist_ph_colors}    Create dictionary    BLACK=001    RED=003    #001 belongs to SPRING-2018    003 belongs to SPRING-2019
+    ${exist_sb_year}    Set variable    2018    #    2018
+    ${exist_sb_season}    Set variable    FALL    #    SPRING
+    ${exist_ph_year}    Set variable    2018    #    2019
+    ${exist_ph_season}    Set variable    SPRING    #    SPRING
+    Comment    Create condition
+    ${input_colors}    Create dictionary    BLUE=004
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    FALL
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Comment    ${is_ph_style_season_year}    Run keyword and continue on failure    List selection should be    ${season_year_select_path}    ${exist_ph_season}-${exist_ph_year}
+    Comment    Run keyword unless    ${is_ph_style_season_year}    Select from season and year dropdown    ${exist_ph_season}-${exist_ph_year}
+    Comment    Page should contain    ${PH-AT-001}    #make sure the ph style exist    if sort of the ph style exceed 100, than must click next page
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-001}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info    #cost    00:01:01.896
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Page should contain    PlaceHolderStyles
+
+Add-Color-style both exist in ph and sb 2
+    Comment    Exist condition
+    ${PH-AT-001}    Set variable    PH-SB-AT-001-T3
+    ${exist_sb_colors}    Create dictionary    BLACK=001    WHITE=002    #001 belongs to FALL-2018    002 belongs to SPRING-2018
+    ${exist_ph_colors}    Create dictionary    BLACK=001    RED=003    #001 belongs to SPRING-2018    003 belongs to SPRING-2019
+    ${exist_sb_year}    Set variable    2018    #    2018
+    ${exist_sb_season}    Set variable    FALL    #    SPRING
+    ${exist_ph_year}    Set variable    2018    #    2019
+    ${exist_ph_season}    Set variable    SPRING    #    SPRING
+    Comment    Create condition
+    ${input_colors}    Create dictionary    GREEN=005
+    ${input_ph_year}    Set variable    2019
+    ${input_ph_season}    Set variable    FALL
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Comment    ${is_ph_style_season_year}    Run keyword and continue on failure    List selection should be    ${season_year_select_path}    ${exist_ph_season}-${exist_ph_year}
+    Comment    Run keyword unless    ${is_ph_style_season_year}    Select from season and year dropdown    ${exist_ph_season}-${exist_ph_year}
+    Comment    Page should contain    ${PH-AT-001}    #make sure the ph style exist    if sort of the ph style exceed 100, than must click next page
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-001}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info    #cost    00:00:05.854
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Page should contain    NewStyle
+
+Add-Color-style both exist in ph and sb 3
+    Comment    Exist condition
+    ${PH-AT-001}    Set variable    PH-SB-AT-001-T3
+    ${exist_sb_colors}    Create dictionary    BLACK=001    WHITE=002    #001 belongs to FALL-2018    002 belongs to SPRING-2018
+    ${exist_ph_colors}    Create dictionary    BLACK=001    RED=003    #001 belongs to SPRING-2018    003 belongs to SPRING-2019
+    ${exist_sb_year}    Set variable    2018    #    2018
+    ${exist_sb_season}    Set variable    FALL    #    SPRING
+    ${exist_ph_year}    Set variable    2018    #    2019
+    ${exist_ph_season}    Set variable    SPRING    #    SPRING
+    Comment    Create condition
+    ${input_colors}    Create dictionary    BLACK=001
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    FALL
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Comment    ${is_ph_style_season_year}    Run keyword and continue on failure    List selection should be    ${season_year_select_path}    ${exist_ph_season}-${exist_ph_year}
+    Comment    Run keyword unless    ${is_ph_style_season_year}    Select from season and year dropdown    ${exist_ph_season}-${exist_ph_year}
+    Comment    Page should contain    ${PH-AT-001}    #make sure the ph style exist    if sort of the ph style exceed 100, than must click next page
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-001}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Comment    Wait until page contains    ErrorMessage
+    Comment    Page should contain    [ER-30123] Please enter a EF Style that exists in the Style Bank.
+    Comment    Click button    Back
+    Sleep    10
+
+Add-Color-style both exist in ph and sb 4
+    Comment    Exist condition
+    ${PH-AT-001}    Set variable    PH-SB-AT-001-T3
+    ${exist_sb_colors}    Create dictionary    BLACK=001    WHITE=002    #001 belongs to FALL-2018    002 belongs to SPRING-2018
+    ${exist_ph_colors}    Create dictionary    BLACK=001    RED=003    #001 belongs to SPRING-2018    003 belongs to SPRING-2019
+    ${exist_sb_year}    Set variable    2018    #    2018
+    ${exist_sb_season}    Set variable    FALL    #    SPRING
+    ${exist_ph_year}    Set variable    2018    #    2019
+    ${exist_ph_season}    Set variable    SPRING    #    SPRING
+    Comment    Create condition
+    ${input_colors}    Create dictionary    WHITE=002
+    ${input_ph_year}    Set variable    2019
+    ${input_ph_season}    Set variable    FALL
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Comment    ${is_ph_style_season_year}    Run keyword and continue on failure    List selection should be    ${season_year_select_path}    ${exist_ph_season}-${exist_ph_year}
+    Comment    Run keyword unless    ${is_ph_style_season_year}    Select from season and year dropdown    ${exist_ph_season}-${exist_ph_year}
+    Comment    Page should contain    ${PH-AT-001}    #make sure the ph style exist    if sort of the ph style exceed 100, than must click next page
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-001}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    NewStyle
+
+Add-Color-style both exist in ph and sb 5
+    Comment    Exist condition
+    ${PH-AT-001}    Set variable    PH-SB-AT-001-T3
+    ${exist_sb_colors}    Create dictionary    BLACK=001    WHITE=002    #001 belongs to FALL-2018    002 belongs to SPRING-2018
+    ${exist_ph_colors}    Create dictionary    BLACK=001    RED=003    #001 belongs to SPRING-2018    003 belongs to SPRING-2019
+    ${exist_sb_year}    Set variable    2018    #    2018
+    ${exist_sb_season}    Set variable    FALL    #    SPRING
+    ${exist_ph_year}    Set variable    2018    #    2019
+    ${exist_ph_season}    Set variable    SPRING    #    SPRING
+    Comment    Create condition
+    ${input_colors}    Create dictionary    YELLOW=006
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Comment    ${is_ph_style_season_year}    Run keyword and continue on failure    List selection should be    ${season_year_select_path}    ${exist_ph_season}-${exist_ph_year}
+    Comment    Run keyword unless    ${is_ph_style_season_year}    Select from season and year dropdown    ${exist_ph_season}-${exist_ph_year}
+    Comment    Page should contain    ${PH-AT-001}    #make sure the ph style exist    if sort of the ph style exceed 100, than must click next page
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-001}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info    #cost    00:04:42.446
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Comment    Wait until page contains    ErrorMessage
+    Comment    Page should contain    [ER-30123] Please enter a EF Style that exists in the Style Bank.
+    Comment    Click button    Back
+    Sleep    10
+
+Add-Color-style both exist in ph and sb 6
+    Comment    Exist condition
+    ${PH-AT-001}    Set variable    PH-SB-AT-001-T3
+    ${exist_sb_colors}    Create dictionary    BLACK=001    WHITE=002    #001 belongs to FALL-2018    002 belongs to SPRING-2018
+    ${exist_ph_colors}    Create dictionary    BLACK=001    RED=003    #001 belongs to SPRING-2018    003 belongs to SPRING-2019
+    ${exist_sb_year}    Set variable    2018    #    2018
+    ${exist_sb_season}    Set variable    FALL    #    SPRING
+    ${exist_ph_year}    Set variable    2018    #    2019
+    ${exist_ph_season}    Set variable    SPRING    #    SPRING
+    Comment    Create condition
+    ${input_colors}    Create dictionary    PURPLE=007
+    ${input_ph_year}    Set variable    2019
+    ${input_ph_season}    Set variable    FALL
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Comment    ${is_ph_style_season_year}    Run keyword and continue on failure    List selection should be    ${season_year_select_path}    ${exist_ph_season}-${exist_ph_year}
+    Comment    Run keyword unless    ${is_ph_style_season_year}    Select from season and year dropdown    ${exist_ph_season}-${exist_ph_year}
+    Comment    Page should contain    ${PH-AT-001}    #make sure the ph style exist    if sort of the ph style exceed 100, than must click next page
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-001}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    NewStyle
+
+Add-Color-style both exist in ph and sb 7
+    Comment    Exist condition
+    ${PH-AT-001}    Set variable    PH-SB-AT-001-T3
+    ${exist_sb_colors}    Create dictionary    BLACK=001    WHITE=002    #001 belongs to FALL-2018    002 belongs to SPRING-2018
+    ${exist_ph_colors}    Create dictionary    BLACK=001    RED=003    #001 belongs to SPRING-2018    003 belongs to SPRING-2019
+    ${exist_sb_year}    Set variable    2018    #    2018
+    ${exist_sb_season}    Set variable    FALL    #    SPRING
+    ${exist_ph_year}    Set variable    2018    #    2019
+    ${exist_ph_season}    Set variable    SPRING    #    SPRING
+    Comment    Create condition
+    ${input_colors}    Create dictionary    BLACK=001
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Comment    ${is_ph_style_season_year}    Run keyword and continue on failure    List selection should be    ${season_year_select_path}    ${exist_ph_season}-${exist_ph_year}
+    Comment    Run keyword unless    ${is_ph_style_season_year}    Select from season and year dropdown    ${exist_ph_season}-${exist_ph_year}
+    Comment    Page should contain    ${PH-AT-001}    #make sure the ph style exist    if sort of the ph style exceed 100, than must click next page
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-001}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Comment    Wait until page contains    ErrorMessage
+    Comment    Page should contain    [ER-30123] Please enter a EF Style that exists in the Style Bank.
+    Comment    Click button    Back
+    Sleep    10
+
+Add-Color-style both exist in ph and sb 8
+    Comment    Exist condition
+    ${PH-AT-001}    Set variable    PH-SB-AT-001-T3
+    ${exist_sb_colors}    Create dictionary    BLACK=001    WHITE=002    #001 belongs to FALL-2018    002 belongs to SPRING-2018
+    ${exist_ph_colors}    Create dictionary    BLACK=001    RED=003    #001 belongs to SPRING-2018    003 belongs to SPRING-2019
+    ${exist_sb_year}    Set variable    2018    #    2018
+    ${exist_sb_season}    Set variable    FALL    #    SPRING
+    ${exist_ph_year}    Set variable    2018    #    2019
+    ${exist_ph_season}    Set variable    SPRING    #    SPRING
+    Comment    Create condition
+    ${input_colors}    Create dictionary    RED=003
+    ${input_ph_year}    Set variable    2019
+    ${input_ph_season}    Set variable    FALL
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Comment    ${is_ph_style_season_year}    Run keyword and continue on failure    List selection should be    ${season_year_select_path}    ${exist_ph_season}-${exist_ph_year}
+    Comment    Run keyword unless    ${is_ph_style_season_year}    Select from season and year dropdown    ${exist_ph_season}-${exist_ph_year}
+    Comment    Page should contain    ${PH-AT-001}    #make sure the ph style exist    if sort of the ph style exceed 100, than must click next page
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-001}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    NewStyle
+
+Add-Color-style both exist in ph and sb 9
+    Comment    Exist condition
+    ${PH-AT-001}    Set variable    PH-SB-AT-001-T3
+    ${exist_sb_colors}    Create dictionary    BLACK=001    WHITE=002    #001 belongs to FALL-2018    002 belongs to SPRING-2018
+    ${exist_ph_colors}    Create dictionary    BLACK=001    RED=003    #001 belongs to SPRING-2018    003 belongs to SPRING-2019
+    ${exist_sb_year}    Set variable    2018    #    2018
+    ${exist_sb_season}    Set variable    FALL    #    SPRING
+    ${exist_ph_year}    Set variable    2018    #    2019
+    ${exist_ph_season}    Set variable    SPRING    #    SPRING
+    Comment    Create condition
+    ${input_colors}    Create dictionary    GRAY=008
+    ${input_ph_year}    Set variable    2019
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Comment    ${is_ph_style_season_year}    Run keyword and continue on failure    List selection should be    ${season_year_select_path}    ${exist_ph_season}-${exist_ph_year}
+    Comment    Run keyword unless    ${is_ph_style_season_year}    Select from season and year dropdown    ${exist_ph_season}-${exist_ph_year}
+    Comment    Page should contain    ${PH-AT-001}    #make sure the ph style exist    if sort of the ph style exceed 100, than must click next page
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-001}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+
+Add-Color-SB-Duplicated1
+    Comment    Exist condition
+    ${SB-AT-002}    Set variable    SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    BLACK=003
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${SB-AT-002} - BLACK already exists in the system for ${input_ph_season} - ${input_ph_year}. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SB-Duplicated2
+    Comment    Exist condition
+    ${SB-AT-002}    Set variable    SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    RED=001
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${SB-AT-002} - RED already exists in the system for ${input_ph_season} - ${input_ph_year}. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated1
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    WHITE=DU01
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${PH-SB-AT-002} - WHITE already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated2
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    DUN02=002
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${PH-SB-AT-002} - DUN02 already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated3
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    BLACK=DU03
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${PH-SB-AT-002} - BLACK already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated4
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    DUN04=001
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${PH-SB-AT-002} - DUN04 already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated5
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    BLACK=DU05
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    FALL
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${PH-SB-AT-002} - BLACK already exists in the system for FALL - 2018. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated6
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    DUN06=001
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    FALL
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${PH-SB-AT-002} - DUN06 already exists in the system for FALL - 2018. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated7
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    RED=DU07
+    ${input_ph_year}    Set variable    2019
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30123] Please enter a EF Style that exists in the Style Bank.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated8
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    DUN08=003
+    ${input_ph_year}    Set variable    2019
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30123] Please enter a EF Style that exists in the Style Bank.
+    Comment    Source style's colors should not change
+
+Add-Color-PH-Duplicated1
+    Comment    ${color_codes}    Create list    001
+    Comment    ${color_descs}    Create list    BLACK
+    Comment    Create PH Style On interface    PH-AT-002    2018    SPRING    J - JACKETS    MISSY
+    ...    WOMENSWEAR    PLACEHOLDER    ${color_descs}    ${color_codes}
+    Comment    Exist condition
+    ${PH-AT-002}    Set variable    PH-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    BLACK=DU01
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30123] Please enter a EF Style that exists in the Style Bank.
+    Comment    Source style's colors should not change
+
+Add-Color-PH-Duplicated2
+    Comment    Exist condition
+    ${PH-AT-002}    Set variable    PH-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    DUN02=001
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30123] Please enter a EF Style that exists in the Style Bank.
+    Comment    Source style's colors should not change

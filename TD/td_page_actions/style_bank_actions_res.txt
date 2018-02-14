@@ -18,6 +18,8 @@ select from season and year dropdown
 select from ph view option in ph style page
     [Arguments]    ${label}
     [Documentation]    label: can be Style/Color/Size; case sensitive
+    ${is_scz_view}    Run keyword and return status    Page should contain element    ${ph_view_option_path}
+    Return from keyword if    ${is_scz_view}==${False}    No style/color/size options to view.
     select from list by label    ${ph_view_option_path}    ${label}
     click button    name=view
     wait until page contains element    //option[@selected and text()='${label}']
@@ -100,7 +102,7 @@ Generate Style Bank Report By Style
     create directory    ${report_store_path}
     Comment    Page should not contain error in download page
     Download to local    ${store_path_file}
-    :FOR    ${x}    IN Range    24    #If download loading page did not disapper, the loading page would close
+    : FOR    ${x}    IN RANGE    5    #If download loading page did not disapper, the loading page would close
     \    ${windows_list}    List windows
     \    ${nwindows}    Get length    ${windows_list}
     \    Exit for loop if    ${nwindows}== ${1}
@@ -108,11 +110,39 @@ Generate Style Bank Report By Style
     \    Continue for loop if    ${nwindows}> ${1}
     \    Select window    ${windows_list[1]}
     \    close window
-    Select window    ${windows_list[0]}
+    [Teardown]    Close linesheet downloading page
     [Return]    ${store_path_file}
 
+Generate Style Bank Report By Style With Error
+    [Arguments]    ${report_type}    ${styles_by_comma}    ${upcs_by_comma}    ${error_msg}    &{styles_filter_criterias}
+    [Documentation]    Report type by label;
+    ...    Report would be generated with current time suffixes;
+    Choose Filter Hierarchy    &{styles_filter_criterias}
+    Input text    ${sb_as_style_input_path}    ${styles_by_comma}    #styles delimit by comma
+    Input text    ${sb_as_upc_input_path}    ${upcs_by_comma}    #upcs delimit by comma
+    Select From List By Label    id=sl1    ${report_type}
+    Click element    name=download    # a processing page poped up, and the selected window is still main
+    Comment    @{current_time}    get time    year,month,day,hour,min,sec
+    Comment    ${create_time}    Evaluate    ''.join(${current_time})
+    Comment    ${report_name_without_spechars}    Remove string    ${report_type}    /
+    Comment    ${store_path_file}    catenate    SEPARATOR=${/}    ${report_store_path}    ${user}_${report_name_without_spechars}_${create_time}.xls
+    Comment    create directory    ${report_store_path}
+    Comment    Page should not contain error in download page
+    : FOR    ${x}    IN RANGE    5    #If download loading page did not disapper, the loading page would close
+    \    ${windows_list}    List windows
+    \    ${nwindows}    Get length    ${windows_list}
+    \    Exit for loop if    ${nwindows}== ${2}
+    \    Sleep    5 sec
+    ${windows_list}    List windows
+    ${nwindows}    Get length    ${windows_list}
+    Should be equal as integers    ${nwindows}    2    Poped page doesn't pop up.
+    Select window    new
+    Run keyword and ignore error    Wait until page does not contain    Downloading Linesheet...    20
+    Wait until page contains    ${error_msg}    5
+    [Teardown]    Close linesheet downloading page
+
 Advanced Search On Style Bank By Style
-    [Arguments]    ${styles}
+    [Arguments]    @{styles}
     [Documentation]    type of styles is list.
     Go to advanced search page
     ${styles_comma}    Evaluate    ','.join(${styles})
@@ -136,7 +166,7 @@ Go to advanced search page
 
 Page should not contain error in download page
     [Documentation]    [ER-10141] Your search returned no results. Please try again.
-    :FOR    ${x}    IN Range    10
+    : FOR    ${x}    IN RANGE    10
     \    ${windows_list}    List windows
     \    ${nwindows}    Get length    ${windows_list}
     \    exit for loop if    ${nwindows}==${2}
@@ -151,3 +181,50 @@ Page should not contain error in download page
     Run keyword if    ${error_status}==${False}    Close window
     Comment    Run keyword and continue on failure    Wait until page does not contain    Downloading Linesheet...    120
     Select window    ${windows_list[0]}
+
+Click Search Button
+    Click element    ${sb_advanced_search_btn1_path}
+    Sleep    1
+    Wait until page does not contain element    //input[@value='Wait']
+    Wait until page contains element    name=seasonandyear    #//input[@value='Search']    Dropdown element
+    Page should not contain    ErrorMessage
+
+Add More Sizes Rows
+    Click button    More Sizes
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+
+Go to style info page
+    [Arguments]    ${locator}
+    Click element    ${locator}
+    Wait until page contains    StyleInfo
+
+Go to colors info page
+    [Arguments]    ${locator}
+    Click element    ${locator}
+    Wait until page contains    ColorInfo    10
+    Page should not contain    ErrorMessage
+
+Go to size info page
+    [Arguments]    ${locator}
+    Click element    ${locator}
+    Wait until page contains    SizingInfo    10
+    Page should not contain    ErrorMessage
+
+Delete selected ph styles
+    [Arguments]    @{locators}
+    : FOR    ${locator}    IN    @{locators}
+    \    Select checkbox    ${locator}
+    Click button    Delete Selected
+    Wait until page contains    AreYouSure?    5
+    Click button    Delete
+    Wait until page contains    ThankYou
+    Page should contain    All selected placeholder styles have been deleted.
+
+Close linesheet downloading page
+    ${windows_list}    List windows
+    Remove from list    ${windows_list}    0    #rm main
+    : FOR    ${win}    IN    @{windows_list}
+    \    Select window    ${win}
+    \    Close window
+    Select window    main

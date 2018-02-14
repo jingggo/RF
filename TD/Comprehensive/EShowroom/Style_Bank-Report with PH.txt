@@ -1,0 +1,517 @@
+*** Settings ***
+Suite Setup       Login7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${browser_profile_ff_1}    # ${browser_profile_ff_1}
+Default Tags      RPH
+Resource          ../../td_page_actions/style_bank_actions_res.txt
+Resource          style_bank_test_data_ef.txt
+Variables         style_bank_test_variables_ef.py
+Resource          ../../td_page_actions/ph_styles_actions_res.txt
+
+*** Test Cases ***
+9-Search existing PH style without filter
+    [Documentation]    successful：the style will display(PH style no size)
+    ${color_codes}    Get from dictionary    ${SB009}    color_codes
+    ${color_descs}    Get from dictionary    ${SB009}    color_descs
+    ${searched_style}    Get from dictionary    ${SB009}    searched_style
+    Create PH Style On Interface    ${searched_style}    ${SB009['year']}    ${SB009['season']}    ${SB009['classname']}    ${SB009['department']}    ${SB009['division']}
+    ...    ${SB009['groupcategory']}    ${color_descs}    ${color_codes}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    ${report_pfile}    Generate Style Bank Report By Style    Style/Color/Size Linesheet Format    ${REPORT_STORE_PATH}    ${searched_style}    ${EMPTY}    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+10-Search an unexisting style without filter
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB003}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Generate Style Bank Report By Style With Error    Style/Color/Size Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+11-without search styles and filter
+    [Documentation]    successful：all criteria selected and display size level(PH style no size)
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    ${report_pfile}    Generate Style Bank Report By Style    Style/Color/Size Linesheet Format    ${REPORT_STORE_PATH}    ${EMPTY}    ${EMPTY}    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+12-filer with ph match
+    [Documentation]    successful：the style will display(PH style no size)
+    ${searched_style}    Get from dictionary    ${SB012}    searched_style
+    ${dic}    Copy dictionary    ${SB012}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    ${report_pfile}    Generate Style Bank Report By Style    Style/Color/Size Linesheet Format    ${REPORT_STORE_PATH}    ${searched_style}    ${EMPTY}    &{dic}
+    ...    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+13-filer with ph not match
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB013}    searched_style
+    ${dic}    Copy dictionary    ${SB013}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Generate Style Bank Report By Style With Error    Style/Color/Size Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+14-only choose filter
+    [Documentation]    successful：the style will display(PH style no size)
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    ${report_pfile}    Generate Style Bank Report By Style    Style/Color/Size Linesheet Format    ${REPORT_STORE_PATH}    ${EMPTY}    ${EMPTY}    &{SB014}
+    ...    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+15-filer and with an unexisting style
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB015}    searched_style
+    ${dic}    Copy dictionary    ${SB015}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Generate Style Bank Report By Style With Error    Style/Color/Size Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}
+
+16-Style Color Linesheet-Search existing PH style without filter
+    [Documentation]    successful：the style will display(PH style no size)
+    ${color_codes}    Get from dictionary    ${SB009}    color_codes
+    ${color_descs}    Get from dictionary    ${SB009}    color_descs
+    ${searched_style}    Get from dictionary    ${SB009}    searched_style
+    Create PH Style On Interface    ${searched_style}    ${SB009['year']}    ${SB009['season']}    ${SB009['classname']}    ${SB009['department']}    ${SB009['division']}
+    ...    ${SB009['groupcategory']}    ${color_descs}    ${color_codes}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    ${report_pfile}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${REPORT_STORE_PATH}    ${searched_style}    ${EMPTY}    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+17-Style Color Linesheet-Search an unexisting style without filter
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB003}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Generate Style Bank Report By Style With Error    Style/Color Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+18-Style Color Linesheet-without search styles and filter
+    [Documentation]    successful：all criteria selected and display size level(PH style no size)
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    ${report_pfile}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${REPORT_STORE_PATH}    ${EMPTY}    ${EMPTY}    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+19-Style Color Linesheet-filer with ph match
+    [Documentation]    successful：the style will display(PH style no size)
+    ${searched_style}    Get from dictionary    ${SB012}    searched_style
+    ${dic}    Copy dictionary    ${SB012}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    ${report_pfile}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${REPORT_STORE_PATH}    ${searched_style}    ${EMPTY}    &{dic}
+    ...    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+20-Style Color Linesheet-filer with ph not match
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB013}    searched_style
+    ${dic}    Copy dictionary    ${SB013}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Generate Style Bank Report By Style With Error    Style/Color Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+21-Style Color Linesheet-only choose filter
+    [Documentation]    successful：the style will display(PH style no size)
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    ${report_pfile}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${REPORT_STORE_PATH}    ${EMPTY}    ${EMPTY}    &{SB014}
+    ...    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+22-Style Color Linesheet-filer and with an unexisting style
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB015}    searched_style
+    ${dic}    Copy dictionary    ${SB015}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Generate Style Bank Report By Style With Error    Style/Color Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}
+
+23-Style Linesheet-Search existing PH style without filter
+    [Documentation]    successful：the style will display(PH style no size)
+    ${color_codes}    Get from dictionary    ${SB009}    color_codes
+    ${color_descs}    Get from dictionary    ${SB009}    color_descs
+    ${searched_style}    Get from dictionary    ${SB009}    searched_style
+    Create PH Style On Interface    ${searched_style}    ${SB009['year']}    ${SB009['season']}    ${SB009['classname']}    ${SB009['department']}    ${SB009['division']}
+    ...    ${SB009['groupcategory']}    ${color_descs}    ${color_codes}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    ${report_pfile}    Generate Style Bank Report By Style    Style Linesheet Format    ${REPORT_STORE_PATH}    ${searched_style}    ${EMPTY}    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+24-Style Linesheet-Search an unexisting style without filter
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB003}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Generate Style Bank Report By Style With Error    Style Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+25-Style Linesheet-without search styles and filter
+    [Documentation]    successful：all criteria selected and display size level(PH style no size)
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    ${report_pfile}    Generate Style Bank Report By Style    Style Linesheet Format    ${REPORT_STORE_PATH}    ${EMPTY}    ${EMPTY}    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+26-Style Linesheet-filer with ph match
+    [Documentation]    successful：the style will display(PH style no size)
+    ${searched_style}    Get from dictionary    ${SB012}    searched_style
+    ${dic}    Copy dictionary    ${SB012}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    ${report_pfile}    Generate Style Bank Report By Style    Style Linesheet Format    ${REPORT_STORE_PATH}    ${searched_style}    ${EMPTY}    &{dic}
+    ...    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+27-Style Linesheet-filer with ph not match
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB013}    searched_style
+    ${dic}    Copy dictionary    ${SB013}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Generate Style Bank Report By Style With Error    Style Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+28-Style Linesheet-only choose filter
+    [Documentation]    successful：the style will display(PH style no size)
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    ${report_pfile}    Generate Style Bank Report By Style    Style Linesheet Format    ${REPORT_STORE_PATH}    ${EMPTY}    ${EMPTY}    &{SB014}
+    ...    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+29-Style Linesheet-filer and with an unexisting style
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB015}    searched_style
+	${dic}    Copy dictionary    ${SB015}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Generate Style Bank Report By Style With Error    Style Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}
+
+30-Multiple Pricing-Search existing PH style without filter
+    [Documentation]    successful：the style will display(PH style no size)
+    ${color_codes}    Get from dictionary    ${SB009}    color_codes
+    ${color_descs}    Get from dictionary    ${SB009}    color_descs
+    ${searched_style}    Get from dictionary    ${SB009}    searched_style
+    Create PH Style On Interface    ${searched_style}    ${SB009['year']}    ${SB009['season']}    ${SB009['classname']}    ${SB009['department']}    ${SB009['division']}
+    ...    ${SB009['groupcategory']}    ${color_descs}    ${color_codes}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Generate Style Bank Report By Style With Error    Style Bank Multiple Pricing Linesheet    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.
+    Comment    ${report_pfile}    Generate Style Bank Report By Style    Style Bank Multiple Pricing Linesheet    ${REPORT_STORE_PATH}    ${searched_style}    ${EMPTY}
+    ...    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+31-Multiple Pricing-Search an unexisting style without filter
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB003}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Generate Style Bank Report By Style With Error    Style Bank Multiple Pricing Linesheet    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+32-Multiple Pricing-without search styles and filter
+    [Documentation]    successful：all criteria selected and display size level(PH style no size)
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    ${report_pfile}    Generate Style Bank Report By Style    Style Bank Multiple Pricing Linesheet    ${REPORT_STORE_PATH}    ${EMPTY}    ${EMPTY}    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+33-Multiple Pricing-filer with ph match
+    [Documentation]    successful：the style will display(PH style no size)
+    ${searched_style}    Get from dictionary    ${SB012}    searched_style
+    ${dic}    Copy dictionary    ${SB012}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Generate Style Bank Report By Style With Error    Style Bank Multiple Pricing Linesheet    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}
+    Comment    ${report_pfile}    Generate Style Bank Report By Style    Style Bank Multiple Pricing Linesheet    ${REPORT_STORE_PATH}    ${searched_style}    ${EMPTY}
+    ...    &{dic}    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+34-Multiple Pricing-filer with ph not match
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB013}    searched_style
+    ${dic}    Copy dictionary    ${SB013}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Generate Style Bank Report By Style With Error    Style Bank Multiple Pricing Linesheet    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}
+
+35-Multiple Pricing-only choose filter
+    [Documentation]    successful：the style will display(PH style no size)
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Comment    Check interface
+    Choose Filter Hierarchy    &{SB014}
+    Click button    Search
+    ${search_styles_count}    Get table cell    xpath=//table[@id='tabletop']    1    1
+    ${search_styles_count}    Get regexp matches    ${search_styles_count}    of(.*)next    1
+    ${search_styles_count}    Get from list    ${search_styles_count}    0
+    ${search_styles_count}    Strip string    ${search_styles_count}
+    ${search_styles_count}    Convert to integer    ${search_styles_count}
+    ${loop}    Evaluate    ${search_styles_count}/100
+    ${search_ph_styles_count}    Set variable    ${0}
+    : FOR    ${l}    IN RANGE    ${loop+1}
+    \    Wait until page contains element    id=tabletop    5
+    \    ${search_styles_count_tmp}    Get matching xpath count    //b[text()='[PH]']
+    \    ${search_ph_styles_count}    Evaluate    ${search_ph_styles_count}+${search_styles_count_tmp}
+    \    ${is_last}    Run keyword and return status    Wait until page contains    next    5
+    \    Exit for loop if    ${is_last}==${False}
+    \    Click link    next
+    ${is_equal}    Run keyword and return status    Should be equal as integers    ${search_ph_styles_count}    ${search_styles_count}
+    Comment    Download
+    Go to Advanced Search page
+    Run keyword if    ${is_equal}    Generate Style Bank Report By Style With Error    Style Bank Multiple Pricing Linesheet    ${EMPTY}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.
+    ...    &{SB014}
+    Run keyword unless    ${is_equal}    Generate Style Bank Report By Style    Style Bank Multiple Pricing Linesheet    ${REPORT_STORE_PATH}    ${EMPTY}    ${EMPTY}
+    ...    &{SB014}    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+36-Multiple Pricing-filer and with an unexisting style
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB015}    searched_style
+	${dic}    Copy dictionary    ${SB015}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Generate Style Bank Report By Style With Error    Style Bank Multiple Pricing Linesheet    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}
+
+37-Linesheet Images-Search existing PH style without filter
+    [Documentation]    successful：the style will display(PH style no size)
+    ${color_codes}    Get from dictionary    ${SB009}    color_codes
+    ${color_descs}    Get from dictionary    ${SB009}    color_descs
+    ${searched_style}    Get from dictionary    ${SB009}    searched_style
+    Create PH Style On Interface    ${searched_style}    ${SB009['year']}    ${SB009['season']}    ${SB009['classname']}    ${SB009['department']}    ${SB009['division']}
+    ...    ${SB009['groupcategory']}    ${color_descs}    ${color_codes}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    ${season_fb_xpath}    Replace string    ${fb_td_text_xpath}    {fb}    fbseason
+    ${year_fb_xpath}    Replace string    ${fb_td_text_xpath}    {fb}    fbyear
+    ${season_attribute}    Get text    ${season_fb_xpath}
+    ${year_attribute}    Get text    ${year_fb_xpath}
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Generate Style Bank Report By Style With Error    Linesheet with Images    ${searched_style}    ${EMPTY}    [ER-30358] The system does not allow a user to view Styles from multiple ${season_attribute}(s); however you must select one ${season_attribute} and one ${year_attribute} when searching for Styles. Please modify your criteria and try again. Thank you.
+
+38-Linesheet Images-Search an unexisting style without filter
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB003}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    ${season_fb_xpath}    Replace string    ${fb_td_text_xpath}    {fb}    fbseason
+    ${year_fb_xpath}    Replace string    ${fb_td_text_xpath}    {fb}    fbyear
+    ${season_attribute}    Get text    ${season_fb_xpath}
+    ${year_attribute}    Get text    ${year_fb_xpath}
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Generate Style Bank Report By Style With Error    Linesheet with Images    ${searched_style}    ${EMPTY}    [ER-30358] The system does not allow a user to view Styles from multiple ${season_attribute}(s); however you must select one ${season_attribute} and one ${year_attribute} when searching for Styles. Please modify your criteria and try again. Thank you.    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+39-Linesheet Images-without search styles and filter
+    [Documentation]    successful：all criteria selected and display size level(PH style no size)
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    ${season_fb_xpath}    Replace string    ${fb_td_text_xpath}    {fb}    fbseason
+    ${year_fb_xpath}    Replace string    ${fb_td_text_xpath}    {fb}    fbyear
+    ${season_attribute}    Get text    ${season_fb_xpath}
+    ${year_attribute}    Get text    ${year_fb_xpath}
+    Generate Style Bank Report By Style With Error    Linesheet with Images    ${EMPTY}    ${EMPTY}    [ER-30358] The system does not allow a user to view Styles from multiple ${season_attribute}(s); however you must select one ${season_attribute} and one ${year_attribute} when searching for Styles. Please modify your criteria and try again. Thank you.
+
+40-Linesheet Images-filer with ph match
+    [Documentation]    successful：the style will display(PH style no size)
+    ${searched_style}    Get from dictionary    ${SB040}    searched_style
+    ${dic}    Copy dictionary    ${SB040}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    ${report_pfile}    Generate Style Bank Report By Style    Linesheet with Images    ${REPORT_STORE_PATH}    ${searched_style}    ${EMPTY}    &{dic}
+    ...    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+41-Linesheet Images-filer with ph not match
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB013}    searched_style
+    ${dic}    Copy dictionary    ${SB013}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Generate Style Bank Report By Style With Error    Linesheet with Images    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+42-Linesheet Images-only choose filter
+    [Documentation]    successful：the style will display(PH style no size)
+    Comment    All filter only include ph styles
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    ${report_pfile}    Generate Style Bank Report By Style    Linesheet with Images    ${REPORT_STORE_PATH}    ${EMPTY}    ${EMPTY}    &{SB014}
+    ...    #Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+
+43-Linesheet Images-filer and with an unexisting style
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB015}    searched_style
+	${dic}    Copy dictionary    ${SB015}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Generate Style Bank Report By Style With Error    Linesheet with Images    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}
+
+44-StyleColor Count-Search existing PH style without filter
+    [Documentation]    successful：the style will display(PH style no size)
+    ${color_codes}    Get from dictionary    ${SB009}    color_codes
+    ${color_descs}    Get from dictionary    ${SB009}    color_descs
+    ${searched_style}    Get from dictionary    ${SB009}    searched_style
+    Create PH Style On Interface    ${searched_style}    ${SB009['year']}    ${SB009['season']}    ${SB009['classname']}    ${SB009['department']}    ${SB009['division']}
+    ...    ${SB009['groupcategory']}    ${color_descs}    ${color_codes}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Comment    genarate report
+    Select From List By Label    id=sl1    Style/Color Count
+    Click element    name=download
+    Sleep    2
+    Select window    new
+    Wait until page contains    ${COMPANY}
+    Page should not contain    ErrorMessage
+    [Teardown]    Close linesheet downloading page
+
+45-StyleColor Count-Search an unexisting style without filter
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB003}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Comment    genarate report
+    Select From List By Label    id=sl1    Style/Color Count
+    Click element    name=download
+    Sleep    2
+    Select window    new
+    Wait until page contains    ${COMPANY}
+    Page should not contain    ErrorMessage
+    [Teardown]    Close linesheet downloading page
+
+46-StyleColor Count-without search styles and filter
+    [Documentation]    successful：all criteria selected and display size level(PH style no size)
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Comment    genarate report
+    Select From List By Label    id=sl1    Style/Color Count
+    Click element    name=download
+    Sleep    2
+    Select window    new
+    Wait until page contains    ${COMPANY}
+    Page should not contain    ErrorMessage
+    [Teardown]    Close linesheet downloading page
+
+47-StyleColor Count-filer with ph match
+    [Documentation]    successful：the style will display(PH style no size)
+    ${searched_style}    Get from dictionary    ${SB012}    searched_style
+    ${dic}    Copy dictionary    ${SB012}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Choose Filter Hierarchy    &{dic}
+    Comment    genarate report
+    Select From List By Label    id=sl1    Style/Color Count
+    Click element    name=download
+    Sleep    2
+    Select window    new
+    Wait until page contains    ${COMPANY}
+    Page should not contain    ErrorMessage
+    [Teardown]    Close linesheet downloading page
+
+48-StyleColor Count-filer with ph not match
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB013}    searched_style
+    ${dic}    Copy dictionary    ${SB013}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Input text    id=Style    ${searched_style}
+    Choose Filter Hierarchy    &{dic}
+    Comment    genarate report
+    Select From List By Label    id=sl1    Style/Color Count
+    Click element    name=download
+    Sleep    2
+    Select window    new
+    Wait until page contains    ${COMPANY}
+    Page should not contain    ErrorMessage
+    [Teardown]    Close linesheet downloading page
+
+49-StyleColor Count-only choose filter
+    [Documentation]    successful：the style will display(PH style no size)
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Choose Filter Hierarchy    &{SB014}
+    Comment    genarate report
+    Select From List By Label    id=sl1    Style/Color Count
+    Click element    name=download
+    Sleep    2
+    Select window    new
+    Wait until page contains    ${COMPANY}
+    Page should not contain    ErrorMessage
+    [Teardown]    Close linesheet downloading page
+
+50-StyleColor Count-filer and with an unexisting style
+    [Documentation]    [ER-10141] Your search returned no results. Please try again.
+    ${searched_style}    Get from dictionary    ${SB015}    searched_style
+	${dic}    Copy dictionary    ${SB015}
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Go to Advanced Search page
+    Select Checkbox    name=is_include_ph_style
+    Choose Filter Hierarchy    &{dic}
+    Comment    genarate report
+    Select From List By Label    id=sl1    Style/Color Count
+    Click element    name=download
+    Sleep    2
+    Select window    new
+    Wait until page contains    ${COMPANY}
+    Page should not contain    ErrorMessage
+    [Teardown]    Close linesheet downloading page
