@@ -893,7 +893,7 @@ Del ph styles after testing
     Comment    @{styles_colors}    Create list    ${style_colors_a}    ${style_colors_b}
     Comment    Del ph colors by searched    FALL    2018    @{styles_colors}
     Comment    Del ph styles by searched    RESORT    2017    AT-00027
-    Del ph styles by searched    SPRING    2018    PH-AT-001
+    Comment    Del ph styles by searched    SPRING    2018    PH-AT-001
 
 Styles or PH styles needed before testing
     Comment    ${linesheet_name}    Set variable    linesheet_ATP.txt
