@@ -1,0 +1,585 @@
+*** Settings ***
+Documentation     Need to delete on PH Style Bank
+...               AT-00005
+...               AT-PH-00006
+...               AT-PH-00012
+...               AT-PH-00013
+...
+...               Need to in Style Bank:
+...               AT-00004
+...               AT-00005
+...               AT-00005
+Suite Setup       #Login7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${EMPTY}    #Login7thonline | ${URL} | ff | ${USER} | ${COMPANY} | ${EMPTY} | # ${browser_profile_ff_1}
+Force Tags        SB
+Default Tags      SB-ADD
+Resource          ../../../td_page_actions/style_bank_actions_res.txt
+Resource          ../style_bank_test_data_ef.txt
+Variables         ../style_bank_test_variables_ef.py
+Resource          ../../../td_page_actions/ph_styles_actions_res.txt
+Resource          ../PH_style_bank_keywords.txt
+Resource          ../style_bank_keywords.txt
+Variables         ../style_bank_renamed_attributes.py
+
+*** Test Cases ***
+SB-All buttons and links on placeholder styles page
+    [Documentation]    Exceptions should not occur.
+    ...
+    ...    Default year season should display satisfied styles.
+    Comment    Preparation before cases
+    Comment    If 'Enable user to add/modify/delete style in the Style Bank' is selected on User Profile.    This checkbox only effected style bank
+    Comment    check links and buttons
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    ${place_holder_styles_links_texts}    Execute javascript    var result=[];$("div.maincontent a").each(function(){result.push($(this).text()); });return result;
+    ${place_holder_styles_links_submit_buttons}    Execute javascript    var result=[];$("div.maincontent input[type='submit']").each(function(){result.push($(this).val()); });return result;    #["View", "Search", "Verify Selected", "Delete Selected", "Verify Selected", "Delete Selected"]
+    ${place_holder_styles_links_buttons}    Execute javascript    var result=[];$("div.maincontent input[type='button']").each(function(){result.push($(this).val()); });return result;    #["Add New Placeholder", "Add New Color", "Add New Placeholder", "Add New Color"]
+    ${place_holder_styles_links_buttons}    Combine lists    ${place_holder_styles_links_submit_buttons}    ${place_holder_styles_links_buttons}
+    log    ${place_holder_styles_links_texts}
+    Log many    @{place_holder_styles_links_texts}
+    Run keyword and continue on failure    List should contain value    ${place_holder_styles_links_texts}    Advanced Search
+    ${expected_ph_styles_buttons}    Create list    View    Search    Remove Style    View Images    Archive
+    ...    Remove Style    View Images    Archive    Add New Style    Add New Style
+    Run keyword and continue on failure    Lists should be equal    ${place_holder_styles_links_buttons}    ${expected_ph_styles_buttons}
+    Comment    All links and buttons are verified during test cases.
+    Comment    check default season-year and styles
+    Run keyword and continue on failure    Table header should contain    css=table.table1    ${DEFINED_ATTR_NAMES_EF['Style #']}    #rename
+    ${default_season_year}    Get selected list label    ${season_year_select_path}
+    ${default_styles}    Get styles per page from style bank
+    ${default_rows}    Get length    ${default_styles}
+    Click button    View
+    Sleep    1
+    Wait until page does not contain element    ${wait_button}
+    ${real_styles}    Get styles per page from style bank
+    Run keyword and continue on failure    Lists should be equal    ${real_styles}    ${default_styles}    Default season-year: '${default_season_year}' with default styles not match.
+    ${fileter_style_title}    Get text    //td[input[@name='searchstr']]/preceding-sibling::td//b
+    Run keyword and continue on failure    Should be equal as strings    ${fileter_style_title}    ${DEFINED_ATTR_NAMES_EF['Style #']}:
+    Comment    Style count in one page
+    Run keyword and continue on failure    Table cell should contain    css=table#tabletop    1    2    View All Styles | View 100 Styles Per Page
+    Run keyword and continue on failure    Element should contain    //table[@id='tabletop']//td[2]/a    View All Styles
+    ${style_nums_len_info}    Get table cell    css=table#tabletop    1    1    #1 - 100 of 1234
+    ${style_nums_len_info}    Strip string    ${style_nums_len_info}
+    ${style_nums_len_infos}    Split string    ${style_nums_len_info}
+    ${total_nstyle}    Get from list    ${style_nums_len_infos}    -1
+    ${total_nstyle}    Set variable if    '${total_nstyle}'=='last'    ${style_nums_len_infos[-3]}    ${total_nstyle}
+    ${total_nstyle}    convert to integer    ${total_nstyle}
+    Run keyword if    ${total_nstyle}>${100}    Should be equal as integers    ${style_nums_len_infos[2]}    100
+    Run keyword if    ${total_nstyle}>${100}    Should be equal as integers    ${default_rows}    100
+    Run keyword if    ${total_nstyle}<${100}    Should be equal as integers    ${style_nums_len_infos[2]}    ${total_nstyle}
+
+SB-Checkboxes
+    [Documentation]    Exceptions should not occur.
+    ...
+    ...    Default year season should display satisfied styles.
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    SPRING-2018
+    Comment    check all styles
+    ${styles_exist}    Run keyword and return status    Table header should contain    css=table.table1    ${DEFINED_ATTR_NAMES_EF['Style #']}
+    Run keyword if    ${styles_exist}==${False}    Pass execution    No styles in style bank
+    ${style_nums_len_info}    Get table cell    css=table#tabletop    1    1    #1 - 100 of 1234 next last
+    ${style_nums_len_info}    Strip string    ${style_nums_len_info}
+    ${style_nums_len_infos}    Split string    ${style_nums_len_info}
+    ${total_nstyle}    Get from list    ${style_nums_len_infos}    2
+    ${total_nstyle}    Convert to integer    ${total_nstyle}
+    Select checkbox    name=toggleAll
+    ${selected_checkbox_length}    Get matching xpath count    //tr[@class='checkedrowcolor']
+    ${selected_checkbox_length}    Evaluate    ${selected_checkbox_length}-1    #minus the checkall box in table header
+    Run keyword and continue on failure    Should be equal as integers    ${total_nstyle}    ${selected_checkbox_length}
+    Comment    uncheck all styles
+    Unselect checkbox    name=toggleAll
+    ${selected_checkbox_length}    Get matching xpath count    //table[@id=table1]//tr[@class='checkedrowcolor']
+    ${selected_checkbox_length}    Convert to integer    ${selected_checkbox_length}
+    Run keyword and continue on failure    Should be equal as integers    ${selected_checkbox_length}    0
+
+StyleInfo-Require attributes should be red
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    #${DEFINED_ATTR_NAMES_EF}    Get company specific attr names    ${PCMID}
+    #Set global variable    ${DEFINED_ATTR_NAMES_EF}
+    Page should contain element    ${season_year_select_path}
+    ${default_season_year}    Get selected list label    ${season_year_select_path}    #FALL-2018
+    ${default_PlaceHolderStyles_year}    Fetch from right    ${default_season_year}    -
+    ${default_PlaceHolderStyles_season}    Fetch from left    ${default_season_year}    -
+    Page should contain button    Add New Style
+    Click button    Add New Style
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleInfo
+    Comment    Verify top text
+    Run keyword and continue on failure    Table cell should contain    css=div table    1    1    StyleInfo
+    Run keyword and continue on failure    Table cell should contain    css=div table    1    2    ${COMPANY}    #Eileen Fisher
+    Run keyword and continue on failure    Table cell should contain    css=div table    1    3    [ *Required fields ]
+    Comment    Verify style attributes
+    ${style_attributes}    Execute javascript    var result=[];$("form[name='styleform'] table table b").each(function(){result.push($(this).text()); });return result;
+    Log    ${style_attributes}
+    ${expected_style_attributes}    Create List    *${DEFINED_ATTR_NAMES_EF['Style #']}:    ${DEFINED_ATTR_NAMES_EF['Season']}:    ${DEFINED_ATTR_NAMES_EF['Year']}:    ${DEFINED_ATTR_NAMES_EF['Style Name']}:    ${DEFINED_ATTR_NAMES_EF['Style Desc']}:
+    ...    ${DEFINED_ATTR_NAMES_EF['Fabrication']}:    ${DEFINED_ATTR_NAMES_EF['Hang/Fold']}:    ${DEFINED_ATTR_NAMES_EF['Delivery Date']}:    ${DEFINED_ATTR_NAMES_EF['Additional Info']}:    Choose a prepack:    ${DEFINED_ATTR_NAMES_EF['Category']}:
+    ...    ${DEFINED_ATTR_NAMES_EF['Product Category']}:    ${DEFINED_ATTR_NAMES_EF['Class']}:    ${DEFINED_ATTR_NAMES_EF['Class Level 3']}:    ${DEFINED_ATTR_NAMES_EF['Group']}:    ${DEFINED_ATTR_NAMES_EF['Group Code']}:    ${DEFINED_ATTR_NAMES_EF['Department']}:
+    ...    ${DEFINED_ATTR_NAMES_EF['Division']}:    ${DEFINED_ATTR_NAMES_EF['Fiber Content']}:    ${DEFINED_ATTR_NAMES_EF['Production Type']}:    ${DEFINED_ATTR_NAMES_EF['Size Range']}:    ${DEFINED_ATTR_NAMES_EF['Yield Per Unit']}:    Category Detail:
+    ...    Category Detail 1:    Category Detail 2:    Fabrication Material:    Design:    ${DEFINED_ATTR_NAMES_EF['Age Group']}:    ${DEFINED_ATTR_NAMES_EF['Gear Line']}:
+    ...    ${DEFINED_ATTR_NAMES_EF['Fit Type']}:    ${DEFINED_ATTR_NAMES_EF['Style Type']}:    ${DEFINED_ATTR_NAMES_EF['Country Code']}:    Last Modified:    Modified by:
+    Run keyword and continue on failure    Lists should be equal    ${style_attributes}    ${expected_style_attributes}
+    ${all_attributes}    Execute javascript    var result=[];$("form[name='styleform'] table b").each(function(){result.push($(this).text()); });return result;
+    ${images_titles}    Get slice from list    ${all_attributes}    34    -1
+    Log    ${images_titles}
+    ${expected_images_titles}    Create List    Find small image:    Remove small image    Find large / 3D image:    Remove large / 3D image    Find detail image:
+    ...    Remove detail image    Find back view image:    Remove back view image
+    Run keyword and continue on failure    Lists should be equal    ${images_titles}    ${expected_images_titles}
+    Run keyword and continue on failure    Page should contain    All layouts require both a small image and a large image.
+    Run keyword and continue on failure    Page should contain    Upload additional images depending on the type of layout you are planning.
+    Comment    Verify require attributes on style info page    Requires should be red and with*
+    Product attributes required verify on style info page
+    Comment    Dropdown with NEW    And dropdown values whether is right
+    Run keyword and continue on failure    Table cell should contain    css=form[name='styleform'] table table    2    2    ${default_PlaceHolderStyles_season}
+    Run keyword and continue on failure    Table cell should contain    css=form[name='styleform'] table table    3    2    ${default_PlaceHolderStyles_year}
+    Run keyword and continue on failure    Page should contain button    Add Color(s)
+
+Add-Style-style empty
+    [Documentation]    If style in style bank, PH style cannot be created for the same year season. PH style can be created if the style in style bank don't have the year season.
+    ${exist_style}    Set variable    ${EMPTY}    #style number    year season    other require    color
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    FALL-2018
+    Page should contain button    Add New Style
+    Click button    Add New Style
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleInfo
+    Click button    Add Color(s)    #save
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}    15
+    Wait until page contains    ErrorMessage    10
+    Page should contain    [ER-80025] ${DEFINED_ATTR_NAMES_EF['Style #']} is missing.
+    Click button    Back
+
+Add-Style-class empty
+    [Documentation]    If style in style bank, PH style cannot be created for the same year season. PH style can be created if the style in style bank don't have the year season.
+    ${style_infos}    Create dictionary    stylenum=AT-00008    seasonid=SPRING    year=2018    department=MISSY    division=WOMENSWEAR
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Page should contain button    Add New Style
+    Click button    Add New Style
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleInfo
+    Add style infos when create new style    &{style_infos}
+    Click button    Add Color(s)    #save
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}    15
+    Wait until page contains    ErrorMessage    10
+    Page should contain    [ER-80400] Required field Style Classification is blank.
+    Click button    Back
+
+Add-Style-department empty
+    [Documentation]    If style in style bank, PH style cannot be created for the same year season. PH style can be created if the style in style bank don't have the year season.
+    ${style_infos}    Create dictionary    stylenum=AT-00009    seasonid=SPRING    year=2018    class=J - JACKETS    division=WOMENSWEAR
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Page should contain button    Add New Style
+    Click button    Add New Style
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleInfo
+    Add style infos when create new style    &{style_infos}
+    Click button    Add Color(s)    #save
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}    15
+    Wait until page contains    ErrorMessage    10
+    Page should contain    [ER-80400] Required field Department is blank.
+    Click button    Back
+
+Add-Style-division empty
+    [Documentation]    If style in style bank, PH style cannot be created for the same year season. PH style can be created if the style in style bank don't have the year season.
+    ${style_infos}    Create dictionary    stylenum=AT-00010    seasonid=SPRING    year=2018    class=J - JACKETS    department=MISSY
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Page should contain button    Add New Style
+    Click button    Add New Style
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleInfo
+    Add style infos when create new style    &{style_infos}
+    Click button    Add Color(s)    #save
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}    15
+    Wait until page contains    ErrorMessage    10
+    Page should contain    [ER-80400] Required field Division is blank.
+    Click button    Back
+
+Add-Style-modified style info after saved-a
+    [Documentation]    If style in style bank, PH style cannot be created for the same year season. PH style can be created if the style in style bank don't have the year season.
+    ${style_infos}    Create dictionary    stylenum=AT-00011    seasonid=SPRING    year=2018    class=J - JACKETS    department=MISSY
+    ...    division=WOMENSWEAR
+    ${color_infos_a}    Create dictionary    color_code=001    color_name=BLACK
+    ${color_infos_b}    Create dictionary    color_code=002    color_name=WHITE
+    @{colors_infos}    Create list    ${color_infos_a}    ${color_infos_b}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Page should contain button    Add New Style
+    Click button    Add New Style
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleInfo
+    Add style infos when create new style    &{style_infos}
+    Click button    Add Color(s)    #save
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}    15
+    Wait until page contains    ColorInfo
+    Check new color info page
+    Comment    more colors
+    Click button    name=more colors
+    Page should contain    [ER-10527] The system will not allow a colorless Style. Please make sure there is at least one color.
+    Click button    Back
+    Add color infos when create new style    @{colors_infos}
+    Click button    name=more colors    #save
+    ${rows_after}    Get matching xpath count    //div[@class='DTFC_LeftBodyWrapper']/table/tbody/tr
+    Run keyword and continue on failure    Should be equal as integers    ${rows_after}    16
+    ${last modified}    Get table cell    css=div.DTFC_RightBodyWrapper table    2    1    #3/06/18 10:21 AM
+    ${modified by}    Get table cell    css=div.DTFC_RightBodyWrapper table    2    2    #Eileen Fisher Parent
+    Click button    name=saveandaddsizes
+    Sleep    0.2
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    SizingInfo
+    Check new size info page    ${style_infos['stylenum']}    ${style_infos['seasonid']}    ${style_infos['year']}
+    Click button    More Sizes
+    ${size_rows_after}    Get matching xpath count    //input[@name='size_name']
+    Run keyword and continue on failure    Should be equal as integers    ${size_rows_after}    12
+    Click button    ${save_size_info_button}    #Save Size Info
+    Sleep    0.2
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleBank
+    Page should contain link    ${style_infos['stylenum']}
+
+Add-Style-modified style info after saved-b
+    [Documentation]    If style in style bank, PH style cannot be created for the same year season. PH style can be created if the style in style bank don't have the year season.
+    ${style_infos}    Create dictionary    stylenum=AT-00012    seasonid=SPRING    year=2018    class=J - JACKETS    department=MISSY
+    ...    division=WOMENSWEAR
+    ${color_infos_a}    Create dictionary    color_code=001    color_name=BLACK    vendor_color_code=001    nrf_color_code=001    color_group=A003
+    ...    pattern_number=1003    start_ship_date=03/06/2018    product_stop_date=04/06/2018    standardcost=11    transfer_price=10    whsl=22
+    ...    low_cost=15    msrp=20    low_retail=16    product_team=E    color_type=EE    color_info=PROFITS FUND FASHION MANUFACTURING LTD.
+    ...    color_indicator=CHINA    multi_channel_ind=N
+    ${color_infos_b}    Create dictionary    color_code=002    color_name=WHITE    vendor_color_code=002    nrf_color_code=002    color_group=B003
+    ...    pattern_number=2003    start_ship_date=03/06/2018    product_stop_date=04/06/2018    standardcost=11    transfer_price=10    whsl=22
+    ...    low_cost=15    msrp=20    low_retail=16    product_team=E    color_type=EE    color_info=PROFITS FUND FASHION MANUFACTURING LTD.
+    ...    color_indicator=CHINA    multi_channel_ind=N
+    ${color_infos_c}    Create dictionary    color_code=003    color_name=RED    vendor_color_code=003    nrf_color_code=003    color_group=C003
+    ...    pattern_number=3003    start_ship_date=03/06/2018    product_stop_date=04/06/2018    standardcost=11    transfer_price=10    whsl=22
+    ...    low_cost=15    msrp=20    low_retail=16    product_team=E    color_type=EE    color_info=PROFITS FUND FASHION MANUFACTURING LTD.
+    ...    color_indicator=CHINA    multi_channel_ind=N
+    @{colors_infos}    Create list    ${color_infos_a}    ${color_infos_b}    ${color_infos_c}
+    ${size_infos_a}    Create dictionary    size_name=PROJ
+    ${size_infos_b}    Create dictionary    size_name=S
+    ${size_infos_c}    Create dictionary    size_name=M
+    ${size_infos_d}    Create dictionary    size_name=L
+    ${size_infos_e}    Create dictionary    size_name=XL
+    ${size_infos_f}    Create dictionary    size_name=XXS
+    ${size_infos_g}    Create dictionary    size_name=XS
+    @{sizes_infos}    Create list    ${size_infos_a}    ${size_infos_b}    ${size_infos_c}    ${size_infos_d}    ${size_infos_e}
+    ...    ${size_infos_f}    ${size_infos_g}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Page should contain button    Add New Style
+    Click button    Add New Style
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleInfo
+    Add style infos when create new style    &{style_infos}
+    Click button    Add Color(s)    #save
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}    15
+    Wait until page contains    ColorInfo
+    Check new color info page
+    Add color infos when create new style    @{colors_infos}
+    Click button    name=saveandaddsizes
+    Sleep    0.2
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    SizingInfo
+    Check new size info page    ${style_infos['stylenum']}    ${style_infos['seasonid']}    ${style_infos['year']}
+    Add size infos when create new style    @{sizes_infos}
+    Click button    ${save_size_info_button}
+    Sleep    0.2
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleBank
+    Page should contain link    ${style_infos['stylenum']}
+    Comment    Verify
+    Input text    id=Style    ${style_infos['stylenum']}
+    Click button    Search
+    ${style_id}    Get value    //a[text()='${style_infos['stylenum']}']/parent::td/preceding-sibling::td[1]/input[@name='selected']
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[4]/a    #Style info
+    Wait until page contains    StyleInfo
+    Go back
+    Wait until page contains    StyleBank
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[5]/a    #Color info
+    Wait until page contains    ColorInfo
+    Go back
+    Wait until page contains    StyleBank
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[6]/a    #Size info
+    Wait until page contains    SizingInfo
+    Go back
+    Wait until page contains    StyleBank
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[7]/a    #UPC info
+    Wait until page contains    UPC
+    Go back
+    Wait until page contains    StyleBank
+
+Edit-style info
+    ${style_infos}    Create dictionary    stylenum=AT-00012    seasonid=SPRING    year=2018    class=J - JACKETS    department=MISSY
+    ...    division=WOMENSWEAR
+    ${edit_style_infos}    Create dictionary    descript=BALLET NECK TOP W/ 3/4 SLVS    hangfold=ECO    productcategory=BASICS    class=T - TOPS    group=FTO - ORGANIC COTTON INTERLOCK
+    ...    fibercontent=100% ORGANIC COTTON    productiontype=KNITS    sizerangeid=M12 (0-22)
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Input text    id=Style    ${style_infos['stylenum']}
+    Click button    Search
+    ${style_id}    Get value    //a[text()='${style_infos['stylenum']}']/parent::td/preceding-sibling::td[1]/input[@name='selected']
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[4]/a    #Style info
+    Wait until page contains    StyleInfo
+    Comment    Add style infos when create new style    &{style_infos}
+    Edit style infos in style bank    &{edit_style_infos}
+    ${last modified time}    Get last modified time
+    Log    ${last modified time}
+    Set to dictionary    ${edit_style_infos}    last_modified=${last modified time}
+    Click button    Save Style Info
+    Wait until page contains    StyleBank
+    Comment    Verify
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[4]/a    #Style info
+    Wait until page contains    StyleInfo
+    Verify style infos in style bank    &{edit_style_infos}
+
+Edit-color info-new color
+    ${style_infos}    Create dictionary    stylenum=AT-00012    seasonid=SPRING    year=2018
+    ${edit_color_infos_a}    Create dictionary    color_code=005    color_name=GREEN    start_ship_date=03/06/2018    product_stop_date=04/06/2018    standardcost=11
+    ...    transfer_price=10    whsl=22    low_cost=15    msrp=20    low_retail=16    product_team=E
+    ...    color_type=EE    color_info=PROFITS FUND FASHION MANUFACTURING LTD.    color_indicator=CHINA    multi_channel_ind=N
+    ${edit_color_infos_b}    Create dictionary    color_code=006    color_name=YELLOW    start_ship_date=03/06/2018    product_stop_date=04/06/2018    standardcost=11
+    ...    transfer_price=10    whsl=22    low_cost=15    msrp=20    low_retail=16    product_team=E
+    ...    color_type=EE    color_info=PROFITS FUND FASHION MANUFACTURING LTD.    color_indicator=CHINA    multi_channel_ind=N
+    @{edit_colors_infos}    Create list    ${edit_color_infos_a}    ${edit_color_infos_b}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Input text    id=Style    ${style_infos['stylenum']}
+    Click button    Search
+    ${style_id}    Get value    //a[text()='${style_infos['stylenum']}']/parent::td/preceding-sibling::td[1]/input[@name='selected']
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[5]/a    #Style info
+    Wait until page contains    ColorInfo
+    Comment    Edit style infos in style bank    &{edit_style_infos}
+    Check new color info page
+    Edit color infos in style bank    @{edit_colors_infos}
+    ${last modified time}    Get last modified time
+    Log    ${last modified time}
+    Click button    Save Color Info
+    Wait until page contains    StyleBank
+    Comment    Verify
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[5]/a    #Style info
+    Wait until page contains    ColorInfo
+    Verify color infos in style bank    ${last modified time}    @{edit_colors_infos}
+
+Edit-color info-modify color info
+    ${style_infos}    Create dictionary    stylenum=AT-00012    seasonid=SPRING    year=2018
+    ${edit_color_infos_a}    Create dictionary    color_code=003    color_name=RED    standardcost=12    transfer_price=11    whsl=23
+    ...    low_cost=16    msrp=21    low_retail=17
+    @{edit_colors_infos}    Create list    ${edit_color_infos_a}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Input text    id=Style    ${style_infos['stylenum']}
+    Click button    Search
+    ${style_id}    Get value    //a[text()='${style_infos['stylenum']}']/parent::td/preceding-sibling::td[1]/input[@name='selected']
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[5]/a    #Style info
+    Wait until page contains    ColorInfo
+    Comment    Edit style infos in style bank    &{edit_style_infos}
+    Edit color infos in style bank    @{edit_colors_infos}
+    ${last modified time}    Get last modified time
+    Log    ${last modified time}
+    Click button    Save Color Info
+    Wait until page contains    StyleBank
+    Comment    Verify
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[5]/a    #Style info
+    Wait until page contains    ColorInfo
+    Verify color infos in style bank    ${last modified time}    @{edit_colors_infos}
+
+Edit-delete color
+    ${style_infos}    Create dictionary    stylenum=AT-00012    seasonid=SPRING    year=2018
+    ${edit_color_infos_a}    Create dictionary    color_code=006    color_name=YELLOW    del_color=Y
+    ${edit_color_infos_b}    Create dictionary    color_code=005    color_name=GREEN    del_color=Y
+    @{edit_colors_infos}    Create list    ${edit_color_infos_a}    ${edit_color_infos_b}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Input text    id=Style    ${style_infos['stylenum']}
+    Click button    Search
+    ${color_info_path}    Set variable    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[5]/a
+    Click element    ${color_info_path}    #Color info
+    Wait until page contains    ColorInfo
+    Edit color infos in style bank    @{edit_colors_infos}
+    ${last modified time}    Get last modified time
+    Log    ${last modified time}
+    Click button    Save Color Info
+    Wait until page contains    StyleBank
+    Comment    Verify
+    Click element    ${color_info_path}    #Color info
+    Wait until page contains    ColorInfo
+    Verify color infos in style bank    ${last modified time}    @{edit_colors_infos}
+
+View color swatch on color info
+    ${style_infos}    Create dictionary    stylenum=AT-00012    seasonid=SPRING    year=2018
+    ${edit_color_infos_a}    Create dictionary    color_code=006    color_name=YELLOW    del_color=Y
+    ${edit_color_infos_b}    Create dictionary    color_code=005    color_name=GREEN    del_color=Y
+    @{edit_colors_infos}    Create list    ${edit_color_infos_a}    ${edit_color_infos_b}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Input text    id=Style    ${style_infos['stylenum']}
+    Click button    Search
+    ${style_id}    Get value    //a[text()='${style_infos['stylenum']}']/parent::td/preceding-sibling::td[1]/input[@name='selected']
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[5]/a    #Color info
+    Wait until page contains    ColorInfo
+    ${color_names}    Execute Javascript    var result=[];$("input[name='color_name']").each(function(){result.push($(this).val()); });return result;
+    Remove values from list    ${color_names}    ${EMPTY}
+    Log    ${color_names}
+    Click button    View Color Swatch
+    Wait until page contains    SwatchSheet
+    Run keyword and continue on failure    Table cell should contain    css=div table    1    1    SwatchSheet
+    Run keyword and continue on failure    Table cell should contain    css=div table    1    2    ${COMPANY}    #AT-PH-00012-T02
+    Run keyword and continue on failure    Table cell should contain    css=div table    1    2    ${DEFINED_ATTR_NAMES_EF['Style #']}: ${style_infos['stylenum']}
+    ${color_names_in_swatch_sheet}    Execute Javascript    var result=[];$("form table small").each(function(){result.push($(this).text()); });return result;
+    Remove values from list    ${color_names_in_swatch_sheet}    ${EMPTY}
+    Log    ${color_names_in_swatch_sheet}
+    Run keyword and continue on failure    Lists should be equal    ${color_names_in_swatch_sheet}    ${color_names}
+    Click button    Back
+
+Edit size info-new size
+    ${style_infos}    Create dictionary    stylenum=AT-00013    seasonid=SPRING    year=2018    class=J - JACKETS    department=MISSY
+    ...    division=WOMENSWEAR
+    ${color_infos_a}    Create dictionary    color_code=001    color_name=BLACK
+    ${color_infos_b}    Create dictionary    color_code=002    color_name=WHITE
+    @{colors_infos}    Create list    ${color_infos_a}    ${color_infos_b}
+    ${edit_size_infos_a}    Create dictionary    size_name=PROJ    #size_code
+    ${edit_size_infos_b}    Create dictionary    size_name=S
+    ${edit_size_infos_c}    Create dictionary    size_name=M
+    Comment    ${edit_size_infos_d}    Create dictionary    size_name=L
+    Comment    ${edit_size_infos_e}    Create dictionary    size_name=XL
+    Comment    ${edit_size_infos_f}    Create dictionary    size_name=XXS
+    Comment    ${edit_size_infos_g}    Create dictionary    size_name=XS
+    @{edit_sizes_infos}    Create list    ${edit_size_infos_a}    ${edit_size_infos_b}    ${edit_size_infos_c}    #${edit_size_infos_d}    ${edit_size_infos_e}
+    ...    # ${edit_size_infos_f}    ${edit_size_infos_g}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Input text    id=Style    ${style_infos['stylenum']}
+    Click button    Search
+    ${is_style_exist}    Run keyword and return status    Page should contain link    ${style_infos['stylenum']}
+    Run keyword unless    ${is_style_exist}    Create a new style on style bank    ${style_infos}    ${colors_infos}    ${edit_sizes_infos}    #to crreate the needed style
+    ${style_id}    Get value    //a[text()='${style_infos['stylenum']}']/parent::td/preceding-sibling::td[1]/input[@name='selected']
+    ${size_info_path}    Set variable    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[6]/a
+    Click element    ${size_info_path}    #SizingInfo
+    Wait until page contains    SizingInfo
+    Edit size infos    @{edit_sizes_infos}
+    ${last modified time}    Get last modified time
+    Log    ${last modified time}
+    Click button    ${save_size_info_button}
+    Wait until page contains    StyleBank
+    Comment    Verify
+    Click element    ${size_info_path}    #SizingInfo
+    Wait until page contains    SizingInfo
+    Check new size info page    ${style_infos['stylenum']}    ${style_infos['seasonid']}    ${style_infos['year']}
+    Verify size infos in style bank    ${last modified time}    ${edit_sizes_infos}
+    Comment    Verify size info in UPC
+    Go back
+    Wait until page contains    StyleBank
+    ${upc_path}    Set variable    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[7]/a
+    Click element    ${upc_path}
+    Wait until page contains element    //big[@class='title1']    #UPC
+    Check UPC page    ${style_infos['stylenum']}    ${style_infos['seasonid']}    ${style_infos['year']}    ${EP_UPC_HEADERS}
+
+Edit upc info-new upc
+    ${style_infos}    Create dictionary    stylenum=AT-00012    seasonid=SPRING    year=2018
+    ${edit_upc_infos_a}    Create dictionary    color_name=BLACK    size_name=PROJ    upc=62000001    articlenumber=6300001
+    ${edit_upc_infos_b}    Create dictionary    color_name=WHITE    size_name=PROJ    upc=62000002    articlenumber=6300002
+    ${edit_upc_infos_c}    Create dictionary    color_name=RED    size_name=PROJ    upc=62000003    articlenumber=6300003
+    @{edit_upcs_infos}    Create list    ${edit_upc_infos_a}    ${edit_upc_infos_b}    ${edit_upc_infos_c}    #${edit_upc_infos_d}    ${edit_upc_infos_e}
+    ...    # ${edit_upc_infos_f}    ${edit_upc_infos_g}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Input text    id=Style    ${style_infos['stylenum']}
+    Click button    Search
+    ${style_id}    Get value    //a[text()='${style_infos['stylenum']}']/parent::td/preceding-sibling::td[1]/input[@name='selected']
+    ${upc_path}    Set variable    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[7]/a
+    Click element    ${upc_path}
+    Wait until page contains element    //big[@class='title1']    #UPC
+    Check UPC page    ${style_infos['stylenum']}    ${style_infos['seasonid']}    ${style_infos['year']}    ${EP_UPC_HEADERS}
+    Click button    Edit
+    Check edit upc page    ${style_infos['stylenum']}    ${style_infos['seasonid']}    ${style_infos['year']}    ${EP_UPC_HEADERS[:-2]}
+    Edit UPC page    @{edit_upcs_infos}
+    ${last modified time}    Get last modified time
+    Log    ${last modified time}
+    Click button    Update
+    Wait until page contains    StyleBank
+    Comment    Verify UPC page
+    Click element    ${upc_path}
+    Wait until page contains element    //big[@class='title1']    #UPC
+    Check UPC page    ${style_infos['stylenum']}    ${style_infos['seasonid']}    ${style_infos['year']}    ${EP_UPC_HEADERS}
+
+Add-New Size with dimension
+    ${style_infos}    Create dictionary    stylenum=AT-00012    seasonid=SPRING    year=2018
+    ${size_desc}    Set variable    SX0
+    ${size_code}    Set variable    ${EMPTY}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Input text    id=Style    ${style_infos['stylenum']}
+    Click Button    Search
+    Wait until page contains    ${style_infos['stylenum']}
+    Page should contain link    ${style_infos['stylenum']}
+    Click link    Sizes
+    Wait until page contains    SizingInfo
+    ${size_table_default_nrows}    Get matching xpath count    //table[@class='table4']/tbody/tr[1]/following-sibling::tr    #8
+    ${blank_size_nrows}    Get matching xpath count    //table[@class='table4']/tbody/tr[1]/following-sibling::tr/td[1]/input[@value='']    #1
+    ${size_table_default_nrows}    Convert to integer    ${size_table_default_nrows}
+    ${blank_size_nrows}    Convert to integer    ${blank_size_nrows}
+    Run keyword if    ${blank_size_nrows}==${0}    Add More Sizes Rows
+    ${new_size_xpath_index}    Evaluate    ${size_table_default_nrows}-${blank_size_nrows}+1
+    Input Text    //table[@class='table4']/tbody/tr[1]/following-sibling::tr[${new_size_xpath_index}]//input[@name='size_name']    ${size_desc}
+    Input Text    //table[@class='table4']/tbody/tr[1]/following-sibling::tr[${new_size_xpath_index}]//input[@name='size_code']    ${size_code}
+    Click button    ${save_size_info_button}
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30061] The size "${size_desc}" does not exist in the company size profile. Please add the size into company size profile first by linesheet upload.
+
+*** Keywords ***
+Preparation before cases
+    Comment    Delete ph styles
+    ${ph_styles_del}    Create list    AT-00005    AT-PH-0006    AT-PH-0012    AT-PH-0013
+    Comment    Verify style not exist    The ph style bank display the same season year
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    : FOR    ${style}    IN    @{styles}
+    \    Page should not contain    ${style}
+    Comment    Should exist in style bank    upload linesheet
+    Comment    AT-00004
+    Comment    AT-00005
+    Comment    AT-00005
+
+Get styles per page from style bank
+    ${default_full_styles_info}    Execute javascript    var result=[];$("table.table1 tbody tr td").each(function(){result.push($(this).text()); });return result;    #to get all styles on style bank
+    log    ${default_full_styles_info}
+    ${default_full_len}    Get length    ${default_full_styles_info}
+    ${default_rows}    Evaluate    ${default_full_len}/9    #9 td per tr
+    ${default_styles}    Create list
+    ${init_start}    Set variable    0
+    ${init_end}    Set variable    9
+    : FOR    ${style}    IN RANGE    ${default_rows}
+    \    ${default_full_style_info}    Get slice from list    ${default_full_styles_info}    ${init_start}    ${init_end}
+    \    ${default_style}    Get from list    ${default_full_style_info}    1
+    \    ${default_style}    Strip string    ${default_style}
+    \    Append to list    ${default_styles}    ${default_style}
+    \    ${init_start}    Evaluate    ${init_start}+9
+    \    ${init_end}    Evaluate    ${init_end}+9
+    Log    ${default_styles}
+    [Return]    ${default_styles}

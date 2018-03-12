@@ -1,0 +1,46 @@
+*** Settings ***
+Suite Setup       #Login7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${EMPTY}    # ${browser_profile_ff_1}
+Force Tags
+Default Tags      PH-EDIT
+Resource          ../../../td_page_actions/style_bank_actions_res.txt
+Resource          ../style_bank_test_data_ef.txt
+Variables         ../style_bank_test_variables_ef.py
+Resource          ../../../td_page_actions/ph_styles_actions_res.txt
+Resource          ../PH_style_bank_keywords.txt
+
+*** Test Cases ***
+Del PH style
+    ${exist_style}    Set variable    EEFTO-T0330M
+    ${exist_color_names}    Create list    WHITE
+    ${exist_color_codes}    Create list    WHITE
+    ${exist_year}    Set variable    2018
+    ${exist_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    ${is_style_dispalyed}    Run keyword and return status    Table column should contain    css=table.table1    2    ${exist_style}
+    Run keyword if    ${is_style_dispalyed}==${False}    Go to Advanced Search page
+    Run keyword if    ${is_style_dispalyed}==${False}    Input text    id=Style    ${exist_style}
+    Run keyword if    ${is_style_dispalyed}==${False}    Click Search Button
+    Table column should contain    css=table.table1    2    ${exist_style}
+    Select checkbox    //td[contains(text(),'${exist_style}')]/preceding-sibling::td/input[@name='placeholderstyleid']
+    Wait until page contains element    css=tr.checkedrowcolor
+    Page should contain button    Delete Selected
+    Click button    Delete Selected
+    Wait until page does not contain element    ${please_wait_button}
+    Delete AreYouSure page
+    Comment    check on ph styles to ensure style was deleted really
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    ${is_style_dispalyed}    Run keyword and return status    Table column should contain    css=table.table1    2    ${exist_style}
+    Run keyword if    ${is_style_dispalyed}    Fail    PH style: '${exist_style}' was not deleted.
+    Go to Advanced Search page
+    Input text    id=Style    ${exist_style}
+    Click Search Button
+    ${is_style_dispalyed}    Run keyword and return status    Table column should contain    css=table.table1    2    ${exist_style}
+    Run keyword if    ${is_style_dispalyed}    Fail    PH style: '${exist_style}' was not deleted.
+    ${years_seasons_of_del_style}    Get list items    ${season_year_select_path}
+    Run keyword and continue on failure    List should have no selections    ${season_year_select_path}
+    ${empty_list}    Create list
+    Run keyword and continue on failure    Lists should be equal    ${years_seasons_of_del_style}    ${empty_list}
+
+Edit-Color-Del

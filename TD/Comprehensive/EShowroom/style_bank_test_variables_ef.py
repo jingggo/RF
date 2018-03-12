@@ -15,7 +15,7 @@ SB003={
 SB004={
     '1Year': ['2018'],
     '2Fashion Season': ['FALL'],
-    '3Story': ['AUTOTESTSTORY']
+    '3Story': ['BASICS']
 }
 
 SB005={
@@ -26,7 +26,7 @@ SB006={
     'searched_style': 'ES001A',
     '1Year': ['2018'],
     '2Fashion Season': ['FALL'],
-    '3Story': ['AUTOTESTSTORY']
+    '3Story': ['BASICS']
 }
 
 SB007={
@@ -62,7 +62,7 @@ SB013={
     'searched_style': 'AUTO-PH-009A',
     '1Year': ['2018'],
     '2Fashion Season': ['FALL'],
-    '3Story': ['AUTOTESTSTORY']
+    '3Story': ['BASICS']
 }
 
 SB014={
@@ -75,7 +75,7 @@ SB015={
     'searched_style': 'NOAUTOEXIST',
     '1Year': ['2018'],
     '2Fashion Season': ['FALL'],
-    '3Story': ['AUTOTESTSTORY']
+    '3Story': ['BASICS']
 }
 
 SB040={

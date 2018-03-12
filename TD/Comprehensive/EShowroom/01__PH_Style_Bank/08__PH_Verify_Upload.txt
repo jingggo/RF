@@ -1,0 +1,84 @@
+*** Settings ***
+Resource          ../../../td_page_actions/style_bank_actions_res.txt
+Resource          ../style_bank_test_data_ef.txt
+Resource          ../../../td_page_actions/ph_styles_actions_res.txt
+Variables         ../ph_verify_ef.py
+Variables         ../style_bank_test_variables_ef.py
+
+*** Test Cases ***
+Preparation for create ph styles
+    [Template]    Create PH Style by copy
+    PH-AT-VE-004    ${PH_AT_VE_004[0]}    PH-AT-VE-005    ${PH_AT_VE_005}
+
+Preparation for create ph colors
+    [Template]    Create PH Color
+    PH-AT-MA-030    ${PH_AT_VE_030}
+
+Style 1
+
+*** Keywords ***
+Create PH Color
+    [Arguments]    ${style}    ${colors_season_year_info}
+    ${style_number}    Set variable    ${style}
+    ${season}    Get from dictionary    ${colors_season_year_info[0]}    season
+    ${year}    Get from dictionary    ${colors_season_year_info[0]}    year
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain element    ${season_year_select_path}
+    ${default_season_year}    Get selected list label    ${season_year_select_path}    #FALL-2018
+    ${default_PlaceHolderStyles_year}    Fetch from right    ${default_season_year}    -
+    ${default_PlaceHolderStyles_season}    Fetch from left    ${default_season_year}    -
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Input text    name=stylenum    ${style_number}
+    Select from list by label    name=seasonid    ${season}
+    Select from list by label    name=year    ${year}
+    ${color_index}    Set variable    ${0}
+    :FOR    ${color_dic}    IN    @{colors_season_year_info}
+    \    ${color_code}    Get from dictionary    ${color_dic}    color_code
+    \    ${color_name}    Get from dictionary    ${color_dic}    color_name
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorcode']    ${color_code}
+    \    Input text    //table[@id='mt']/tbody/tr[${color_index+2}]//input[@name='colorname']    ${color_name}
+    \    ${color_index}    Evaluate    ${color_index}+1
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderStyles    10
+
+Create PH Style by copy
+    [Arguments]    ${src_style}    ${src_color_season_year}    ${tar_style}    ${tar_colors_season_year}
+    ${src_season}    Get from dictionary    ${src_color_season_year}    season
+    ${src_year}    Get from dictionary    ${src_color_season_year}    year
+    ${src_color_code}    Get from dictionary    ${src_color_season_year}    color_code
+    ${src_color_name}    Get from dictionary    ${src_color_season_year}    color_name
+    ${tar_color_season_year}    Get from list    ${tar_colors_season_year}    0
+    ${tar_season}    Get from dictionary    ${tar_color_season_year}    season
+    ${tar_year}    Get from dictionary    ${tar_color_season_year}    year
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to advanced search on style bank
+    Input text    id=Style    ${tar_style}
+    Click search button
+    ${is_ph_style_exist}    Run keyword and return status    Table column should contain    css=table.table1    2    ${tar_style}
+    Return from keyword if    ${is_ph_style_exist}
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    ${style_id}    Select ph style by search    ${src_style}    ${src_season}-${src_year}
+    Click link    //a[contains(@href,'styleid=${style_id}') and text()='Copy']
+    Sleep    0.2
+    Wait until page contains    CopyToPlaceHolder    10
+    Input text    name=stylenum    ${tar_style}
+    Run keyword unless    '${src_season}'=='${tar_season}'    Select from list by label    name=seasonid    ${tar_season}
+    Run keyword unless    '${src_year}'=='${tar_year}'    Select from list by label    id=year    ${tar_year}
+    :FOR    ${i}    ${create_ph_color}    IN ENUMERATE    @{tar_colors_season_year}
+    \    ${tar_color_code}    Get from dictionary    ${create_ph_color}    color_code
+    \    ${tar_color_name}    Get from dictionary    ${create_ph_color}    color_name
+    \    Run keyword unless    '${src_color_code}'=='${tar_color_code}'    Input text    //div[@class='DTFC_LeftBodyWrapper']//tbody/tr[${i+1}]/td[2]/input    ${tar_color_code}
+    \    Run keyword unless    '${src_color_code}'=='${tar_color_code}'    Input text    //div[@class='dataTables_scroll']//table[@id='mt']//tbody/tr[${i+1}]//input[@name='nrfcolorcode']    ${EMPTY}
+    \    Run keyword unless    '${src_color_name}'=='${tar_color_name}'    Input text    //div[@class='DTFC_LeftBodyWrapper']//tbody/tr[${i+1}]/td[3]/input    ${tar_color_name}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page contains    PlaceHolderStyles

@@ -11,7 +11,9 @@ select from season and year dropdown
     [Documentation]    Catalog Season Desc-Catalog Season Year in CK.
     ...
     ...    If the no ph styles created in PH style Bank, the initial label of the selected season year is 'season-year' or it's rename.
-    select from list by label    ${season_year_select_path}    ${label}
+    ${default}    Get selected list label    ${season_year_select_path}
+    Return from keyword if    '${default}'=='${label}'
+    Select from list by label    ${season_year_select_path}    ${label}
     click element    name=view
     wait until page contains element    //option[@selected and text()='${label}']    #//option[@selected and text()='SP-2018']
 
@@ -158,6 +160,9 @@ Go To UPC Page
     Wait Until Page Contains Element    ${sb_upc_title1_path}
 
 Go to advanced search page
+    ${selected_value}    Get selected list value    name=seasonandyear
+    Run keyword if    '${selected_value}'=='0'    Select from list by index    name=seasonandyear    1
+    Run keyword if    '${selected_value}'=='0'    Click button    View
     Wait until keyword succeeds    30 sec    3 sec    Page should contain link    Advanced Search
     Click Link    Advanced Search
     Wait Until Page Contains Element    ${sb_as_style_input_path}

@@ -43,4 +43,7 @@ ${color_info_left_body_table_path}    //div[@class='DTFC_LeftBodyWrapper']/table
 ${style_colors_code_desc_jquery}    var result=[];$("div.DTFC_LeftWrapper input[type='text']").each(function(){result.push($(this).val()); });return result;
 ${style_colors_descs_jquery}    var result=[];$("div.DTFC_LeftWrapper input[name='colorname']").each(function(){result.push($(this).val()); });return result;
 ${style_colors_codes_jquery}    var result=[];$("div.DTFC_LeftWrapper input[name='colorcode']").each(function(){result.push($(this).val()); });return result;
-${fb_td_text_xpath}	//td[@id='{fb}']/following-sibling::td[1]
+${fb_td_text_xpath}    //td[@id='{fb}']/following-sibling::td[1]
+${save_size_info_button}    name=save size info
+${remove_style_button}    Remove Style
+${save_color_info_button}    name=save color info

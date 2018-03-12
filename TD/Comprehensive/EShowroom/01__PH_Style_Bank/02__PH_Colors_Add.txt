@@ -1,0 +1,918 @@
+*** Settings ***
+Suite Setup       Styles or PH styles needed before testing
+Suite Teardown    Del ph styles after testing
+Default Tags      PH-CADD
+Resource          ../../../td_page_actions/style_bank_actions_res.txt
+Resource          ../style_bank_test_data_ef.txt
+Variables         ../style_bank_test_variables_ef.py
+Resource          ../../../td_page_actions/ph_styles_actions_res.txt
+Resource          ../PH_style_bank_keywords.txt
+Resource          ../../File_Uploads/Upload_Linesheet/upload_linesheet_action_res.txt
+Variables         ../style_bank_renamed_attributes.py
+
+*** Test Cases ***
+PlaceHolderColorInfo-Check
+    [Documentation]    [ER-80080] ACS Color 125 with Color Name 125-BLACK/RED cannot be added for Style# - Fabric Code 11112, since ACS Color 110 with Color Name 125-BLACK/RED
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain element    ${season_year_select_path}
+    ${default_season_year}    Get selected list label    ${season_year_select_path}    #FALL-2018
+    ${default_PlaceHolderStyles_year}    Fetch from right    ${default_season_year}    -
+    ${default_PlaceHolderStyles_season}    Fetch from left    ${default_season_year}    -
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    text and buttons
+    Run keyword and continue on failure    Page should contain    [ *Required fields ]
+    Run keyword and continue on failure    Page should contain    Last Modified:
+    Run keyword and continue on failure    Page should contain    Modified by:
+    Run keyword and continue on failure    Page should contain button    Save Style Info
+    Run keyword and continue on failure    Page should contain button    More Colors
+    Comment    require attributes    Require is color desc
+    ${style_level_required_attributes_count}    Get matching xpath count    //b[@class='required']
+    Run keyword and continue on failure    Should be equal as integers    ${style_level_required_attributes_count}    3
+    ${color_level_required_attributes_count}    Get matching xpath count    //th[@class='required']
+    Run keyword and continue on failure    Should be equal as integers    ${color_level_required_attributes_count}    1
+    ${style_required_attributes}    Execute javascript    var result=[];$("b.required").each(function(){result.push($(this).text()); });return result;
+    ${expected_required_attributes}    Create List    * Existing ${DEFINED_ATTR_NAMES['Style #']}    *${DEFINED_ATTR_NAMES['Season']}    *${DEFINED_ATTR_NAMES['Year']}
+    Run keyword and continue on failure    Lists should be equal    ${style_required_attributes}    ${EXPECTED_COLORINFO_STYLEATTRIBUTES}
+    ${color_level_required}    Get text    css=th.required    #color desc
+    ${color_level_required_first_char}    Get substring    ${color_level_required}    0    1
+    Run keyword and continue on failure    Should be equal as strings    ${color_level_required_first_char}    *    Color level required attribute does not start with *
+    Comment    thead titles
+    ${color_attributes}    Execute javascript    var result=[];$("table#mt th").each(function(){result.push($(this).text()); });return result;
+    Remove values from list    ${color_attributes}    ${EMPTY}    ${SPACE}
+    Remove values from list    ${color_attributes}    \xa0    #There are blank titles at color attributes text's front and end, so remove it
+    Log    ${color_attributes}
+    ${expected_ths_color_info_page}    Create List    ${DEFINED_ATTR_NAMES['Color Code']}    *${DEFINED_ATTR_NAMES['Color Desc']}    ${DEFINED_ATTR_NAMES['NRF Color Code']}    ${DEFINED_ATTR_NAMES['Pattern #']}    ${DEFINED_ATTR_NAMES['Material Type']}
+    ...    ${DEFINED_ATTR_NAMES['Product Team']}    ${DEFINED_ATTR_NAMES['Vendor Color Family']}    ${DEFINED_ATTR_NAMES['Replenishment Indicator']}    ${DEFINED_ATTR_NAMES['STD Cost']}    ${DEFINED_ATTR_NAMES['Transfer Price']}    ${DEFINED_ATTR_NAMES['WHSL']}
+    ...    ${DEFINED_ATTR_NAMES['Low Cost']}    ${DEFINED_ATTR_NAMES['MSRP']}    ${DEFINED_ATTR_NAMES['Low Retail']}    ${DEFINED_ATTR_NAMES['Color Category']}    ${DEFINED_ATTR_NAMES['Color Type']}    ${DEFINED_ATTR_NAMES['Color Info']}
+    ...    ${DEFINED_ATTR_NAMES['Color Indicator']}    ${DEFINED_ATTR_NAMES['Factory']}    Share to Child
+    Run keyword and continue on failure    Lists should be equal    ${color_attributes}    ${expected_ths_color_info_page}
+    ${default_color_rows}    Get matching xpath count    //input[@name='deletecolorid']
+    Run keyword and continue on failure    Should be equal as integers    ${default_color_rows}    6    Default Color rows is not 6.
+    Comment    Default selected season year
+    Run keyword and continue on failure    List selection should be    name=seasonid    ${default_PlaceHolderStyles_season}
+    Run keyword and continue on failure    List selection should be    name=year    ${default_PlaceHolderStyles_year}
+    Comment    textbox should be Blank    Other Attributes default display should be blank
+    ${style_value}    Get value    name=stylenum
+    Run keyword and continue on failure    Should be empty    ${style_value}
+    ${input_text_default_values}    Execute javascript    var result=[];$("input[type='text']").each(function(){result.push($(this).val()); });return result;    #blank input include style, color, size level
+    ${input_text_blank_match_count}    Get count    ${input_text_default_values}    ${EMPTY}
+    Run keyword and continue on failure    Should be equal as integers    ${input_text_blank_match_count}    91    Default count of blank Textareas is not 91.
+    Run keyword and continue on failure    List selection should be    name=materialtype    ${SPACE}
+    Run keyword and continue on failure    List selection should be    name=productteam    ${SPACE}
+    Run keyword and continue on failure    List selection should be    name=vendorcolorfamily    ${SPACE}
+    Run keyword and continue on failure    List selection should be    name=replenishmentindicator    ${SPACE}
+    Run keyword and continue on failure    Checkbox should not be selected    name=issharetochild
+    Comment    More Colors button
+    Click button    More Colors    #5 rows added
+    ${default_color_rows}    Get matching xpath count    //input[@name='deletecolorid']
+    Run keyword and continue on failure    Should be equal as integers    ${default_color_rows}    11
+
+Style empty
+    &{style_infos}    Create dictionary    stylenum=${EMPTY}
+    ${color_infos}    Create dictionary
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Run keyword and continue on failure    Page should contain    ErrorMessage
+    Run keyword and continue on failure    Page should contain    [ER-30112] The style must have a ${DEFINED_ATTR_NAMES['Style #']} and ${DEFINED_ATTR_NAMES['Color Desc']}.    #${DEFINED_ATTR_NAMES['Style #']}    ${DEFINED_ATTR_NAMES['Color Desc']}
+    Run keyword and continue on failure    Page should contain button    Back
+
+Add-Color-season year empty
+    [Documentation]    Can create a new ph style
+    &{style_infos}    Create dictionary    stylenum=AT-00025    seasonid=${EMPTY}    year=${EMPTY}
+    ${color_infos}    Create dictionary    colorcode=001    colorname=BLACK
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Run keyword and continue on failure    Page should contain    ErrorMessage
+    Run keyword and continue on failure    Page should contain    [ER-30369] You must select one Fashion Season and one Year for a style, Please check your information and re-enter.    #${DEFINED_ATTR_NAMES['Season']}    ${DEFINED_ATTR_NAMES['Year']}
+    Run keyword and continue on failure    Page should contain button    Back
+
+Add-Color-color name empty
+    [Documentation]    Can create a new ph style
+    &{style_infos}    Create dictionary    stylenum=AT-00025    seasonid=SPRING    year=2018
+    ${color_infos}    Create dictionary
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Run keyword and continue on failure    Page should contain    ErrorMessage
+    Run keyword and continue on failure    Page should contain    [ER-30112] The style must have a ${DEFINED_ATTR_NAMES['Style #']} and ${DEFINED_ATTR_NAMES['Color Desc']}.
+    Run keyword and continue on failure    Page should contain button    Back
+
+Add-Color-modified by share to child
+    [Documentation]    Can delete the PH color to re-executed
+    &{style_infos}    Create dictionary    stylenum=AT-00025    seasonid=SPRING    year=2018
+    ${color_infos_a}    Create dictionary    colorcode=002    colorname=WHITE
+    ${color_infos_b}    Create dictionary    colorcode=003    colorname=RED
+    @{colors_infos}    Create list    ${color_infos_a}    ${color_infos_b}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment
+    ${edit_style_infos}    Create dictionary    stylenum=${style_infos['stylenum']}    seasonid=SPRING    year=2018
+    ${edit_color_infos_a}    Create dictionary    colorcode=003    colorname=RED    issharetochild=Y
+    ${edit_color_infos_b}    Create dictionary    colorcode=002    colorname=WHITE    issharetochild=Y
+    ${edit_colors_infos}    Create list    ${edit_color_infos_a}    ${edit_color_infos_b}
+    Edit in Place Holder Color Info page    @{edit_colors_infos}    &{edit_style_infos}
+    Comment    Verify modified data
+    ${style_id}    Get value    //td[contains(text(),"${style_infos['stylenum']}")]/preceding-sibling::td/input[@name='placeholderstyleid']
+    Click element    //a[contains(@href,'styleid=${style_id}') and text()='Edit']
+    Wait until page contains    PlaceHolderColorInfo
+    ${order_color_codes_modified}    Execute Javascript    var result=[];$("input[name='colorcode']").each(function(){result.push($(this).val()); });return result;
+    ${order_color_names_modified}    Execute Javascript    var result=[];$("input[name='colorname']").each(function(){result.push($(this).val()); });return result;
+    Remove values from list    ${order_color_codes_modified}    ${EMPTY}
+    Remove values from list    ${order_color_names_modified}    ${EMPTY}
+    ${expected_ordered_color_codes}    Create list    003    002
+    ${expected_ordered_color_names}    Create list    RED    WHITE
+    Run keyword and continue on failure    Lists should be equal    ${order_color_codes_modified}    ${expected_ordered_color_codes}
+    Run keyword and continue on failure    Lists should be equal    ${order_color_names_modified}    ${expected_ordered_color_names}
+    : FOR    ${edit_color_infos}    IN    @{edit_colors_infos}
+    \    ${color_name}    Get from dictionary    ${edit_color_infos}    colorname
+    \    Run keyword and continue on failure    Element should be disabled    //input[@name='colorname' and @value='${color_name}']/parent::td/following-sibling::td/input[@name='issharetochild']
+    Comment    Verify on child companies
+    Click element    id=corporate-text
+    ${all_companies}    Get list items    //select[@name='access']
+    Remove from list    ${all_companies}    0
+    : FOR    ${child_company}    IN    @{all_companies}
+    \    Select from list by label    name=access    ${child_company}
+    \    Wait until page contains    -${child_company}    #    -EF International
+    \    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    \    Wait until page contains    PlaceHolderStyles
+    \    Advanced search on style bank by style    ${style_infos['stylenum']}
+    \    Run keyword and continue on failure    Table column should contain    css=table.table1    2    ${style_infos['stylenum']}
+    \    Click element    //a[contains(@href,'styleid=${style_id}') and text()='View']
+    \    Wait until page contains    PlaceHolderColorInfo    10
+    \    Run keyword and continue on failure    Page should contain button    Back
+    \    Run keyword and continue on failure    Page should not contain element    //input[@name='issharetochild']
+    \    Click button    Back
+    \    Wait until page contains    PlaceHolderStyles
+    \    Click element    id=corporate-text
+    Select from list by index    name=access    0
+    Wait until page contains    -${COMPANY}
+
+Edit-delete color
+    &{style_infos}    Create dictionary    stylenum=AT-00025    seasonid=SPRING    year=2018
+    ${color_infos_a}    Create dictionary    colorcode=002    colorname=WHITE    deletecolorid=Y
+    ${color_infos_b}    Create dictionary    colorcode=003    colorname=RED
+    @{colors_infos}    Create list    ${color_infos_a}    ${color_infos_b}
+    Edit in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify modified data
+    ${style_id}    Get value    //td[contains(text(),"${style_infos['stylenum']}")]/preceding-sibling::td/input[@name='placeholderstyleid']
+    Click element    //a[contains(@href,'styleid=${style_id}') and text()='Edit']
+    Wait until page contains    PlaceHolderColorInfo
+    ${order_color_names_modified}    Execute Javascript    var result=[];$("input[name='colorname']").each(function(){result.push($(this).val()); });return result;
+    Run keyword and continue on failure    List should not contain value    ${order_color_names_modified}    WHITE    Color name "WHITE" is not deleted.
+
+Add-Color-style unexist
+    [Documentation]    Can create a new ph style
+    ${style_number}    Generate random string    10
+    &{style_infos}    Create dictionary    stylenum=${style_number}
+    ${color_infos}    Create dictionary
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Run keyword and continue on failure    Page should contain    ErrorMessage
+    Run keyword and continue on failure    Page should contain    [ER-30145] Style ${style_number} does not exist in the system.
+    Run keyword and continue on failure    Page should contain button    Back
+
+Add-Color-style only exist in sb 2
+    [Documentation]    Style with season-year is in SB, new color code and color name. Result: would create PH color.
+    &{style_infos}    Create dictionary    stylenum=AT-00026    seasonid=FALL    year=2018    #style in style bank
+    ${color_infos}    Create dictionary    colorcode=003    colorname=RED    #new color name and color code    color_name=color_code    length of color code less than 4
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    PlaceHolderStyles
+    Run keyword and continue on failure    Table column should contain    css=table.table1    2    ${style_infos['stylenum']}
+    ${added_style_colors}    Get PH colors for a PH Style    ${style_infos['stylenum']}
+    Log    ${added_style_colors}
+    ${expected_ph_colors}    Create list
+    : FOR    ${color_info}    IN    @{colors_infos}
+    \    ${color_code}    Get from dictionary    ${color_info}    colorcode
+    \    ${color_name}    Get from dictionary    ${color_info}    colorname
+    \    ${expected_ph_color}    Create dictionary    stylenum=${style_infos['stylenum']}    colorcode=${color_code}    colorname=${color_name}
+    \    Append to list    ${expected_ph_colors}    ${expected_ph_color}
+    Lists should be equal    ${expected_ph_colors}    ${added_style_colors}
+
+Add-Color-style only exist in sb 3
+    [Documentation]    Style with season-year is in SB, color code in SB and new color name. Result:error message.
+    &{style_infos}    Create dictionary    stylenum=AT-00026    seasonid=FALL    year=2018    #style in style bank
+    ${color_infos}    Create dictionary    colorcode=001    colorname=RED    #color name not in sb    color code in sb    color_name=color_code
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    ErrorMessage    10
+    ${style_number}    Get from dictionary    ${style_infos}    stylenum
+    ${color_name_exist_in_sb}    Get from dictionary    ${color_infos}    colorname
+    Page should contain    [ER-80080] ${DEFINED_ATTR_NAMES['Color Code']} 001 with ${DEFINED_ATTR_NAMES['Color Desc']} RED cannot be added for ${DEFINED_ATTR_NAMES['Style #']} ${style_number}, since ${DEFINED_ATTR_NAMES['Color Code']} 003 with ${DEFINED_ATTR_NAMES['Color Desc']} RED already exists for ${DEFINED_ATTR_NAMES['Style #']} ${style_number}. ${DEFINED_ATTR_NAMES['Color Desc']} cannot be duplicated.    #    [ER-30382] This Style/Color combination ${style_number} - ${color_name_exist_in_sb} already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+
+Add-Color-style only exist in sb 4
+    [Documentation]    Style in SB, season-year not in SB, color code in SB and new color name. Result:error message.
+    &{style_infos}    Create dictionary    stylenum=AT-00026    seasonid=RESORT    year=2017    #style in style bank    #season-year not in sb
+    ${color_infos}    Create dictionary    colorcode=001    colorname=RED    #color name not in sb    color code in sb
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    ErrorMessage    10
+    ${style_number}    Get from dictionary    ${style_infos}    stylenum
+    ${color_name_exist_in_sb}    Get from dictionary    ${color_infos}    colorname
+    Page should contain    [ER-80080] ${DEFINED_ATTR_NAMES['Color Code']} 001 with ${DEFINED_ATTR_NAMES['Color Desc']} RED cannot be added for ${DEFINED_ATTR_NAMES['Style #']} ${style_number}, since ${DEFINED_ATTR_NAMES['Color Code']} 003 with ${DEFINED_ATTR_NAMES['Color Desc']} RED already exists for ${DEFINED_ATTR_NAMES['Style #']} ${style_number}. ${DEFINED_ATTR_NAMES['Color Desc']} cannot be duplicated.    #    [ER-80080] ${DEFINED_ATTR_NAMES['Color Code']} 001 with ${DEFINED_ATTR_NAMES['Color Desc']} RED cannot be added for ${DEFINED_ATTR_NAMES['Style #']} SB-AT-001-TEST1, since ${DEFINED_ATTR_NAMES['Color Code']} 003 with ${DEFINED_ATTR_NAMES['Color Desc']} RED already exists for ${DEFINED_ATTR_NAMES['Style #']} SB-AT-001-TEST1. ${DEFINED_ATTR_NAMES['Color Desc']} cannot be duplicated.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+
+Add-Color-style only exist in sb 5
+    [Documentation]    Style and season-year in SB, new color code and color name in SB. Result:error message.
+    &{style_infos}    Create dictionary    stylenum=AT-00026    seasonid=FALL    year=2018    #style in style bank    #season-year in sb
+    ${color_infos}    Create dictionary    colorcode=BLK    colorname=BLACK    #color name in sb    color code not in sb
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    ErrorMessage    10
+    ${style_number}    Get from dictionary    ${style_infos}    stylenum
+    ${color_name_exist_in_sb}    Get from dictionary    ${color_infos}    colorname
+    Page should contain    [ER-30382] This Style/Color combination ${style_number} - ${color_name_exist_in_sb} already exists in the system for FALL - 2018. Please check your information and re-enter.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+
+Add-Color-style only exist in sb 6
+    [Documentation]    Style in SB, season-year not in SB, new color code and color name in SB . Result:error message.
+    &{style_infos}    Create dictionary    stylenum=AT-00027    seasonid=RESORT    year=2017    #style in style bank    #season-year not in sb
+    ${color_infos}    Create dictionary    colorcode=BLK    colorname=BLACK    #color name in sb    color code not in sb
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on New Style Page
+    Wait until page contains    NewStyle    10
+    Check New Style Page    ${style_infos['stylenum']}    ${style_infos['seasonid']}    ${style_infos['year']}
+    Click button    Cancel
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Verify on Place Holder Styles
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Run keyword and continue on failure    Table column should contain    css=table.table1    2    ${style_infos['stylenum']}
+    Comment    ${ph_style_id}    Get value
+    Comment    Click element    `
+    Comment    Check Place Holder Info whith style in style bank
+
+Add-Color-style only exist in sb 7
+    &{style_infos}    Create dictionary    stylenum=AT-00026    seasonid=FALL    year=2018    #style in style bank    #season-year in sb
+    ${color_infos}    Create dictionary    colorcode=001    colorname=BLACK    #color name in sb    color code in sb
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    ErrorMessage    10
+    ${style_number}    Get from dictionary    ${style_infos}    stylenum
+    ${color_name_exist_in_sb}    Get from dictionary    ${color_infos}    colorname
+    Page should contain    [ER-30382] This Style/Color combination ${style_number} - ${color_name_exist_in_sb} already exists in the system for FALL - 2018. Please check your information and re-enter.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+    #    Is modified area should maintain    currently not maintain
+
+Add-Color-style only exist in sb 8
+    &{style_infos}    Create dictionary    stylenum=AT-00026    seasonid=FALL    year=2018    #season-year not in sb
+    ${color_infos}    Create dictionary    colorcode=002    colorname=WHITE    #color name in sb    color code in sb
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    ErrorMessage    10
+    ${style_number}    Get from dictionary    ${style_infos}    stylenum
+    ${color_name_exist_in_sb}    Get from dictionary    ${color_infos}    colorname
+    Page should contain    [ER-30382] This Style/Color combination ${style_number} - ${color_name_exist_in_sb} already exists in the system for FALL - 2018. Please check your information and re-enter.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+
+Add-Color-style both exist in ph and sb 1
+    [Documentation]    There is a PH style in the PH style bank.
+    &{style_infos}    Create dictionary    stylenum=PH-AT-001    seasonid=SPRING    year=2018
+    ${color_infos}    Create dictionary    colorcode=003    colorname=RED
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    ErrorMessage    10
+    ${style_number}    Get from dictionary    ${style_infos}    stylenum
+    ${color_name_exist_in_sb}    Get from dictionary    ${color_infos}    colorname
+    Page should contain    [ER-30123] Please enter a ${DEFINED_ATTR_NAMES['Style #']} that exists in the Style Bank.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+
+Add-Color-style both exist in ph and sb 2
+    [Documentation]    There is a PH style in the PH style bank.
+    &{style_infos}    Create dictionary    stylenum=PH-AT-001    seasonid=SPRING    year=2019
+    ${color_infos}    Create dictionary    colorcode=004    colorname=BLUE
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    ErrorMessage    10
+    ${style_number}    Get from dictionary    ${style_infos}    stylenum
+    ${color_name_exist_in_sb}    Get from dictionary    ${color_infos}    colorname
+    Page should contain    [ER-30123] Please enter a ${DEFINED_ATTR_NAMES['Style #']} that exists in the Style Bank.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+
+Add-Color-style both exist in ph and sb 3
+    [Documentation]    There is a PH style in the PH style bank.
+    &{style_infos}    Create dictionary    stylenum=PH-AT-001    seasonid=SPRING    year=2018
+    ${color_infos}    Create dictionary    colorcode=001    colorname=BLACK
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    ErrorMessage    10
+    ${style_number}    Get from dictionary    ${style_infos}    stylenum
+    ${color_name_exist_in_sb}    Get from dictionary    ${color_infos}    colorname
+    Page should contain    [ER-30123] Please enter a ${DEFINED_ATTR_NAMES['Style #']} that exists in the Style Bank.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+
+Add-Color-style both exist in ph and sb 4
+    [Documentation]    There is a PH style in the PH style bank.
+    &{style_infos}    Create dictionary    stylenum=PH-AT-001    seasonid=SPRING    year=2019
+    ${color_infos}    Create dictionary    colorcode=001    colorname=BLACK
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    ErrorMessage    10
+    ${style_number}    Get from dictionary    ${style_infos}    stylenum
+    ${color_name_exist_in_sb}    Get from dictionary    ${color_infos}    colorname
+    Page should contain    [ER-30123] Please enter a ${DEFINED_ATTR_NAMES['Style #']} that exists in the Style Bank.
+    Page should contain button    Back
+    Click button    Back
+    Wait until page contains    PlaceHolderColorInfo
+
+Add-Color-style both exist in ph and sb 5
+    [Documentation]    style with season-year in sb, new color code and color name.
+    ...    Result: New ph colors created
+    &{style_infos}    Create dictionary    stylenum=PH-SB-AT-001    seasonid=FALL    year=2018
+    ${color_infos_a}    Create dictionary    colorcode=004    colorname=BLUE
+    ${color_infos_b}    Create dictionary    colorcode=009    colorname=PINK
+    @{colors_infos}    Create list    ${color_infos_a}    ${color_infos_b}
+    Comment    Comment
+    Comment    &{add_style_infos}    Create dictionary    stylenum=PH-SB-AT-001    seasonid=SPRING    year=2018
+    Comment    ${add_color_infos}    Create dictionary    colorcode=001    colorname=BLACk
+    Comment    @{add_colors_infos}    Create list    ${add_color_infos}
+    Comment    Add in Place Holder info page    @{add_colors_infos}    &{add_style_infos}    #new ph style
+    Comment    &{add_style_infos}    Create dictionary    stylenum=PH-SB-AT-001    seasonid=SPRING    year=2019
+    Comment    ${add_color_infos}    Create dictionary    colorcode=003    colorname=RED
+    Comment    @{add_colors_infos}    Create list    ${add_color_infos}
+    Comment    Add in Place Holder info page    @{add_colors_infos}    &{add_style_infos}    #new ph style
+    Comment    Comment
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}    #new ph color
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    PlaceHolderStyles
+    ${default_season_year}    Get selected list label    name=seasonandyear
+    Should be equal as strings    ${default_season_year}    ${style_infos['seasonid']}-${style_infos['year']}
+    Page should contain    ${style_infos['stylenum']}
+    ${all_style_colors}    Get PH colors for a PH Style    ${style_infos['stylenum']}
+    Log    ${all_style_colors}
+    ${expected_ph_colors}    Create list
+    : FOR    ${color_info}    IN    @{colors_infos}
+    \    ${color_code}    Get from dictionary    ${color_info}    colorcode
+    \    ${color_name}    Get from dictionary    ${color_info}    colorname
+    \    ${expected_ph_color}    Create dictionary    stylenum=${style_infos['stylenum']}    colorcode=${color_code}    colorname=${color_name}
+    \    Append to list    ${expected_ph_colors}    ${expected_ph_color}
+    Run keyword and continue on failure    List should contain sublist    ${all_style_colors}    ${expected_ph_colors}
+    Comment    clear data
+    ${style_colors_a}    Create dictionary    stylenum=PH-SB-AT-001    colorcode=004    colorname=BLUE
+    ${style_colors_b}    Create dictionary    stylenum=PH-SB-AT-001    colorcode=009    colorname=PINK
+    @{styles_colors}    Create list    ${style_colors_a}    ${style_colors_b}
+    Del ph colors by searched    FALL    2018    @{styles_colors}
+
+Add-Color-style both exist in ph and sb 6
+    [Documentation]    Style in SB, new season-year, new color code and color name.
+    ...    Result: New PH style created.
+    &{style_infos}    Create dictionary    stylenum=PH-SB-AT-001    seasonid=FALL    year=2019
+    ${color_infos}    Create dictionary    colorcode=005    colorname=GREEN
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on New Style Page
+    Wait until page contains    NewStyle    10
+    Check New Style Page    ${style_infos['stylenum']}    ${style_infos['seasonid']}    ${style_infos['year']}
+    Click button    Populate
+    Click button    Submit
+    Wait until page contains    PlaceHolderStyles
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    PlaceHolderStyles
+    ${default_season_year}    Get selected list label    name=seasonandyear
+    Run keyword and continue on failure    Should be equal as strings    ${default_season_year}    ${style_infos['seasonid']}-${style_infos['year']}    Need to confirm with Iris. Default season-year belongs to the new created or keep it as previously
+    Comment    verify data
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Page should contain    ${style_infos['stylenum']}
+    Comment    Verify modified data
+    ${style_id}    Get value    //td[contains(text(),"${style_infos['stylenum']}")]/preceding-sibling::td/input[@name='placeholderstyleid']
+    Click element    //a[contains(@href,'styleid=${style_id}') and text()='Edit']
+    Wait until page contains    PlaceHolderInfo
+    ${m_color_codes}    Execute Javascript    var result=[];$("input[name='colorcode']").each(function(){result.push($(this).val()); });return result;
+    Remove values from list    ${m_color_codes}    ${EMPTY}
+    Log    ${m_color_codes}
+    ${m_color_names}    Execute Javascript    var result=[];$("input[name='colorname']").each(function(){result.push($(this).val()); });return result;
+    Remove values from list    ${m_color_names}    ${EMPTY}
+    Log    ${m_color_names}
+    ${m_colors_infos}    Create list
+    :FOR    ${m_color_code}    ${m_color_name}    IN ZIP    ${m_color_codes}    ${m_color_names}
+    \    ${m_color_infos}    Create dictionary    colorcode=${m_color_code}    colorname=${m_color_name}
+    \    Append to list    ${m_colors_infos}    ${m_color_infos}
+    Log    ${m_colors_infos}
+    Run keyword and continue on failure    Lists should be equal    ${m_colors_infos}    ${colors_infos}
+    Go back
+    Comment    clear data
+    Del ph styles by searched    FALL    2019    PH-SB-AT-001
+
+Add-Color-style both exist in ph and sb 7
+    [Documentation]    style with season-year in SB. color code and color name in SB.
+    ...    Result: error message.
+    &{style_infos}    Create dictionary    stylenum=PH-SB-AT-001    seasonid=FALL    year=2018
+    ${color_infos}    Create dictionary    colorcode=001    colorname=BLACK
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Run keyword and continue on failure    page should contain    ErrorMessage
+    Run keyword and continue on failure    page should contain    [ER-30382] This Style/Color combination ${style_infos['stylenum']} - ${color_infos['colorname']} already exists in the system for ${style_infos['seasonid']} - ${style_infos['year']}. Please check your information and re-enter.
+    Run keyword and continue on failure    page should contain button    Back
+
+Add-Color-style both exist in ph and sb 8
+    &{style_infos}    Create dictionary    stylenum=PH-SB-AT-001    seasonid=FALL    year=2019
+    ${color_infos}    Create dictionary    colorcode=002    colorname=WHITE
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on New Style Page
+    Wait until page contains    NewStyle    10
+    Check New Style Page    ${style_infos['stylenum']}    ${style_infos['seasonid']}    ${style_infos['year']}
+    Click button    Populate
+    Click button    Submit
+    Wait until page contains    PlaceHolderStyles
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    PlaceHolderStyles
+    ${default_season_year}    Get selected list label    name=seasonandyear
+    Run keyword and continue on failure    Should be equal as strings    ${default_season_year}    ${style_infos['seasonid']}-${style_infos['year']}    Need to confirm with Iris. Default season-year belongs to the new created or keep it as previously
+    Comment    Page should contain    ${style_infos['stylenum']}
+    Comment    ${added_style_colors}    Get PH colors for a PH Style    ${style_infos['stylenum']}
+    Comment    Log    ${added_style_colors}
+    Comment    ${expected_ph_colors}    Create list
+    Comment    : FOR    ${color_info}    IN    @{colors_infos}
+    Comment    \    ${color_code}    Get from dictionary    ${color_info}    colorcode
+    Comment    \    ${color_name}    Get from dictionary    ${color_info}    colorname
+    Comment    \    ${expected_ph_color}    Create dictionary    stylenum=${style_infos['stylenum']}    colorcode=${color_code}    colorname=${color_name}
+    Comment    \    Append to list    ${expected_ph_colors}    ${expected_ph_color}
+    Comment    Lists should be equal    ${expected_ph_colors}    ${added_style_colors}
+    Comment    verify data
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Page should contain    ${style_infos['stylenum']}
+    Comment    Verify modified data
+    ${style_id}    Get value    //td[contains(text(),"${style_infos['stylenum']}")]/preceding-sibling::td/input[@name='placeholderstyleid']
+    Click element    //a[contains(@href,'styleid=${style_id}') and text()='Edit']
+    Wait until page contains    PlaceHolderInfo
+    ${m_color_codes}    Execute Javascript    var result=[];$("input[name='colorcode']").each(function(){result.push($(this).val()); });return result;
+    Remove values from list    ${m_color_codes}    ${EMPTY}
+    Log    ${m_color_codes}
+    ${m_color_names}    Execute Javascript    var result=[];$("input[name='colorname']").each(function(){result.push($(this).val()); });return result;
+    Remove values from list    ${m_color_names}    ${EMPTY}
+    Log    ${m_color_names}
+    ${m_colors_infos}    Create list
+    :FOR    ${m_color_code}    ${m_color_name}    IN ZIP    ${m_color_codes}    ${m_color_names}
+    \    ${m_color_infos}    Create dictionary    colorcode=${m_color_code}    colorname=${m_color_name}
+    \    Append to list    ${m_colors_infos}    ${m_color_infos}
+    Log    ${m_colors_infos}
+    Run keyword and continue on failure    Lists should be equal    ${m_colors_infos}    ${colors_infos}
+    Go back
+    Comment    clear data
+    Del ph styles by searched    FALL    2019    PH-SB-AT-001
+
+Add-Color-style both exist in ph and sb 9
+    &{style_infos}    Create dictionary    stylenum=PH-SB-AT-001    seasonid=SPRING    year=2018
+    ${color_infos}    Create dictionary    colorcode=006    colorname=YELLOW
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    PlaceHolderStyles
+    ${default_season_year}    Get selected list label    name=seasonandyear
+    Should be equal as strings    ${default_season_year}    ${style_infos['seasonid']}-${style_infos['year']}
+    Page should contain    ${style_infos['stylenum']}
+    ${all_style_colors}    Get PH colors for a PH Style    ${style_infos['stylenum']}
+    Log    ${all_style_colors}
+    ${expected_ph_colors}    Create list
+    : FOR    ${color_info}    IN    @{colors_infos}
+    \    ${color_code}    Get from dictionary    ${color_info}    colorcode
+    \    ${color_name}    Get from dictionary    ${color_info}    colorname
+    \    ${expected_ph_color}    Create dictionary    stylenum=${style_infos['stylenum']}    colorcode=${color_code}    colorname=${color_name}
+    \    Append to list    ${expected_ph_colors}    ${expected_ph_color}
+    Run keyword and continue on failure    List should contain sublist    ${all_style_colors}    ${expected_ph_colors}
+
+Add-Color-style both exist in ph and sb 10
+    &{style_infos}    Create dictionary    stylenum=PH-SB-AT-001    seasonid=FALL    year=2019
+    ${color_infos}    Create dictionary    colorcode=007    colorname=PURPLE
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Run keyword and continue on failure    page should contain    ErrorMessage
+    Run keyword and continue on failure    page should contain    [ER-30123] Please enter a ${DEFINED_ATTR_NAMES['Style #']} that exists in the Style Bank.
+    Run keyword and continue on failure    page should contain button    Back
+
+Add-Color-style both exist in ph and sb 11
+    &{style_infos}    Create dictionary    stylenum=PH-SB-AT-001    seasonid=SPRING    year=2018
+    ${color_infos}    Create dictionary    colorcode=001    colorname=BLACK
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Run keyword and continue on failure    page should contain    ErrorMessage
+    Run keyword and continue on failure    page should contain    [ER-30382] This Style/Color combination ${style_infos['stylenum']} - ${color_infos['colorname']} already exists in the system for ${style_infos['seasonid']} - ${style_infos['year']}. Please check your information and re-enter.
+    Run keyword and continue on failure    page should contain button    Back
+
+Add-Color-style both exist in ph and sb 12
+    &{style_infos}    Create dictionary    stylenum=PH-SB-AT-001    seasonid=FALL    year=2019
+    ${color_infos}    Create dictionary    colorcode=003    colorname=RED
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Run keyword and continue on failure    page should contain    ErrorMessage
+    Run keyword and continue on failure    page should contain    [ER-30123] Please enter a ${DEFINED_ATTR_NAMES['Style #']} that exists in the Style Bank.
+    Run keyword and continue on failure    page should contain button    Back
+
+Add-Color-style both exist in ph and sb 13
+    [Documentation]    style in sb, testing season-year in PH style bank, and with new color code and new color name.
+    ...
+    ...    Result: New PH color created.
+    &{style_infos}    Create dictionary    stylenum=PH-SB-AT-001    seasonid=SPRING    year=2019
+    ${color_infos}    Create dictionary    colorcode=008    colorname=GRAY
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment    Verify on Place Holder Styles
+    Wait until page contains    PlaceHolderStyles
+    ${default_season_year}    Get selected list label    name=seasonandyear
+    Should be equal as strings    ${default_season_year}    ${style_infos['seasonid']}-${style_infos['year']}
+    Page should contain    ${style_infos['stylenum']}
+    ${all_ph_style_colors}    Get PH colors for a PH Style    ${style_infos['stylenum']}
+    Log    ${all_ph_style_colors}
+    ${expected_ph_colors}    Create list
+    : FOR    ${color_info}    IN    @{colors_infos}
+    \    ${color_code}    Get from dictionary    ${color_info}    colorcode
+    \    ${color_name}    Get from dictionary    ${color_info}    colorname
+    \    ${expected_ph_color}    Create dictionary    stylenum=${style_infos['stylenum']}    colorcode=${color_code}    colorname=${color_name}
+    \    Append to list    ${expected_ph_colors}    ${expected_ph_color}
+    Run keyword and continue on failure    List should contain sublist    ${all_ph_style_colors}    ${expected_ph_colors}
+    Comment    clear data
+    ${style_colors_a}    Create dictionary    stylenum=PH-SB-AT-001    colorcode=008    colorname=GRAY
+    @{styles_colors}    Create list    ${style_colors_a}
+    Del ph colors by searched    SPRING    2019    @{styles_colors}
+
+Add-Color-SB-Duplicated1
+    Comment    Exist condition
+    ${SB-AT-002}    Set variable    SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    BLACK=003
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${SB-AT-002} - BLACK already exists in the system for ${input_ph_season} - ${input_ph_year}. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SB-Duplicated2
+    Comment    Exist condition
+    ${SB-AT-002}    Set variable    SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    RED=001
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${SB-AT-002} - RED already exists in the system for ${input_ph_season} - ${input_ph_year}. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated1
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    WHITE=DU01
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${PH-SB-AT-002} - WHITE already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated2
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    DUN02=002
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${PH-SB-AT-002} - DUN02 already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated3
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    BLACK=DU03
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${PH-SB-AT-002} - BLACK already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated4
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    DUN04=001
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${PH-SB-AT-002} - DUN04 already exists in the system for SPRING - 2018. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated5
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    BLACK=DU05
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    FALL
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${PH-SB-AT-002} - BLACK already exists in the system for FALL - 2018. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated6
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    DUN06=001
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    FALL
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30382] This Style/Color combination ${PH-SB-AT-002} - DUN06 already exists in the system for FALL - 2018. Please check your information and re-enter.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated7
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    RED=DU07
+    ${input_ph_year}    Set variable    2019
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30123] Please enter a ${DEFINED_ATTR_NAMES['Style #']} that exists in the Style Bank.
+    Comment    Source style's colors should not change
+
+Add-Color-SBPH-Duplicated8
+    Comment    Exist condition
+    ${PH-SB-AT-002}    Set variable    PH-SB-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    DUN08=003
+    ${input_ph_year}    Set variable    2019
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-SB-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30123] Please enter a ${DEFINED_ATTR_NAMES['Style #']} that exists in the Style Bank.
+    Comment    Source style's colors should not change
+
+Add-Color-PH-Duplicated1
+    Comment    ${color_codes}    Create list    001
+    Comment    ${color_descs}    Create list    BLACK
+    Comment    Create PH Style On interface    PH-AT-002    2018    SPRING    J - JACKETS    MISSY
+    ...    WOMENSWEAR    PLACEHOLDER    ${color_descs}    ${color_codes}
+    Comment    Exist condition
+    ${PH-AT-002}    Set variable    PH-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    BLACK=DU01
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30123] Please enter a ${DEFINED_ATTR_NAMES['Style #']} that exists in the Style Bank.
+    Comment    Source style's colors should not change
+
+Add-Color-PH-Duplicated2
+    Comment    Exist condition
+    ${PH-AT-002}    Set variable    PH-AT-002
+    Comment    Create condition
+    ${input_colors}    Create dictionary    DUN02=001
+    ${input_ph_year}    Set variable    2018
+    ${input_ph_season}    Set variable    SPRING
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Add New Color
+    Click button    Add New Color
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    PlaceHolderColorInfo
+    Comment    Input    style,season,year,color code and color name
+    Edit on place holder color info page    ${PH-AT-002}    ${input_colors}    ${input_ph_season}    ${input_ph_year}    #&{other_attributes_with_locator}
+    Click button    Save Style Info
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30123] Please enter a ${DEFINED_ATTR_NAMES['Style #']} that exists in the Style Bank.
+    Comment    Source style's colors should not change
+
+Add-Color-and modified
+    [Documentation]    Can delete the PH color to re-executed
+    &{style_infos}    Create dictionary    stylenum=AT-00025    seasonid=SPRING    year=2018
+    ${color_infos_a}    Create dictionary    colorcode=002    colorname=WHITE
+    ${color_infos_b}    Create dictionary    colorcode=003    colorname=RED
+    @{colors_infos}    Create list    ${color_infos_a}    ${color_infos_b}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}
+    Comment
+    ${edit_style_infos}    Create dictionary    stylenum=AT-00025    seasonid=SPRING    year=2018
+    ${edit_color_infos_a}    Create dictionary    colorcode=003    colorname=RED    standardcost=8    transferpricing=10    whsl=52
+    ...    lowcost=26    msrp=62    lowretail=31
+    ${edit_color_infos_b}    Create dictionary    colorcode=002    colorname=WHITE    standardcost=11    transferpricing=12    whsl=50
+    ...    lowcost=25    msrp=60    lowretail=30
+    ${edit_color_infos_c}    Create dictionary    colorcode=004    colorname=BLUE    standardcost=8    transferpricing=10    whsl=52
+    ...    lowcost=26    msrp=62    lowretail=31
+    ${edit_color_infos_d}    Create dictionary    colorcode=005    colorname=GREEN    standardcost=11    transferpricing=12    whsl=50
+    ...    lowcost=25    msrp=60    lowretail=30
+    ${edit_colors_infos}    Create list    ${edit_color_infos_a}    ${edit_color_infos_b}    ${edit_color_infos_c}    ${edit_color_infos_d}
+    Edit in Place Holder Color Info page    @{edit_colors_infos}    &{edit_style_infos}
+    Comment    Verify modified data
+    ${style_id}    Get value    //td[contains(text(),"${style_infos['stylenum']}")]/preceding-sibling::td/input[@name='placeholderstyleid']
+    Click element    //a[contains(@href,'styleid=${style_id}') and text()='Edit']
+    Wait until page contains    PlaceHolderColorInfo
+    ${order_color_codes_modified}    Execute Javascript    var result=[];$("input[name='colorcode']").each(function(){result.push($(this).val()); });return result;
+    ${order_color_names_modified}    Execute Javascript    var result=[];$("input[name='colorname']").each(function(){result.push($(this).val()); });return result;
+    Remove values from list    ${order_color_codes_modified}    ${EMPTY}
+    Remove values from list    ${order_color_names_modified}    ${EMPTY}
+    ${expected_ordered_color_codes}    Create list    004    005    003    002
+    ${expected_ordered_color_names}    Create list    BLUE    GREEN    RED    WHITE
+    Run keyword and continue on failure    Lists should be equal    ${order_color_codes_modified}    ${expected_ordered_color_codes}
+    Run keyword and continue on failure    Lists should be equal    ${order_color_names_modified}    ${expected_ordered_color_names}
+    : FOR    ${e_color_infos}    IN    @{edit_colors_infos}
+    \    ${expected_standardcost}    Get from dictionary    ${e_color_infos}    standardcost
+    \    ${expected_transferpricing}    Get from dictionary    ${e_color_infos}    transferpricing
+    \    ${expected_whsl}    Get from dictionary    ${e_color_infos}    whsl
+    \    ${expected_lowcost}    Get from dictionary    ${e_color_infos}    lowcost
+    \    ${expected_msrp}    Get from dictionary    ${e_color_infos}    msrp
+    \    ${expected_lowretail}    Get from dictionary    ${e_color_infos}    lowretail
+    \    ${color_name}    Get from dictionary    ${e_color_infos}    colorname
+    \    ${color_name}    Convert to uppercase    ${color_name}
+    \    ${color_names}    Execute Javascript    var result=[];$("input[name='colorname']").each(function(){result.push($(this).val()); });return result;
+    \    ${edit_color_name_index}    Get index from list    ${color_names}    ${color_name}
+    \    ${tr_path}    Set variable    //table[@id='mt']/tbody/tr[${edit_color_name_index+2}]
+    \    ${edit_standardcost}    Get value    ${tr_path}//input[@name='standardcost']
+    \    ${edit_transferpricing}    Get value    ${tr_path}//input[@name='transferpricing']
+    \    ${edit_whsl}    Get value    ${tr_path}//input[@name='whsl']
+    \    ${edit_lowcost}    Get value    ${tr_path}//input[@name='lowcost']
+    \    ${edit_msrp}    Get value    ${tr_path}//input[@name='msrp']
+    \    ${edit_lowretail}    Get value    ${tr_path}//input[@name='lowretail']
+    \    Run keyword and continue on failure    Should be equal as strings    ${expected_standardcost}.00    ${edit_standardcost}
+    \    Run keyword and continue on failure    Should be equal as strings    ${expected_transferpricing}.00    ${edit_transferpricing}
+    \    Run keyword and continue on failure    Should be equal as strings    ${expected_whsl}.00    ${edit_whsl}
+    \    Run keyword and continue on failure    Should be equal as strings    ${expected_lowcost}.00    ${edit_lowcost}
+    \    Run keyword and continue on failure    Should be equal as strings    ${expected_msrp}.00    ${edit_msrp}
+    \    Run keyword and continue on failure    Should be equal as strings    ${expected_lowretail}.00    ${edit_lowretail}
+
+*** Keywords ***
+Del ph styles after testing
+    Comment    Clear data
+    Comment    ${style_colors_a}    Create dictionary    stylenum=AT-00025    colorcode=003    colorname=RED
+    Comment    ${style_colors_b}    Create dictionary    stylenum=AT-00025    colorcode=002    colorname=WHITE
+    Comment    @{styles_colors}    Create list    ${style_colors_a}    ${style_colors_b}
+    Comment    Del ph colors by searched    SPRING    2018    @{styles_colors}
+    Comment    ${style_colors_a}    Create dictionary    stylenum=AT-00026    colorcode=003    colorname=RED
+    Comment    ${style_colors_b}    Create dictionary    stylenum=AT-00026    colorcode=002    colorname=WHITE
+    Comment    @{styles_colors}    Create list    ${style_colors_a}    ${style_colors_b}
+    Comment    Del ph colors by searched    FALL    2018    @{styles_colors}
+    Comment    Del ph styles by searched    RESORT    2017    AT-00027
+    Del ph styles by searched    SPRING    2018    PH-AT-001
+
+Styles or PH styles needed before testing
+    Comment    ${linesheet_name}    Set variable    linesheet_ATP.txt
+    Comment    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    Comment    Upload Linesheet    ${EXECDIR}${/}01__PH_Style_Bank${/}linesheet_before_testing_eileen_fisher${/}${linesheet_name}
+    Comment    Close window
+    Comment    Select window    main
+    Comment    Create PH Style
+    Comment    &{style_infos}    Create dictionary    stylenum=PH-AT-001    seasonid=SPRING    year=2018    classname=J - JACKETS
+    ...    department=MISSY    division=WOMENSWEAR
+    Comment    ${color_infos}    Create dictionary    colorcode=001    colorname=BLACK
+    Comment    @{colors_infos}    Create list    ${color_infos}
+    Comment    Add in Place Holder Info page    @{colors_infos}    &{style_infos}
+    &{style_infos}    Create dictionary    stylenum=PH-SB-AT-001    seasonid=SPRING    year=2019    classname=J - JACKETS    department=MISSY
+    ...    division=WOMENSWEAR
+    ${color_infos}    Create dictionary    colorcode=003    colorname=RED
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Info page    @{colors_infos}    &{style_infos}
+    &{style_infos}    Create dictionary    stylenum=PH-SB-AT-001    seasonid=SPRING    year=2018
+    ${color_infos}    Create dictionary    colorcode=001    colorname=BLACK
+    @{colors_infos}    Create list    ${color_infos}
+    Add in Place Holder Color Info page    @{colors_infos}    &{style_infos}

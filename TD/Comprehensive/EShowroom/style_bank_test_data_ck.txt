@@ -1,0 +1,12 @@
+*** Variables ***
+${URL}            https://10.125.2.171
+${USER}           cktest
+${COMPANY}        Calvin Klein Asia
+${no-style-found}    No styles found.
+${REPORT_STORE_PATH}    Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
+${PARENT_COMPANY_ID}    100440
+${APPBETA}        'appbeta','sol','10.125.2.230/griapp'
+${POSBETA}        'appbeta','sol','10.125.2.230/gripos'
+${FULL_USER}      7th Test User
+${CO_CORPORATE_DIVISION}    CKAsia
+${PCMID}          100440

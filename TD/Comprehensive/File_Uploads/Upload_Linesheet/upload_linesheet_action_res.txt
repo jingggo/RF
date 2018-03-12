@@ -38,3 +38,14 @@ Upload Style Image
     Switch to uploading page
     Wait until uploading files disappear
     #
+
+Upload Swatch Image
+    [Arguments]    ${upload_file}    ${zipfile}
+    ${file_type_value}    File Type    Swatch Image
+    File Name    ${file_type_value}    ${upload_file}
+    Delimiter    ${file_type_value}    tab
+    Zip File    ${file_type_value}    ${zipfile}
+    Process Document    ${file_type_value}
+    Switch to uploading page
+    Wait until uploading files disappear
+    #

@@ -1,1 +1,1 @@
-EILEENFISHER	AT-IMAGE001	large-image.jpg	small-image.jpg	detail-image.jpg	back-image.jpg
+EILEENFISHER	AT-IMAGE002	large-image.jpg	small-image.jpg	detail-image.jpg	back-image.jpg

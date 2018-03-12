@@ -1,0 +1,744 @@
+*** Settings ***
+Resource          ../../td_page_actions/style_bank_actions_res.txt
+Resource          style_bank_test_data_ef.txt
+Variables         style_bank_test_variables_ef.py
+Resource          ../../td_page_actions/ph_styles_actions_res.txt
+Resource          PH_style_bank_keywords.txt
+
+*** Keywords ***
+Add style infos when create new style
+    [Arguments]    &{style_infos}
+    ${stylenum_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    stylenum    #Require
+    ${stylename_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    stylename    #Require
+    ${descript_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    descript    #Require
+    ${fabrication_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    fabrication
+    ${hangfold_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    hangfold
+    ${delivery_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    delivery
+    ${additionalinfo_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    additionalinfo
+    ${styleprepack_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    styleprepack
+    ${category_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    category
+    ${productcategory_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    productcategory
+    ${class_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    class    #Require
+    ${classlevel3_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    classlevel3
+    ${group_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    group    #Require
+    ${groupcode_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    groupcode    #Require
+    ${department_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    department
+    ${division_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    division
+    ${fibercontent_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    fibercontent
+    ${productiontype_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    productiontype
+    ${sizerangeid_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    sizerangeid
+    ${yield_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    yield
+    ${categorydetail_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    categorydetail
+    ${categorydetail1_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    categorydetail1
+    ${categorydetail2_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    categorydetail2
+    ${fabricMaterial_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    fabricMaterial
+    ${design_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    design
+    ${agegroup_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    agegroup
+    ${gearline_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    gearline
+    ${fittype_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    fittype
+    ${styletype_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    styletype
+    ${countrycode_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    countrycode
+    Run keyword if    ${stylenum_in_dic}    Input text    name=stylenum    ${style_infos['stylenum']}
+    Run keyword if    ${stylename_in_dic}    Input text    name=stylename    ${style_infos['stylename']}
+    Run keyword if    ${descript_in_dic}    Input text    name=descript    ${style_infos['descript']}
+    Run keyword if    ${fabrication_in_dic}    Input text    name=fabrication    ${style_infos['fabrication']}
+    Run keyword if    ${hangfold_in_dic}    Select from list by label    name=hangfold    ${style_infos['hangfold']}
+    Run keyword if    ${delivery_in_dic}    Input text    name=delivery    ${style_infos['delivery']}
+    Run keyword if    ${additionalinfo_in_dic}    Input text    name=additionalinfo    ${style_infos['additionalinfo']}
+    Run keyword if    ${styleprepack_in_dic}    Select from list by label    name=styleprepack    ${style_infos['styleprepack']}
+    Run keyword if    ${category_in_dic}    Select from list by label    name=category    ${style_infos['category']}
+    Run keyword if    ${productcategory_in_dic}    Input text    name=productcategory    ${style_infos['productcategory']}
+    Run keyword if    ${class_in_dic}    Input text    name=class    ${style_infos['class']}
+    Run keyword if    ${classlevel3_in_dic}    Input text    name=classlevel3    ${style_infos['classlevel3']}
+    Run keyword if    ${group_in_dic}    Input text    name=group    ${style_infos['group']}
+    Run keyword if    ${groupcode_in_dic}    Input text    name=groupcode    ${style_infos['groupcode']}
+    Run keyword if    ${department_in_dic}    Select from list by label    name=department    ${style_infos['department']}
+    Run keyword if    ${division_in_dic}    Input text    name=division    ${style_infos['division']}
+    Run keyword if    ${fibercontent_in_dic}    Input text    name=fibercontent    ${style_infos['fibercontent']}
+    Run keyword if    ${productiontype_in_dic}    Input text    name=productiontype    ${style_infos['productiontype']}
+    Run keyword if    ${sizerangeid_in_dic}    Select from list by label    name=sizerangeid    ${style_infos['sizerangeid']}
+    Run keyword if    ${yield_in_dic}    Input text    name=yield    ${style_infos['yield']}
+    Run keyword if    ${categorydetail_in_dic}    Select from list by label    name=categorydetail    ${style_infos['categorydetail']}
+    Run keyword if    ${categorydetail1_in_dic}    Select from list by label    name=categorydetail1    ${style_infos['categorydetail1']}
+    Run keyword if    ${categorydetail2_in_dic}    Select from list by label    name=categorydetail2    ${style_infos['categorydetail2']}
+    Run keyword if    ${fabricMaterial_in_dic}    Select from list by label    name=fabricMaterial    ${style_infos['fabricMaterial']}
+    Run keyword if    ${design_in_dic}    Select from list by label    name=design    ${style_infos['design']}
+    Run keyword if    ${agegroup_in_dic}    Input text    name=agegroup    ${style_infos['agegroup']}
+    Run keyword if    ${gearline_in_dic}    Input text    name=gearline    ${style_infos['gearline']}
+    Run keyword if    ${fittype_in_dic}    Input text    name=fittype    ${style_infos['fittype']}
+    Run keyword if    ${styletype_in_dic}    Input text    name=styletype    ${style_infos['styletype']}
+    Run keyword if    ${countrycode_in_dic}    Input text    name=countrycode    ${style_infos['countrycode']}
+
+Product attributes required verify on style info page
+    connect to database using custom params    cx_Oracle    ${APPBETA}    #'appuser','sol','10.125.2.221/auto1app'
+    @{hierarchys}    query    select distinct cc.* from company_criteria cc where cc.company_id=${PARENT_COMPANY_ID}
+    Log many    @{hierarchys}
+    disconnect from database
+    ${system_product_attributes}    Create list    Style #    Department    Division    Class    Group
+    ${all_hierarchys}    Create list
+    : FOR    ${hierarchy}    IN    @{hierarchys}
+    \    ${hierarchy}    Convert to list    ${hierarchy}
+    \    ${criterias}    Get slice from list    ${hierarchy}    2    11
+    \    Remove values from list    ${criterias}    ${None}
+    \    log    ${criterias}
+    \    ${all_hierarchys}    Combine lists    ${all_hierarchys}    ${criterias}
+    log many    ${all_hierarchys}
+    ${all_hierarchys}    Remove duplicates    ${all_hierarchys}
+    ${product_hierarchys}    Create list
+    : FOR    ${product_hierarchy}    IN    @{all_hierarchys}
+    \    ${is_product}    Run keyword and return status    List should contain value    ${system_product_attributes}    ${product_hierarchy}
+    \    Run keyword if    ${is_product}    Append to list    ${product_hierarchys}    ${product_hierarchy}
+    log    ${product_hierarchys}    #ef:['Department', 'Division', 'Class', 'Style #']
+    Set suite variable    ${REQUIRE_PRODUCT_ATTRIBUTES}    ${product_hierarchys}
+    ${product_hierarchys_count}    Get length    ${product_hierarchys}
+    ${required_count}    Get matching xpath count    //b[@class='required']
+    ${required_count}    Convert to integer    ${required_count}
+    Run keyword and continue on failure    Should be equal as integers    ${required_count}    ${product_hierarchys_count}    Real count of require attributes is: ${required_count}, but expected is: ${product_hierarchys_count}.(#24233)
+    ${required_attributes}    Execute javascript    var result=[];$("b.required").each(function(){result.push($(this).text()); });return result;
+    : FOR    ${required_attribute}    IN    @{required_attributes}
+    \    ${required_attribute}    Strip string    ${required_attribute}
+    \    ${required_attribute_first_char}    Get substring    ${required_attribute}    0    1
+    \    Run keyword and continue on failure    Should be equal as strings    ${required_attribute_first_char}    *
+
+Check new color info page
+    Run keyword and continue on failure    Page should contain    Please select the color Material Parent Group that best matches the Color Description(s) or color codes for the style. This will enable retailers to search for items by color.
+    Run keyword and continue on failure    Element should contain    //a[@href='/bin-java/efsnPackage.do_vendorShowCo']/big    ${COMPANY}
+    Comment    buttons
+    ${buttons_color_info_page}    Execute javascript    var result=[];$("div.maincontent input[type='submit']").each(function(){result.push($(this).val()); });return result;
+    ${buttons_color_info_page}    Evaluate    [v.strip() for v in ${buttons_color_info_page}]
+    ${expected_buttons_color_info_page}    Create List    Save Color Info    Save & Add Size(s)    View Color Swatch    More Colors    Save Color Info
+    ...    Save & Add Size(s)    View Color Swatch    More Colors
+    Run keyword and continue on failure    Lists should be equal    ${buttons_color_info_page}    ${expected_buttons_color_info_page}
+    Comment    titles
+    ${ths_color_info_page}    Execute javascript    var result=[];$("th").each(function(){result.push($(this).text()); });return result;
+    Remove values from list    ${ths_color_info_page}    ${EMPTY}
+    ${ths_color_info_page}    Evaluate    [v.strip() for v in ${ths_color_info_page}]
+    ${ths_color_info_page}    Evaluate    [l.replace(u'\xa0',' ') for l in ${ths_color_info_page}]
+    Log    ${ths_color_info_page}
+    Comment    ${expected_ths_color_info_page}    Create List    Last modified    Modified by    Delete    Color Description
+    ...    Color Code    zReserve23    Upload Color Swatch    zReserve19    Color# NRF    zReserve26
+    ...    zReserve25    zReserve27    zReserve28    zReserve36    Estimated Cost    zReserve41
+    ...    Wholesale Price    Low Cost    Retail Price    Low Retail    L/S Page Title    zReserve35
+    ...    zReserve37    Customer Account Code    Delivery    Main Sew venue    COO    zReserve43
+    ...    Outlet Style Indicator    Multi Channel    LY Style Match    LY Style Color Code Match
+    ${expected_ths_color_info_page}    Create List    Last modified    Modified by    Delete    ${DEFINED_ATTR_NAMES_EF['Color Desc']}    ${DEFINED_ATTR_NAMES_EF['Color Code']}
+    ...    ${DEFINED_ATTR_NAMES_EF['Vendor Color Family']}    Upload Color Swatch    ${DEFINED_ATTR_NAMES_EF['Vendor Color Code']}    ${DEFINED_ATTR_NAMES_EF['NRF Color Code']}    ${DEFINED_ATTR_NAMES_EF['Color Group']}    ${DEFINED_ATTR_NAMES_EF['Pattern #']}
+    ...    ${DEFINED_ATTR_NAMES_EF['Exclusive']}    ${DEFINED_ATTR_NAMES_EF['Start Ship Date']}    ${DEFINED_ATTR_NAMES_EF['Product Stop Date']}    ${DEFINED_ATTR_NAMES_EF['STD Cost']}    ${DEFINED_ATTR_NAMES_EF['Transfer Price']}    ${DEFINED_ATTR_NAMES_EF['WHSL']}
+    ...    ${DEFINED_ATTR_NAMES_EF['Low Cost']}    ${DEFINED_ATTR_NAMES_EF['MSRP']}    ${DEFINED_ATTR_NAMES_EF['Low Retail']}    ${DEFINED_ATTR_NAMES_EF['Product Team']}    ${DEFINED_ATTR_NAMES_EF['Material Type']}    ${DEFINED_ATTR_NAMES_EF['Replenishment Indicator']}
+    ...    ${DEFINED_ATTR_NAMES_EF['Color Category']}    ${DEFINED_ATTR_NAMES_EF['Color Type']}    ${DEFINED_ATTR_NAMES_EF['Color Info']}    ${DEFINED_ATTR_NAMES_EF['Color Indicator']}    ${DEFINED_ATTR_NAMES_EF['Factory']}    Outlet Style Indicator
+    ...    Multi Channel    LY Style Match    LY Style Color Code Match
+    ${values}    Create List
+    : FOR    ${key}    IN    @{ths_color_info_page}
+    \    ${in}    Run keyword and return status    Dictionary should contain key    ${DEFINED_ATTR_NAMES_EF}    ${key}
+    \    ${value}    Run keyword if    ${in}    Get from dictionary    ${DEFINED_ATTR_NAMES_EF}    ${key}
+    \    Append to list    ${values}    ${value}
+    Log many    @{values}
+    Run keyword and continue on failure    Lists should be equal    ${ths_color_info_page}    ${expected_ths_color_info_page}
+    ${color_attributes_len}    Get length    ${ths_color_info_page}
+    Comment    dafault color rows
+    ${default_rows}    Get matching xpath count    //div[@class='DTFC_LeftBodyWrapper']/table/tbody/tr
+    ${default_rows}    Convert to integer    ${default_rows}
+    Run keyword and continue on failure    Should be equal as integers    ${default_rows}    8
+
+Add color infos when create new style
+    [Arguments]    @{colors_infos}
+    : FOR    ${index}    ${color_infos}    IN ENUMERATE    @{colors_infos}
+    \    Run keyword if    ${index}>${7}    Click button    name=more colors
+    \    ${left_tr_path}    Set variable    //div[@class='DTFC_LeftBodyWrapper']/table/tbody/tr[${index+1}]
+    \    ${mid_tr_path}    Set variable    //div[@class='dataTables_scrollBody']/table/tbody/tr[${index+1}]
+    \    ${right_tr_path}    Set variable    //div[@class='DTFC_RightBodyWrapper']/table/tbody/tr[${index+1}]
+    \    ${color_name_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_name
+    \    ${color_code_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_code
+    \    ${colorFamilyList_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    colorFamilyList    #select
+    \    ${swatchfile_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    swatchfile    #upload file
+    \    ${vendor_color_code_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    vendor_color_code
+    \    ${nrf_color_code_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    nrf_color_code
+    \    ${color_group_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_group
+    \    ${pattern_number_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    pattern_number
+    \    ${accountexclusive_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    accountexclusive    #select
+    \    ${start_ship_date_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    start_ship_date
+    \    ${product_stop_date_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    product_stop_date
+    \    ${standardcost_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    standardcost
+    \    ${transfer_price_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    transfer_price
+    \    ${whsl_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    whsl
+    \    ${low_cost_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    low_cost
+    \    ${msrp_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    msrp
+    \    ${low_retail_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    low_retail
+    \    ${product_team_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    product_team
+    \    ${material_type_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    material_type
+    \    ${replen_indicator_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    replen_indicator
+    \    ${color_category_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_category
+    \    ${color_type_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_type
+    \    ${color_info_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_info
+    \    ${color_indicator_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_indicator
+    \    ${factory_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    factory
+    \    ${outlet_style_indicator_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    outlet_style_indicator
+    \    ${multi_channel_ind_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    multi_channel_ind    #select
+    \    ${ly_style_number_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    ly_style_number
+    \    ${ly_color_code_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    ly_color_code
+    \    ${del_color_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    del_color
+    \    Run keyword if    ${color_name_in_dic}    Input text    ${left_tr_path}//input[@name='color_name']    ${color_infos['color_name']}
+    \    Run keyword if    ${color_code_in_dic}    Input text    ${left_tr_path}//input[@name='color_code']    ${color_infos['color_code']}
+    \    Run keyword if    ${colorFamilyList_in_dic}    Select from list by label    ${mid_tr_path}//select[@name='colorFamilyList']    ${color_infos['colorFamilyList']}
+    \    Run keyword if    ${swatchfile_in_dic}    Input text    ${mid_tr_path}//input[@name='swatchfile']    ${color_infos['swatchfile']}
+    \    Run keyword if    ${vendor_color_code_in_dic}    Input text    ${mid_tr_path}//input[@name='vendor_color_code']    ${color_infos['vendor_color_code']}
+    \    Run keyword if    ${nrf_color_code_in_dic}    Input text    ${mid_tr_path}//input[@name='nrf_color_code']    ${color_infos['nrf_color_code']}
+    \    Run keyword if    ${color_group_in_dic}    Input text    ${mid_tr_path}//input[@name='color_group']    ${color_infos['color_group']}
+    \    Run keyword if    ${pattern_number_in_dic}    Input text    ${mid_tr_path}//input[@name='pattern_number']    ${color_infos['pattern_number']}
+    \    Run keyword if    ${accountexclusive_in_dic}    Select from list by label    ${mid_tr_path}//select[@name='accountexclusive']    ${color_infos['accountexclusive']}
+    \    Run keyword if    ${start_ship_date_in_dic}    Input text    ${mid_tr_path}//input[@name='start_ship_date']    ${color_infos['start_ship_date']}
+    \    Run keyword if    ${product_stop_date_in_dic}    Input text    ${mid_tr_path}//input[@name='product_stop_date']    ${color_infos['product_stop_date']}
+    \    Run keyword if    ${standardcost_in_dic}    Input text    ${mid_tr_path}//input[@name='standardcost']    ${color_infos['standardcost']}
+    \    Run keyword if    ${transfer_price_in_dic}    Input text    ${mid_tr_path}//input[@name='transfer_price']    ${color_infos['transfer_price']}
+    \    Run keyword if    ${whsl_in_dic}    Input text    ${mid_tr_path}//input[@name='whsl']    ${color_infos['whsl']}
+    \    Run keyword if    ${low_cost_in_dic}    Input text    ${mid_tr_path}//input[@name='low_cost']    ${color_infos['low_cost']}
+    \    Run keyword if    ${msrp_in_dic}    Input text    ${mid_tr_path}//input[@name='msrp']    ${color_infos['msrp']}
+    \    Run keyword if    ${low_retail_in_dic}    Input text    ${mid_tr_path}//input[@name='low_retail']    ${color_infos['low_retail']}
+    \    Run keyword if    ${product_team_in_dic}    Input text    ${mid_tr_path}//input[@name='product_team']    ${color_infos['product_team']}
+    \    Run keyword if    ${material_type_in_dic}    Input text    ${mid_tr_path}//input[@name='material_type']    ${color_infos['material_type']}
+    \    Run keyword if    ${replen_indicator_in_dic}    Input text    ${mid_tr_path}//input[@name='replen_indicator']    ${color_infos['replen_indicator']}
+    \    Run keyword if    ${color_category_in_dic}    Input text    ${mid_tr_path}//input[@name='color_category']    ${color_infos['color_category']}
+    \    Run keyword if    ${color_type_in_dic}    Input text    ${mid_tr_path}//input[@name='color_type']    ${color_infos['color_type']}
+    \    Run keyword if    ${color_info_in_dic}    Input text    ${mid_tr_path}//input[@name='color_info']    ${color_infos['color_info']}
+    \    Run keyword if    ${color_indicator_in_dic}    Input text    ${mid_tr_path}//input[@name='color_indicator']    ${color_infos['color_indicator']}
+    \    Run keyword if    ${factory_in_dic}    Input text    ${mid_tr_path}//input[@name='factory']    ${color_infos['factory']}
+    \    Run keyword if    ${outlet_style_indicator_in_dic}    Input text    ${mid_tr_path}//input[@name='outlet_style_indicator']    ${color_infos['outlet_style_indicator']}
+    \    Run keyword if    ${multi_channel_ind_in_dic}    Select from list by label    ${mid_tr_path}//select[@name='multi_channel_ind']    ${color_infos['multi_channel_ind']}
+    \    Run keyword if    ${ly_style_number_in_dic}    Input text    ${mid_tr_path}//input[@name='ly_style_number']    ${color_infos['ly_style_number']}
+    \    Run keyword if    ${del_color_in_dic}    Run keyword if    '${color_infos['del_color']}'=='Y'    Select checkbox    ${right_tr_path}//input[@name='del_color
+    \    ...    ${color_infos['del_color']}
+    \    Run keyword if    ${del_color_in_dic}    Run keyword if    '${color_infos['del_color']}'=='N'    Unselect checkbox    ${right_tr_path}//input[@name='del_color
+    \    ...    ${color_infos['del_color']}
+
+Check new size info page
+    [Arguments]    ${style}    ${season}    ${year}
+    Run keyword and continue on failure    Page should contain    Enter all your sizes into boxes below, one size per box.
+    Run keyword and continue on failure    Element should contain    //a[@href='/bin-java/efsnPackage.do_vendorShowCo']/big    ${COMPANY}
+    Run keyword and continue on failure    Element should contain    //a[contains(@href, '/bin-java/efsnPackage.do_vendorStyleBankDetail')]/b    ${style} ${season}-${year}    #AT-PH-00012-T01 SPRING-2018    ${style} ${season}-${year}
+    Run keyword and continue on failure    Page should contain button    Save Size Info
+    Run keyword and continue on failure    Page should contain button    More Sizes
+    Comment    Size info table
+    Run keyword and continue on failure    Table header should contain    css=table.table4    Size
+    Run keyword and continue on failure    Table header should contain    css=table.table4    Size Code
+    Run keyword and continue on failure    Table header should contain    css=table.table4    Delete
+    Run keyword and continue on failure    Table header should contain    css=table.table4    Last modified
+    Run keyword and continue on failure    Table header should contain    css=table.table4    Modified by
+    ${default_size_rows}    Get matching xpath count    //input[@name='size_name']
+    Run keyword and continue on failure    Should be equal as integers    ${default_size_rows}    8
+
+Edit style infos in style bank
+    [Arguments]    &{style_infos}
+    ${stylenum_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    stylenum    #Require
+    ${stylename_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    stylename    #Require
+    ${descript_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    descript    #Require
+    ${fabrication_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    fabrication
+    ${hangfold_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    hangfold
+    ${delivery_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    delivery
+    ${additionalinfo_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    additionalinfo
+    ${styleprepack_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    styleprepack
+    ${category_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    category
+    ${productcategory_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    productcategory
+    ${class_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    class    #Require
+    ${classlevel3_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    classlevel3
+    ${group_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    group    #Require
+    ${groupcode_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    groupcode    #Require
+    ${department_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    department
+    ${division_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    division
+    ${fibercontent_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    fibercontent
+    ${productiontype_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    productiontype
+    ${sizerangeid_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    sizerangeid
+    ${yield_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    yield
+    ${categorydetail_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    categorydetail
+    ${categorydetail1_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    categorydetail1
+    ${categorydetail2_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    categorydetail2
+    ${fabricMaterial_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    fabricMaterial
+    ${design_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    design
+    ${agegroup_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    agegroup
+    ${gearline_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    gearline
+    ${fittype_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    fittype
+    ${styletype_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    styletype
+    ${countrycode_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    countrycode
+    ${existing_style}    Get value    name=stylenum
+    Run keyword if    ${stylenum_in_dic}    Run keyword if    '${existing_style}'!='${style_infos['stylenum']}'    Input text    name=stylenum    ${style_infos['stylenum']}
+    Run keyword if    ${stylename_in_dic}    Input text    name=stylename    ${style_infos['stylename']}
+    Run keyword if    ${descript_in_dic}    Input text    name=descript    ${style_infos['descript']}
+    Run keyword if    ${fabrication_in_dic}    Input text    name=fabrication    ${style_infos['fabrication']}
+    Run keyword if    ${hangfold_in_dic}    Select from list by label    name=hangfold    ${style_infos['hangfold']}
+    Run keyword if    ${delivery_in_dic}    Input text    name=delivery    ${style_infos['delivery']}
+    Run keyword if    ${additionalinfo_in_dic}    Input text    name=additionalinfo    ${style_infos['additionalinfo']}
+    Run keyword if    ${styleprepack_in_dic}    Select from list by label    name=styleprepack    ${style_infos['styleprepack']}
+    Run keyword if    ${category_in_dic}    Select from list by label    name=category    ${style_infos['category']}
+    Run keyword if    ${productcategory_in_dic}    Input text    name=productcategory    ${style_infos['productcategory']}
+    Run keyword if    ${class_in_dic}    Input text    name=class    ${style_infos['class']}
+    Run keyword if    ${classlevel3_in_dic}    Input text    name=classlevel3    ${style_infos['classlevel3']}
+    Run keyword if    ${group_in_dic}    Input text    name=group    ${style_infos['group']}
+    Run keyword if    ${groupcode_in_dic}    Input text    name=groupcode    ${style_infos['groupcode']}
+    Run keyword if    ${department_in_dic}    Select from list by label    name=department    ${style_infos['department']}
+    Run keyword if    ${division_in_dic}    Input text    name=division    ${style_infos['division']}
+    Run keyword if    ${fibercontent_in_dic}    Input text    name=fibercontent    ${style_infos['fibercontent']}
+    Run keyword if    ${productiontype_in_dic}    Input text    name=productiontype    ${style_infos['productiontype']}
+    Run keyword if    ${sizerangeid_in_dic}    Select from list by label    name=sizerangeid    ${style_infos['sizerangeid']}
+    Run keyword if    ${yield_in_dic}    Input text    name=yield    ${style_infos['yield']}
+    Run keyword if    ${categorydetail_in_dic}    Select from list by label    name=categorydetail    ${style_infos['categorydetail']}
+    Run keyword if    ${categorydetail1_in_dic}    Select from list by label    name=categorydetail1    ${style_infos['categorydetail1']}
+    Run keyword if    ${categorydetail2_in_dic}    Select from list by label    name=categorydetail2    ${style_infos['categorydetail2']}
+    Run keyword if    ${fabricMaterial_in_dic}    Select from list by label    name=fabricMaterial    ${style_infos['fabricMaterial']}
+    Run keyword if    ${design_in_dic}    Select from list by label    name=design    ${style_infos['design']}
+    Run keyword if    ${agegroup_in_dic}    Input text    name=agegroup    ${style_infos['agegroup']}
+    Run keyword if    ${gearline_in_dic}    Input text    name=gearline    ${style_infos['gearline']}
+    Run keyword if    ${fittype_in_dic}    Input text    name=fittype    ${style_infos['fittype']}
+    Run keyword if    ${styletype_in_dic}    Input text    name=styletype    ${style_infos['styletype']}
+    Run keyword if    ${countrycode_in_dic}    Input text    name=countrycode    ${style_infos['countrycode']}
+
+Verify style infos in style bank
+    [Arguments]    &{style_infos}
+    ${stylenum_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    stylenum    #Require
+    ${stylename_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    stylename    #Require
+    ${descript_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    descript    #Require
+    ${fabrication_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    fabrication
+    ${hangfold_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    hangfold
+    ${delivery_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    delivery
+    ${additionalinfo_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    additionalinfo
+    ${styleprepack_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    styleprepack
+    ${category_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    category
+    ${productcategory_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    productcategory
+    ${class_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    class    #Require
+    ${classlevel3_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    classlevel3
+    ${group_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    group    #Require
+    ${groupcode_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    groupcode    #Require
+    ${department_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    department
+    ${division_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    division
+    ${fibercontent_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    fibercontent
+    ${productiontype_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    productiontype
+    ${sizerangeid_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    sizerangeid
+    ${yield_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    yield
+    ${categorydetail_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    categorydetail
+    ${categorydetail1_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    categorydetail1
+    ${categorydetail2_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    categorydetail2
+    ${fabricMaterial_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    fabricMaterial
+    ${design_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    design
+    ${agegroup_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    agegroup
+    ${gearline_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    gearline
+    ${fittype_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    fittype
+    ${styletype_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    styletype
+    ${countrycode_in_dic}    Run keyword and return status    Dictionary should contain key    ${style_infos}    countrycode
+    ${verified_stylenum}    Get value    name=stylenum
+    ${verified_stylename}    Get value    name=stylename
+    ${verified_descript}    Get text    name=descript
+    ${verified_fabrication}    Get text    name=fabrication
+    ${verified_hangfold}    Get selected list label    name=hangfold
+    ${verified_delivery}    Get value    name=delivery
+    ${verified_additionalinfo}    Get text    name=additionalinfo
+    ${verified_styleprepack}    Get selected list label    name=styleprepack
+    ${verified_category}    Get selected list label    name=category
+    ${verified_productcategory}    Get value    name=productcategory
+    ${verified_class}    Get value    name=class
+    ${verified_classlevel3}    Get value    name=classlevel3
+    ${verified_group}    Get value    name=group
+    ${verified_groupcode}    Get value    name=groupcode
+    ${verified_department}    Get selected list label    name=department
+    ${verified_division}    Get value    name=division
+    ${verified_fibercontent}    Get value    name=fibercontent
+    ${verified_productiontype}    Get value    name=productiontype
+    ${verified_sizerangeid}    Get selected list label    name=sizerangeid
+    ${verified_yield}    Get value    name=yield
+    ${verified_categorydetail}    Get selected list label    name=categorydetail
+    ${verified_categorydetail1}    Get selected list label    name=categorydetail1
+    ${verified_categorydetail2}    Get selected list label    name=categorydetail2
+    ${verified_fabricMaterial}    Get selected list label    name=fabricMaterial
+    ${verified_design}    Get selected list label    name=design
+    ${verified_agegroup}    Get value    name=agegroup
+    ${verified_gearline}    Get value    name=gearline
+    ${verified_fittype}    Get value    name=fittype
+    ${verified_styletype}    Get value    name=styletype
+    ${verified_countrycode}    Get value    name=countrycode
+    Run keyword if    ${stylenum_in_dic}    Should be equal as strings    ${verified_stylenum}    ${style_infos['stylenum']}
+    Run keyword if    ${stylename_in_dic}    Should be equal as strings    ${verified_stylename}    ${style_infos['stylename']}
+    Run keyword if    ${descript_in_dic}    Should be equal as strings    ${verified_descript}    ${style_infos['descript']}
+    Run keyword if    ${fabrication_in_dic}    Should be equal as strings    ${verified_fabrication}    ${style_infos['fabrication']}
+    Run keyword if    ${hangfold_in_dic}    Should be equal as strings    ${verified_hangfold}    ${style_infos['hangfold']}
+    Run keyword if    ${delivery_in_dic}    Should be equal as strings    ${verified_delivery}    ${style_infos['delivery']}
+    Run keyword if    ${additionalinfo_in_dic}    Should be equal as strings    ${verified_additionalinfo}    ${style_infos['additionalinfo']}
+    Run keyword if    ${styleprepack_in_dic}    Should be equal as strings    ${verified_styleprepack}    ${style_infos['styleprepack']}
+    Run keyword if    ${category_in_dic}    Should be equal as strings    ${verified_category}    ${style_infos['category']}
+    Run keyword if    ${productcategory_in_dic}    Should be equal as strings    ${verified_productcategory}    ${style_infos['productcategory']}
+    Run keyword if    ${class_in_dic}    Should be equal as strings    ${verified_class}    ${style_infos['class']}
+    Run keyword if    ${classlevel3_in_dic}    Should be equal as strings    ${verified_classlevel3}    ${style_infos['classlevel3']}
+    Run keyword if    ${group_in_dic}    Should be equal as strings    ${verified_group}    ${style_infos['group']}
+    Run keyword if    ${groupcode_in_dic}    Should be equal as strings    ${verified_groupcode}    ${style_infos['groupcode']}
+    Run keyword if    ${department_in_dic}    Should be equal as strings    ${verified_department}    ${style_infos['department']}
+    Run keyword if    ${division_in_dic}    Should be equal as strings    ${verified_division}    ${style_infos['division']}
+    Run keyword if    ${fibercontent_in_dic}    Should be equal as strings    ${verified_fibercontent}    ${style_infos['fibercontent']}
+    Run keyword if    ${productiontype_in_dic}    Should be equal as strings    ${verified_productiontype}    ${style_infos['productiontype']}
+    Run keyword if    ${sizerangeid_in_dic}    Should be equal as strings    ${verified_sizerangeid}    ${style_infos['sizerangeid']}
+    Run keyword if    ${yield_in_dic}    Should be equal as strings    ${verified_yield}    ${style_infos['yield']}
+    Run keyword if    ${categorydetail_in_dic}    Should be equal as strings    ${verified_categorydetail}    ${style_infos['categorydetail']}
+    Run keyword if    ${categorydetail1_in_dic}    Should be equal as strings    ${verified_categorydetail1}    ${style_infos['categorydetail1']}
+    Run keyword if    ${categorydetail2_in_dic}    Should be equal as strings    ${verified_categorydetail2}    ${style_infos['categorydetail2']}
+    Run keyword if    ${fabricMaterial_in_dic}    Should be equal as strings    ${verified_fabricMaterial}    ${style_infos['fabricMaterial']}
+    Run keyword if    ${design_in_dic}    Should be equal as strings    ${verified_design}    ${style_infos['design']}
+    Run keyword if    ${agegroup_in_dic}    Should be equal as strings    ${verified_agegroup}    ${style_infos['agegroup']}
+    Run keyword if    ${gearline_in_dic}    Should be equal as strings    ${verified_gearline}    ${style_infos['gearline']}
+    Run keyword if    ${fittype_in_dic}    Should be equal as strings    ${verified_fittype}    ${style_infos['fittype']}
+    Run keyword if    ${styletype_in_dic}    Should be equal as strings    ${verified_styletype}    ${style_infos['styletype']}
+    Run keyword if    ${countrycode_in_dic}    Should be equal as strings    ${verified_countrycode}    ${style_infos['countrycode']}
+    ${corporate_division}    Get text    //td[b[text()='Corporate Division:']]/following-sibling::td[1]    #EILEENFISHER
+    Run keyword and continue on failure    Should be equal as strings    ${corporate_division}    ${CO_CORPORATE_DIVISION}
+    ${last modified}    Get table cell    css=form[name='styleform'] table table    -2    2    #Last Modified
+    ${modified by}    Get table cell    css=form[name='styleform'] table table    -1    2    #Modified by
+    Run keyword and continue on failure    Should be equal as strings    ${modified by}    ${FULL_USER}
+    Run keyword and continue on failure    Should be equal as strings    ${last modified}    ${style_infos['last_modified']}
+
+Get last modified time
+    ${myear}    ${mmonth}    ${mday}    ${mhour1}    ${mmin}    ${msec}    Get time
+    ...    year,month,day,hour,min,sec
+    ${mhour}    Convert to integer    ${mhour1}
+    ${rhour}    Set variable if    ${mhour}>${12}    ${mhour-12}    ${mhour}
+    ${mhour}    Convert to string    ${mhour}
+    ${rrhour}    Set variable if    ${mhour}<${10}    ${mhour1[1]}    ${mhour}
+    ${rhour}    Set variable if    ${mhour}>${12}    ${rhour}    ${rrhour}
+    ${hour}    Set variable if    ${mhour}>=${12}    ${rhour}:${mmin} PM    ${rhour}:${mmin} AM
+    ${cur_year}    Get substring    ${myear}    -2    #2018---18
+    ${mmonth_p}    Set variable    ${mmonth[0]}
+    ${mmonth_p}    Convert to integer    ${mmonth_p}
+    ${mmonth}    Set variable if    ${mmonth_p}==${0}    ${mmonth[1]}    ${mmonth}
+    Return from keyword    ${mmonth}/${mday}/${cur_year} ${hour}
+
+Edit color infos in style bank
+    [Arguments]    @{colors_infos}
+    : FOR    ${color_infos}    IN    @{colors_infos}
+    \    ${color_name}    Get from dictionary    ${color_infos}    color_name
+    \    ${color_name}    Convert to uppercase    ${color_name}
+    \    ${color_code}    Get from dictionary    ${color_infos}    color_code
+    \    ${color_code}    Convert to uppercase    ${color_code}
+    \    ${color_codes}    Execute Javascript    var result=[];$("input[name='color_code']").each(function(){result.push($(this).val()); });return result;
+    \    Remove values from list    ${color_codes}    ${EMPTY}
+    \    Log    ${color_codes}
+    \    ${edit_color_code_index}    Get index from list    ${color_codes}    ${color_code}
+    \    ${color_names}    Execute Javascript    var result=[];$("input[name='color_name']").each(function(){result.push($(this).val()); });return result;
+    \    Remove values from list    ${color_names}    ${EMPTY}
+    \    Log    ${color_names}
+    \    ${color_names_len}    Get length    ${color_names}
+    \    ${edit_color_name_index}    Get index from list    ${color_names}    ${color_name}
+    \    ${left_tr_path}    Set variable if    '${edit_color_name_index}'=='-1'    //div[@class='DTFC_LeftBodyWrapper']/table/tbody/tr[${color_names_len+1}]    //div[@class='DTFC_LeftBodyWrapper']/table/tbody/tr[${edit_color_name_index+1}]
+    \    ${mid_tr_path}    Set variable if    '${edit_color_name_index}'=='-1'    //div[@class='dataTables_scrollBody']/table/tbody/tr[${color_names_len+1}]    //div[@class='dataTables_scrollBody']/table/tbody/tr[${edit_color_name_index+1}]
+    \    ${right_tr_path}    Set variable if    '${edit_color_name_index}'=='-1'    //div[@class='DTFC_RightBodyWrapper']/table/tbody/tr[${color_names_len+1}]    //div[@class='DTFC_RightBodyWrapper']/table/tbody/tr[${edit_color_name_index+1}]
+    \    ${color_name_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_name
+    \    ${color_code_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_code
+    \    ${colorFamilyList_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    colorFamilyList    #select
+    \    ${swatchfile_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    swatchfile    #upload file
+    \    ${vendor_color_code_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    vendor_color_code
+    \    ${nrf_color_code_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    nrf_color_code
+    \    ${color_group_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_group
+    \    ${pattern_number_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    pattern_number
+    \    ${accountexclusive_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    accountexclusive    #select
+    \    ${start_ship_date_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    start_ship_date
+    \    ${product_stop_date_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    product_stop_date
+    \    ${standardcost_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    standardcost
+    \    ${transfer_price_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    transfer_price
+    \    ${whsl_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    whsl
+    \    ${low_cost_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    low_cost
+    \    ${msrp_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    msrp
+    \    ${low_retail_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    low_retail
+    \    ${product_team_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    product_team
+    \    ${material_type_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    material_type
+    \    ${replen_indicator_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    replen_indicator
+    \    ${color_category_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_category
+    \    ${color_type_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_type
+    \    ${color_info_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_info
+    \    ${color_indicator_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_indicator
+    \    ${factory_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    factory
+    \    ${outlet_style_indicator_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    outlet_style_indicator
+    \    ${multi_channel_ind_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    multi_channel_ind    #select
+    \    ${ly_style_number_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    ly_style_number
+    \    ${ly_color_code_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    ly_color_code
+    \    ${del_color_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    del_color
+    \    Run keyword if    '${edit_color_code_index}'=='-1'    Run keyword if    ${color_name_in_dic}    Input text    ${left_tr_path}//input[@name='color_name']
+    \    ...    ${color_infos['color_name']}
+    \    Run keyword if    '${edit_color_name_index}'=='-1'    Run keyword if    ${color_code_in_dic}    Input text    ${left_tr_path}//input[@name='color_code']
+    \    ...    ${color_infos['color_code']}
+    \    Run keyword if    ${colorFamilyList_in_dic}    Select from list by label    ${mid_tr_path}//select[@name='colorFamilyList']    ${color_infos['colorFamilyList']}
+    \    Run keyword if    ${swatchfile_in_dic}    Input text    ${mid_tr_path}//input[@name='swatchfile']    ${color_infos['swatchfile']}
+    \    Run keyword if    ${vendor_color_code_in_dic}    Input text    ${mid_tr_path}//input[@name='vendor_color_code']    ${color_infos['vendor_color_code']}
+    \    Run keyword if    ${nrf_color_code_in_dic}    Input text    ${mid_tr_path}//input[@name='nrf_color_code']    ${color_infos['nrf_color_code']}
+    \    Run keyword if    ${color_group_in_dic}    Input text    ${mid_tr_path}//input[@name='color_group']    ${color_infos['color_group']}
+    \    Run keyword if    ${pattern_number_in_dic}    Input text    ${mid_tr_path}//input[@name='pattern_number']    ${color_infos['pattern_number']}
+    \    Run keyword if    ${accountexclusive_in_dic}    Select from list by label    ${mid_tr_path}//select[@name='accountexclusive']    ${color_infos['accountexclusive']}
+    \    Run keyword if    ${start_ship_date_in_dic}    Input text    ${mid_tr_path}//input[@name='start_ship_date']    ${color_infos['start_ship_date']}
+    \    Run keyword if    ${product_stop_date_in_dic}    Input text    ${mid_tr_path}//input[@name='product_stop_date']    ${color_infos['product_stop_date']}
+    \    Run keyword if    ${standardcost_in_dic}    Input text    ${mid_tr_path}//input[@name='standardcost']    ${color_infos['standardcost']}
+    \    Run keyword if    ${transfer_price_in_dic}    Input text    ${mid_tr_path}//input[@name='transfer_price']    ${color_infos['transfer_price']}
+    \    Run keyword if    ${whsl_in_dic}    Input text    ${mid_tr_path}//input[@name='whsl']    ${color_infos['whsl']}
+    \    Run keyword if    ${low_cost_in_dic}    Input text    ${mid_tr_path}//input[@name='low_cost']    ${color_infos['low_cost']}
+    \    Run keyword if    ${msrp_in_dic}    Input text    ${mid_tr_path}//input[@name='msrp']    ${color_infos['msrp']}
+    \    Run keyword if    ${low_retail_in_dic}    Input text    ${mid_tr_path}//input[@name='low_retail']    ${color_infos['low_retail']}
+    \    Run keyword if    ${product_team_in_dic}    Input text    ${mid_tr_path}//input[@name='product_team']    ${color_infos['product_team']}
+    \    Run keyword if    ${material_type_in_dic}    Input text    ${mid_tr_path}//input[@name='material_type']    ${color_infos['material_type']}
+    \    Run keyword if    ${replen_indicator_in_dic}    Input text    ${mid_tr_path}//input[@name='replen_indicator']    ${color_infos['replen_indicator']}
+    \    Run keyword if    ${color_category_in_dic}    Input text    ${mid_tr_path}//input[@name='color_category']    ${color_infos['color_category']}
+    \    Run keyword if    ${color_type_in_dic}    Input text    ${mid_tr_path}//input[@name='color_type']    ${color_infos['color_type']}
+    \    Run keyword if    ${color_info_in_dic}    Input text    ${mid_tr_path}//input[@name='color_info']    ${color_infos['color_info']}
+    \    Run keyword if    ${color_indicator_in_dic}    Input text    ${mid_tr_path}//input[@name='color_indicator']    ${color_infos['color_indicator']}
+    \    Run keyword if    ${factory_in_dic}    Input text    ${mid_tr_path}//input[@name='factory']    ${color_infos['factory']}
+    \    Run keyword if    ${outlet_style_indicator_in_dic}    Input text    ${mid_tr_path}//input[@name='outlet_style_indicator']    ${color_infos['outlet_style_indicator']}
+    \    Run keyword if    ${multi_channel_ind_in_dic}    Select from list by label    ${mid_tr_path}//select[@name='multi_channel_ind']    ${color_infos['multi_channel_ind']}
+    \    Run keyword if    ${ly_style_number_in_dic}    Input text    ${mid_tr_path}//input[@name='ly_style_number']    ${color_infos['ly_style_number']}
+    \    Run keyword if    ${ly_color_code_in_dic}    Input text    ${mid_tr_path}//input[@name='ly_color_code']    ${color_infos['ly_color_code']}
+    \    Run keyword if    ${del_color_in_dic}    Run keyword if    '${color_infos['del_color']}'=='Y'    Select checkbox    ${right_tr_path}//input[@name='del_color']
+    \    Run keyword if    ${del_color_in_dic}    Run keyword if    '${color_infos['del_color']}'=='N'    Unselect checkbox    ${right_tr_path}//input[@name='del_color']
+
+Verify color infos in style bank
+    [Arguments]    ${last_modified}    @{colors_infos}
+    : FOR    ${color_infos}    IN    @{colors_infos}
+    \    ${color_name}    Get from dictionary    ${color_infos}    color_name
+    \    ${color_name}    Convert to uppercase    ${color_name}
+    \    ${color_code}    Get from dictionary    ${color_infos}    color_code
+    \    ${color_code}    Convert to uppercase    ${color_code}
+    \    ${color_codes}    Execute Javascript    var result=[];$("input[name='color_code']").each(function(){result.push($(this).val()); });return result;
+    \    Remove values from list    ${color_codes}    ${EMPTY}
+    \    Log    ${color_codes}
+    \    ${edit_color_code_index}    Get index from list    ${color_codes}    ${color_code}
+    \    ${color_names}    Execute Javascript    var result=[];$("input[name='color_name']").each(function(){result.push($(this).val()); });return result;
+    \    Remove values from list    ${color_names}    ${EMPTY}
+    \    Log    ${color_names}
+    \    ${color_names_len}    Get length    ${color_names}
+    \    ${edit_color_name_index}    Get index from list    ${color_names}    ${color_name}
+    \    Run keyword if    '${edit_color_name_index}'=='-1'    Run keyword and continue on failure    List should not contain value    ${color_names}    ${color_name}
+    \    Continue for loop if    '${edit_color_name_index}'=='-1'
+    \    ${left_tr_path}    Set variable if    '${edit_color_name_index}'=='-1'    //div[@class='DTFC_LeftBodyWrapper']/table/tbody/tr[${color_names_len+1}]    //div[@class='DTFC_LeftBodyWrapper']/table/tbody/tr[${edit_color_name_index+1}]
+    \    ${mid_tr_path}    Set variable if    '${edit_color_name_index}'=='-1'    //div[@class='dataTables_scrollBody']/table/tbody/tr[${color_names_len+1}]    //div[@class='dataTables_scrollBody']/table/tbody/tr[${edit_color_name_index+1}]
+    \    ${right_tr_path}    Set variable if    '${edit_color_name_index}'=='-1'    //div[@class='DTFC_RightBodyWrapper']/table/tbody/tr[${color_names_len+1}]    //div[@class='DTFC_RightBodyWrapper']/table/tbody/tr[${edit_color_name_index+1}]
+    \    ${verified_color_name}    Get value    ${left_tr_path}//input[@name='color_name']
+    \    ${verified_color_code}    Get value    ${left_tr_path}//input[@name='color_code']
+    \    ${verified_colorFamilyList}    Get selected list label    ${mid_tr_path}//select[@name='colorFamilyList']
+    \    ${verified_vendor_color_code}    Get value    ${mid_tr_path}//input[@name='vendor_color_code']
+    \    ${verified_nrf_color_code}    Get value    ${mid_tr_path}//input[@name='nrf_color_code']
+    \    ${verified_color_group}    Get value    ${mid_tr_path}//input[@name='color_group']
+    \    ${verified_pattern_number}    Get value    ${mid_tr_path}//input[@name='pattern_number']
+    \    ${verified_accountexclusive}    Get selected list label    ${mid_tr_path}//select[@name='accountexclusive']
+    \    ${verified_start_ship_date}    Get value    ${mid_tr_path}//input[@name='start_ship_date']
+    \    ${verified_product_stop_date}    Get value    ${mid_tr_path}//input[@name='product_stop_date']
+    \    ${verified_standardcost}    Get value    ${mid_tr_path}//input[@name='standardcost']
+    \    ${verified_transfer_price}    Get value    ${mid_tr_path}//input[@name='transfer_price']
+    \    ${verified_whsl}    Get value    ${mid_tr_path}//input[@name='whsl']
+    \    ${verified_low_cost}    Get value    ${mid_tr_path}//input[@name='low_cost']
+    \    ${verified_msrp}    Get value    ${mid_tr_path}//input[@name='msrp']
+    \    ${verified_low_retail}    Get value    ${mid_tr_path}//input[@name='low_retail']
+    \    ${verified_product_team}    Get value    ${mid_tr_path}//input[@name='product_team']
+    \    ${verified_material_type}    Get value    ${mid_tr_path}//input[@name='material_type']
+    \    ${verified_replen_indicator}    Get value    ${mid_tr_path}//input[@name='replen_indicator']
+    \    ${verified_color_category}    Get value    ${mid_tr_path}//input[@name='color_category']
+    \    ${verified_color_type}    Get value    ${mid_tr_path}//input[@name='color_type']
+    \    ${verified_color_info}    Get value    ${mid_tr_path}//input[@name='color_info']
+    \    ${verified_color_indicator}    Get value    ${mid_tr_path}//input[@name='color_indicator']
+    \    ${verified_factory}    Get value    ${mid_tr_path}//input[@name='factory']
+    \    ${verified_outlet_style_indicator}    Get value    ${mid_tr_path}//input[@name='outlet_style_indicator']
+    \    ${verified_multi_channel_ind}    Get selected list label    ${mid_tr_path}//select[@name='multi_channel_ind']
+    \    ${verified_ly_style_number}    Get value    ${mid_tr_path}//input[@name='ly_style_number']
+    \    ${verified_ly_color_code}    Get value    ${mid_tr_path}//input[@name='ly_color_code']
+    \    ${last_modified}    Get table cell    css=div.DTFC_RightBodyWrapper table    ${edit_color_name_index+2}    1
+    \    ${modified_by}    Get table cell    css=div.DTFC_RightBodyWrapper table    ${edit_color_name_index+2}    2
+    \    ${color_name_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_name
+    \    ${color_code_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_code
+    \    ${colorFamilyList_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    colorFamilyList    #select
+    \    ${vendor_color_code_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    vendor_color_code
+    \    ${nrf_color_code_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    nrf_color_code
+    \    ${color_group_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_group
+    \    ${pattern_number_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    pattern_number
+    \    ${accountexclusive_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    accountexclusive    #select
+    \    ${start_ship_date_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    start_ship_date
+    \    ${product_stop_date_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    product_stop_date
+    \    ${standardcost_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    standardcost
+    \    ${transfer_price_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    transfer_price
+    \    ${whsl_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    whsl
+    \    ${low_cost_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    low_cost
+    \    ${msrp_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    msrp
+    \    ${low_retail_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    low_retail
+    \    ${product_team_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    product_team
+    \    ${material_type_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    material_type
+    \    ${replen_indicator_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    replen_indicator
+    \    ${color_category_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_category
+    \    ${color_type_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_type
+    \    ${color_info_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_info
+    \    ${color_indicator_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    color_indicator
+    \    ${factory_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    factory
+    \    ${outlet_style_indicator_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    outlet_style_indicator
+    \    ${multi_channel_ind_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    multi_channel_ind    #select
+    \    ${ly_style_number_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    ly_style_number
+    \    ${ly_color_code_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    ly_color_code
+    \    ${del_color_in_dic}    Run keyword and return status    Dictionary should contain key    ${color_infos}    del_color
+    \    Run keyword if    ${color_name_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_color_name}    ${color_infos['color_name']}
+    \    Run keyword if    ${color_code_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_color_code}    ${color_infos['color_code']}
+    \    Run keyword if    ${colorFamilyList_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_colorFamilyList}    ${color_infos['colorFamilyList']}
+    \    Run keyword if    ${vendor_color_code_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_vendor_color_code}    ${color_infos['vendor_color_code']}
+    \    Run keyword if    ${nrf_color_code_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_nrf_color_code}    ${color_infos['nrf_color_code']}
+    \    Run keyword if    ${color_group_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_color_group}    ${color_infos['color_group']}
+    \    Run keyword if    ${pattern_number_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_pattern_number}    ${color_infos['pattern_number']}
+    \    Run keyword if    ${accountexclusive_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_accountexclusive}    ${color_infos['accountexclusive']}
+    \    Run keyword if    ${start_ship_date_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_start_ship_date}    ${color_infos['start_ship_date']}
+    \    Run keyword if    ${product_stop_date_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_product_stop_date}    ${color_infos['product_stop_date']}
+    \    Run keyword if    ${standardcost_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_standardcost}    ${color_infos['standardcost']}.00
+    \    Run keyword if    ${transfer_price_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_transfer_price}    ${color_infos['transfer_price']}.00
+    \    Run keyword if    ${whsl_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_whsl}    ${color_infos['whsl']}.00
+    \    Run keyword if    ${low_cost_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_low_cost}    ${color_infos['low_cost']}.00
+    \    Run keyword if    ${msrp_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_msrp}    ${color_infos['msrp']}.00
+    \    Run keyword if    ${low_retail_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_low_retail}    ${color_infos['low_retail']}.00
+    \    Run keyword if    ${product_team_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_product_team}    ${color_infos['product_team']}
+    \    Run keyword if    ${material_type_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_material_type}    ${color_infos['material_type']}
+    \    Run keyword if    ${replen_indicator_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_replen_indicator}    ${color_infos['replen_indicator']}
+    \    Run keyword if    ${color_category_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_color_category}    ${color_infos['color_category']}
+    \    Run keyword if    ${color_type_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_color_type}    ${color_infos['color_type']}
+    \    Run keyword if    ${color_info_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_color_info}    ${color_infos['color_info']}
+    \    Run keyword if    ${color_indicator_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_color_indicator}    ${color_infos['color_indicator']}
+    \    Run keyword if    ${factory_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_factory}    ${color_infos['factory']}
+    \    Run keyword if    ${outlet_style_indicator_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_outlet_style_indicator}    ${color_infos['outlet_style_indicator']}
+    \    Run keyword if    ${multi_channel_ind_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_multi_channel_ind}    ${color_infos['multi_channel_ind']}
+    \    Run keyword if    ${ly_style_number_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_ly_style_number}    ${color_infos['ly_style_number']}
+    \    Run keyword if    ${ly_color_code_in_dic}    Run keyword and continue on failure    Should be equal as strings    ${verified_ly_color_code}    ${color_infos['ly_color_code']}
+    \    Run keyword if    ${del_color_in_dic}    Run keyword and continue on failure    Checkbox should not be selected    ${right_tr_path}//input[@name='del_color']
+    \    Run keyword and continue on failure    Table cell should contain    css=div.DTFC_RightBodyWrapper table    ${edit_color_name_index+2}    1    ${last_modified}
+    \    Run keyword and continue on failure    Table cell should contain    css=div.DTFC_RightBodyWrapper table    ${edit_color_name_index+2}    2    ${FULL_USER}
+
+Edit size infos
+    [Arguments]    @{sizes_infos}
+    : FOR    ${index}    ${size_infos}    IN ENUMERATE    @{sizes_infos}
+    \    ${size_name}    Get from dictionary    ${size_infos}    size_name
+    \    ${size_names}    Execute Javascript    var result=[];$("input[name='size_name']").each(function(){result.push($(this).val()); });return result;
+    \    Remove values from list    ${size_names}    ${EMPTY}
+    \    Log    ${size_names}
+    \    ${edit_size_name_index}    Get index from list    ${size_names}    ${size_name}
+    \    ${size_names_len}    Get length    ${size_names}
+    \    ${edit_tr_path}    Set variable if    '${edit_size_name_index}'=='-1'    //table[@class='table4']//tr[${size_names_len+2}]    //table[@class='table4']//tr[${edit_size_name_index+2}]
+    \    ${edit_size_name_path}    Set variable    ${edit_tr_path}//input[@name='size_name']
+    \    ${edit_size_code_path}    Set variable    ${edit_tr_path}//input[@name='size_code']
+    \    ${size_name_in_dic}    Run keyword and return status    Dictionary should contain key    ${size_infos}    size_name
+    \    ${size_code_in_dic}    Run keyword and return status    Dictionary should contain key    ${size_infos}    size_code
+    \    ${del_size_in_dic}    Run keyword and return status    Dictionary should contain key    ${size_infos}    del_size
+    \    ${exist_size_name}    Get value    ${edit_size_name_path}
+    \    ${exist_size_code}    Get value    ${edit_size_code_path}
+    \    Run keyword if    ${size_name_in_dic}    Run keyword if    '${exist_size_name}'!='${size_infos['size_name']}'    Input text    ${edit_size_name_path}
+    \    ...    ${size_infos['size_name']}
+    \    Run keyword if    ${size_code_in_dic}    Run keyword if    '${exist_size_code}'!='${size_infos['size_code']}'    Input text    ${edit_size_code_path}
+    \    ...    ${size_infos['size_code']}
+    \    Run keyword if    ${del_size_in_dic}    Run keyword if    '${size_infos['del_size']}'=='Y'    Select checkbox    ${edit_tr_path}//input[@name='del_size']
+
+Verify size infos in style bank
+    [Arguments]    ${last_modified}    ${verified_sizes_infos}
+    ${size_names}    Execute Javascript    var result=[];$("input[name='size_name']").each(function(){result.push($(this).val()); });return result;
+    Comment    Remove values from list    ${size_names}    ${EMPTY}
+    Log    ${size_names}
+    ${size_codes}    Execute Javascript    var result=[];$("input[name='size_code']").each(function(){result.push($(this).val()); });return result;
+    Comment    Remove values from list    ${size_names}    ${EMPTY}
+    Log    ${size_codes}
+    ${modified_sizes_infos}    Create list
+    : FOR    ${size_name}    ${size_code}    IN ZIP    ${size_names}    ${size_codes}
+    \    Continue for loop if    '${size_name}'=='${EMPTY}'
+    \    ${size_infos}    Create dictionary    size_name=${size_name}
+    \    Run keyword unless    '${size_code}'=='${EMPTY}'    Set to dictionary    ${size_infos}    size_code=${size_code}
+    \    Append to list    ${modified_sizes_infos}    ${size_infos}
+    Log    ${modified_sizes_infos}
+    Run keyword and continue on failure    Lists should be equal    ${modified_sizes_infos}    ${verified_sizes_infos}
+    : FOR    ${index}    ${size_name}    IN ENUMERATE    @{size_names}
+    \    Continue for loop if    '${size_name}'=='${EMPTY}'
+    \    Run keyword and continue on failure    Table cell should contain    css=table.table4    ${index+2}    4    ${last_modified}
+    \    Run keyword and continue on failure    Table cell should contain    css=table.table4    ${index+2}    5    ${FULL_USER}
+
+Verify size info in UPC
+
+Check UPC page
+    [Arguments]    ${style}    ${season}    ${year}    ${expected_headers_upc}
+    Run keyword and continue on failure    Element should contain    //big[@class='title1']    UPC
+    Run keyword and continue on failure    Page should contain link    ${COMPANY}
+    Run keyword and continue on failure    Page should contain link    ${style} ${season}-${year}
+    Run keyword and continue on failure    Page should contain button    Back
+    Run keyword and continue on failure    Page should contain button    Edit
+    Comment    check headers
+    ${table_headers}    Execute Javascript    var result=[];$("table.table4 th").each(function(){result.push($(this).text()); });return result;
+    ${table_headers}    Evaluate    [v.replace(u'\xa0', ' ') for v in ${table_headers}]    #${remove_sp_space_for_html_script}
+    Log    ${table_headers}
+    Comment    ${expected_headers_upc}    Create list    ${DEFINED_ATTR_NAMES_EF['Color Desc']}    ${DEFINED_ATTR_NAMES_EF['Color Code']}    ${DEFINED_ATTR_NAMES_EF['Size Name']}    ${DEFINED_ATTR_NAMES_EF['Size Code']}
+    ...    UPC    ${DEFINED_ATTR_NAMES_EF['Article #']}    Last modified    Modified by
+    Run keyword and continue on failure    Lists should be equal    ${table_headers}    ${expected_headers_upc}
+    Comment    check data
+    ${all_data}    Execute Javascript    var result=[];$("table.table4 td").each(function(){result.push($(this).text()); });return result;
+    ${all_data_len}    Get length    ${all_data}
+    ${td_datas_list}    Evaluate    [${all_data}[i:i+8] for i in range(0,${all_data_len},8)]    #return a two dimension list
+    Log many    @{td_datas_list}
+    ${strip_td_dataa_list}    Create list
+    : FOR    ${td_data_list}    IN    @{td_datas_list}
+    \    ${strip_td_data_list}    Evaluate    [v.replace(u'\xa0', ' ') for v in ${td_data_list}]
+    \    ${strip_td_data_list}    Strip list    ${strip_td_data_list}
+    \    Append to list    ${strip_td_dataa_list}    ${strip_td_data_list}
+    Log many    @{strip_td_dataa_list}
+    Comment    not verify expected data
+
+Check edit upc page
+    [Arguments]    ${style}    ${season}    ${year}    ${expected_headers_edit_upc}
+    Run keyword and continue on failure    Element should contain    //big[@class='title1']    UPC
+    Run keyword and continue on failure    Page should contain link    ${COMPANY}
+    Run keyword and continue on failure    Page should contain link    ${style} ${season}-${year}
+    Run keyword and continue on failure    Page should contain button    Update
+    Comment    check headers
+    ${table_headers}    Execute Javascript    var result=[];$("table.table1 th").each(function(){result.push($(this).text()); });return result;
+    ${table_headers}    Evaluate    [v.replace(u'\xa0', ' ') for v in ${table_headers}]    #${remove_sp_space_for_html_script}
+    ${table_headers}    Strip list    ${table_headers}
+    Log    ${table_headers}
+    Comment    ${expected_headers_edit_upc}    Create list    Color Description    Color Code    Size    Size Code
+    ...    UPC    zReserve42
+    Run keyword and continue on failure    Lists should be equal    ${table_headers}    ${expected_headers_edit_upc}
+    Comment    check data
+
+Edit UPC page
+    [Arguments]    @{upcs_infos}
+    : FOR    ${upc_infos}    IN    @{upcs_infos}
+    \    ${color_name}    Get from dictionary    ${upc_infos}    color_name
+    \    ${size_name}    Get from dictionary    ${upc_infos}    size_name
+    \    ${upc_in_dic}    Run keyword and return status    Dictionary should contain key    ${upc_infos}    upc
+    \    ${articlenumber_in_dic}    Run keyword and return status    Dictionary should contain key    ${upc_infos}    articlenumber
+    \    ${tr_path}    Set variable    //table[@class='table1']//tr[td[1][text()='${color_name}'] and td[3][text()='${size_name}']]    #//table[@class='table1']//tr[td[1][text()='BLACK'] and td[3][text()='S']]
+    \    ${upc_path}    Set variable    ${tr_path}//input[@name='upc']    #size=14
+    \    ${articlenumber_path}    Set variable    ${tr_path}//input[@name='articlenumber']    #size=20
+    \    Run keyword if    ${upc_in_dic}    Input text    ${upc_path}    ${upc_infos['upc']}
+    \    Run keyword if    ${articlenumber_in_dic}    Input text    ${articlenumber_path}    ${upc_infos['articlenumber']}
+
+Are you sure page when delete style
+    Wait until page contains    AreYouSure?
+    Page should contain    You have chosen to delete styles from the stylebank.
+    Page should contain    If this is correct, please click the Delete button.
+    Page should contain    If this is not correct, please click the Cancel button.
+    Page should contain button    Delete
+    Comment    Page should contain button    Cancel
+    Page should contain element    //input[contains(@value,'Cancel')]
+
+Thank you page when delete style
+    Wait until page contains    ThankYou    10
+    Page should contain    All selected
+    Page should contain    styles have been deleted
+    Page should contain    from
+    Page should contain    the style bank
+
+Create a new style on style bank
+    [Arguments]    ${style_infos}    ${colors_infos}    ${edit_sizes_infos}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Page should contain button    Add New Style
+    Click button    Add New Style
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleInfo
+    Add style infos when create new style    &{style_infos}
+    Click button    Add Color(s)    #save
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}    15
+    Wait until page contains    ColorInfo
+    Check new color info page
+    Add color infos when create new style    @{colors_infos}
+    Click button    name=saveandaddsizes
+    Sleep    0.2
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    SizingInfo
+    Check new size info page    ${style_infos['stylenum']}    ${style_infos['seasonid']}    ${style_infos['year']}
+    Edit size infos    @{edit_sizes_infos}
+    Click button    ${save_size_info_button}
+    Wait until page contains    StyleBank

@@ -1,0 +1,128 @@
+*** Settings ***
+Suite Setup       Suite to upload image styles    #Login7thonline | ${URL} | ff | ${USER} | ${COMPANY} | ${browser_profile_ff_1}
+Test Teardown     Close linesheet downloading page
+Default Tags      SB-UPLOAD
+Resource          ../../File_Uploads/Upload_Linesheet/upload_linesheet_action_res.txt
+Resource          ../../../td_page_actions/style_bank_actions_res.txt
+Resource          ../style_bank_test_data_ef.txt
+Variables         ../style_bank_test_variables_ef.py
+Resource          ../../../td_page_actions/ph_styles_actions_res.txt
+
+*** Test Cases ***
+Style Image-Required file blank
+    Comment    Suite to upload image styles
+    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    Log variables
+    ${upload_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    style-image-upload    ${TEST_NAME}.txt
+    ${zip_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    style-image-upload    ${TEST_NAME}.zip
+    Upload Style Image    ${upload_file}    ${zip_file}
+    Wait until page does not contain    Uploading files...    30
+    Wait until page contains    ThankYou    5
+    Page should contain    Style Image file ${TEST_NAME}.txt
+    Page should contain    was not uploaded due to errors.
+    Sleep    5
+
+Style Image-at least one image-existing style
+    [Documentation]    Upload successfully
+    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    Log variables
+    ${upload_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    style-image-upload    ${TEST_NAME}.txt
+    ${zip_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    style-image-upload    ${TEST_NAME}.zip
+    Upload Style Image    ${upload_file}    ${zip_file}
+    Comment    Select window    new
+    Wait until page does not contain    Uploading files...    60
+    Wait until page contains    ThankYou    5
+    Page should contain    Style Image file ${TEST_NAME}.txt
+    Page should contain    was successfully uploaded.
+    Sleep    5
+
+Style Image-at least one image-unexisting style
+    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    Log variables
+    ${upload_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    style-image-upload    ${TEST_NAME}.txt
+    ${zip_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    style-image-upload    ${TEST_NAME}.zip
+    Upload Style Image    ${upload_file}    ${zip_file}
+    Comment    Select window    new
+    Wait until page does not contain    Uploading files...    60
+    Run keyword and continue on failure    Page should contain    Style Image file ${TEST_NAME}.txt
+    Run keyword and continue on failure    Page should contain    was not uploaded due to errors.
+    Run keyword and continue on failure    Page should contain    A text file with error messages has been sent to you via email.
+    Run keyword and continue on failure    Page should contain    If necessary, please fix the data to correct the error and upload the file again.
+    Run keyword and continue on failure    Page should contain    Please contact Client Support toll free at 1-800-775-7571 or email support@7thonline.com with any questions or problems.
+    Page should contain button    Close Window
+    Sleep    5
+
+Style Image-pictures mismatch
+    [Documentation]    Warnings of uploadWarning.txt:
+    ...    Line 1: file large-image.jpg does not exist.
+    ...
+    ...    Error data line of Style Image-pictures mismatch.txt:
+    ...    EILEENFISHER AT-IMAGE001 large-image.jpg small-image.jpg detail-image.jpg back-image.jpg
+    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    Log variables
+    ${upload_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    style-image-upload    ${TEST_NAME}.txt
+    ${zip_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    style-image-upload    ${TEST_NAME}.zip
+    Upload Style Image    ${upload_file}    ${zip_file}
+    Page should contain    Style Image file ${TEST_NAME}.txt
+    Page should contain    was not uploaded due to errors.
+    Run keyword and continue on failure    Page should contain    A text file with error messages has been sent to you via email.
+    Run keyword and continue on failure    Page should contain    If necessary, please fix the data to correct the error and upload the file again.
+    Run keyword and continue on failure    Page should contain    Please contact Client Support toll free at 1-800-775-7571 or email support@7thonline.com with any questions or problems.
+    Page should contain button    Close Window
+    Sleep    5
+
+Swatch Image-Require file blank
+    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    Log variables
+    ${upload_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    swatch-image-upload    ${TEST_NAME}.txt
+    ${zip_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    swatch-image-upload    ${TEST_NAME}.zip
+    Upload Swatch Image    ${upload_file}    ${zip_file}
+    Wait until page does not contain    Uploading files...    30
+    Wait until page contains    ThankYou    5
+    Page should contain    Swatch Image file ${TEST_NAME}.txt
+    Page should contain    was not uploaded due to errors.
+
+Swatch Image-Require style is existing
+    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    ${upload_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    swatch-image-upload    ${TEST_NAME}.txt
+    ${zip_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    swatch-image-upload    ${TEST_NAME}.zip
+    Upload Swatch Image    ${upload_file}    ${zip_file}
+    Wait until page does not contain    Uploading files...    60
+    Wait until page contains    ThankYou    5
+    Page should contain    Swatch Image file ${TEST_NAME}.txt
+    Page should contain    was successfully uploaded.
+
+Swatch Image-Require style is not existing
+    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    ${upload_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    swatch-image-upload    ${TEST_NAME}.txt
+    ${zip_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    swatch-image-upload    ${TEST_NAME}.zip
+    Upload Swatch Image    ${upload_file}    ${zip_file}
+    Wait until page does not contain    Uploading files...    60
+    Run keyword and continue on failure    Page should contain    Swatch Image file ${TEST_NAME}.txt
+    Run keyword and continue on failure    Page should contain    was not uploaded due to errors.
+    Run keyword and continue on failure    Page should contain    A text file with error messages has been sent to you via email.
+    Run keyword and continue on failure    Page should contain    If necessary, please fix the data to correct the error and upload the file again.
+    Run keyword and continue on failure    Page should contain    Please contact Client Support toll free at 1-800-775-7571 or email support@7thonline.com with any questions or problems.
+    Page should contain button    Close Window
+
+Swatch Image-Image file and zip name not match
+    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    ${upload_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    swatch-image-upload    ${TEST_NAME}.txt
+    ${zip_file}    Catenate    SEPARATOR=${/}    ${EXECDIR}    style_bank_upload_files    swatch-image-upload    ${TEST_NAME}.zip
+    Upload Swatch Image    ${upload_file}    ${zip_file}
+    Wait until page does not contain    Uploading files...    30
+    Wait until page contains    ThankYou    5
+    Page should contain    Swatch Image file ${TEST_NAME}.txt
+    Page should contain    was not uploaded due to errors.
+    Run keyword and continue on failure    Page should contain    A text file with error messages has been sent to you via email.
+    Run keyword and continue on failure    Page should contain    If necessary, please fix the data to correct the error and upload the file again.
+    Run keyword and continue on failure    Page should contain    Please contact Client Support toll free at 1-800-775-7571 or email support@7thonline.com with any questions or problems.
+    Page should contain button    Close Window
+
+*** Keywords ***
+Suite to upload image styles
+    ${linesheet_name}    Set variable    linesheet_AT-IMAGE.txt
+    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    Upload Linesheet    ${EXECDIR}${/}02__Style_Bank${/}${linesheet_name}
+    Close window
+    Select window    main

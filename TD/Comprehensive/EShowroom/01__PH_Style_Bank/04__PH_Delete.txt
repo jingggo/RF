@@ -1,0 +1,219 @@
+*** Settings ***
+Suite Setup       #Login7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${EMPTY}    # ${browser_profile_ff_1}
+Default Tags      PH-DEL
+Resource          ../../../td_page_actions/style_bank_actions_res.txt
+Resource          ../style_bank_test_data_ef.txt
+Variables         ../style_bank_test_variables_ef.py
+Resource          ../../../td_page_actions/ph_styles_actions_res.txt
+Resource          ../PH_style_bank_keywords.txt
+
+*** Test Cases ***
+No PH selected
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Delete Selected
+    Click button    Delete Selected
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30116] Please select the styles/colors you would like to remove.
+    Page should contain button    Back
+
+PH style
+    @{styles}    Create list    AT-NEW-PH-STYLE001
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Delete Selected
+    Select PH styles    @{styles}
+    Click button    Delete Selected    #On Place Holder Styles page
+    Are you sure page when delete ph
+    Click button    Delete    #On are you sure page
+    Thank you page when delete ph
+    Comment    Verify style not exist    The ph style bank display the same season year
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    : FOR    ${style}    IN    @{styles}
+    \    Page should not contain    ${style}
+
+PH styles
+    @{styles}    Create list    AT-00005    AT-PH-0006    AT-PH-0012    AT-PH-0013
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Delete Selected
+    Select PH styles    @{styles}
+    Click button    Delete Selected    #On Place Holder Styles page
+    Are you sure page when delete ph
+    Click button    Delete    #On are you sure page
+    Thank you page when delete ph
+    Comment    Verify style not exist    The ph style bank display the same season year
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    : FOR    ${style}    IN    @{styles}
+    \    Page should not contain    ${style}
+
+PH color-select color
+    ${style_colors}    Create dictionary    stylenum=AT-00025    colorcode=003    colorname=RED
+    @{styles_colors}    Create list    ${style_colors}
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Delete Selected
+    Select PH colors by color    @{styles_colors}
+    Click button    Delete Selected    #On Place Holder Styles page
+    Are you sure page when delete ph
+    Click button    Delete    #On are you sure page
+    Thank you page when delete ph
+    Comment    Verify style not exist    The ph style bank display the same season year
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    ${ph_styles_colors}    Create List
+    : FOR    ${v_style_colors}    IN    @{styles_colors}
+    \    ${ph_style_colors}    Get PH colors for a PH Style    ${v_style_colors['stylenum']}
+    \    ${ph_styles_colors}    Combine lists    ${ph_styles_colors}    ${ph_style_colors}
+    Log    ${ph_styles_colors}
+    : FOR    ${v_style_colors}    IN    @{styles_colors}
+    \    Run keyword and continue on failure    List should not contain value    ${ph_styles_colors}    ${v_style_colors}    PH color fails to delete.
+
+PH colors
+    ${style_colors_a}    Create dictionary    stylenum=AT-00025    colorcode=003    colorname=RED
+    ${style_colors_b}    Create dictionary    stylenum=AT-00025    colorcode=002    colorname=WHITE
+    ${style_colors_c}    Create dictionary    stylenum=AT-00025-TEST    colorcode=003    colorname=RED
+    ${style_colors_d}    Create dictionary    stylenum=AT-00025-TEST    colorcode=002    colorname=WHITE
+    @{styles_colors}    Create list    ${style_colors_a}    ${style_colors_b}    ${style_colors_c}    ${style_colors_d}
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Delete Selected
+    Select PH colors by color    @{styles_colors}
+    Click button    Delete Selected    #On Place Holder Styles page
+    Are you sure page when delete ph
+    Click button    Delete    #On are you sure page
+    Thank you page when delete ph
+    Comment    Verify style not exist    The ph style bank display the same season year
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    ${existing_ph_styles_colors}    Create List
+    ${ph_styles}    Create List
+    : FOR    ${v_style_colors}    IN    @{styles_colors}
+    \    Continue for loop if    '${v_style_colors['stylenum']}' in ${ph_styles}
+    \    ${ph_style_colors}    Get PH colors for a PH Style    ${v_style_colors['stylenum']}
+    \    ${existing_ph_styles_colors}    Combine lists    ${existing_ph_styles_colors}    ${ph_style_colors}
+    \    Append to list    ${ph_styles}    ${v_style_colors['stylenum']}
+    Log    ${existing_ph_styles_colors}
+    : FOR    ${v_style_colors}    IN    @{styles_colors}
+    \    Run keyword and continue on failure    List should not contain value    ${existing_ph_styles_colors}    ${v_style_colors}    PH color fails to delete.
+
+PH color-select style
+    @{styles}    Create list    Copy of Copy of PH-AT-MA-035
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Delete Selected
+    Select PH colors by style    @{styles}
+    Click button    Delete Selected    #On Place Holder Styles page
+    Are you sure page when delete ph
+    Click button    Delete    #On are you sure page
+    Thank you page when delete ph
+    Comment    Verify style not exist    The ph style bank display the same season year
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    : FOR    ${style}    IN    @{styles}
+    \    Page should not contain    ${style}
+
+PH size
+    Comment    no ph size
+
+PH sizes
+    Comment    no ph size
+
+PH styles and PH colors
+    Comment    select ph styles
+    @{styles}    Create list    AT-PH-00013_TEST    COPY OF PH-AT-VE-004
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Page should contain button    Delete Selected
+    Select PH styles    @{styles}
+    Comment    select ph colors
+    ${style_colors_a}    Create dictionary    stylenum=AT-00025    colorcode=003    colorname=RED
+    ${style_colors_b}    Create dictionary    stylenum=AT-00025    colorcode=002    colorname=WHITE
+    ${style_colors_c}    Create dictionary    stylenum=AT-00025-TEST    colorcode=003    colorname=RED
+    ${style_colors_d}    Create dictionary    stylenum=AT-00025-TEST    colorcode=002    colorname=WHITE
+    @{styles_colors}    Create list    ${style_colors_a}    ${style_colors_b}    ${style_colors_c}    ${style_colors_d}
+    Select PH colors by color    @{styles_colors}
+    Sleep    20
+    Comment    Delete
+    Click button    Delete Selected    #On Place Holder Styles page
+    Are you sure page when delete ph
+    Click button    Delete    #On are you sure page
+    Thank you page when delete ph
+    Comment    Verify style not exist    ph style
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    : FOR    ${style}    IN    @{styles}
+    \    Page should not contain    ${style}
+    Comment    Verify style not exist    ph style
+    ${existing_ph_styles_colors}    Create List
+    ${ph_styles}    Create List
+    : FOR    ${v_style_colors}    IN    @{styles_colors}
+    \    Continue for loop if    '${v_style_colors['stylenum']}' in ${ph_styles}
+    \    ${ph_style_colors}    Get PH colors for a PH Style    ${v_style_colors['stylenum']}
+    \    ${existing_ph_styles_colors}    Combine lists    ${existing_ph_styles_colors}    ${ph_style_colors}
+    \    Append to list    ${ph_styles}    ${v_style_colors['stylenum']}
+    Log    ${existing_ph_styles_colors}
+    : FOR    ${v_style_colors}    IN    @{styles_colors}
+    \    Run keyword and continue on failure    List should not contain value    ${existing_ph_styles_colors}    ${v_style_colors}    PH color fails to delete.
+
+PH styles and PH sizes
+    Comment    no ph size
+
+PH colors and PH sizes
+    Comment    no ph size
+
+PH styles and colors and sizes
+    Comment    no ph size
+
+All PH in a season year
+    Comment    there is a bug
+
+Delete PH style On worksheet with units
+
+Active Del style
+
+*** Keywords ***
+Select PH styles
+    [Arguments]    @{styles}
+    : FOR    ${style}    IN    @{styles}
+    \    Select checkbox    //td[contains(text(),'${style}')]/preceding-sibling::td/input[@name='placeholderstyleid']
+    \    Wait until page contains element    //td[contains(text(),'${style}')]/parent::tr[@class='checkedrowcolor']
+
+Are you sure page when delete ph
+    Wait until page contains    AreYouSure?
+    Page should contain    You have chosen to delete placeholder style(s)/color(s). If this is correct, please click the Delete button.
+    Page should contain    If this is not correct, please click the Cancel button.
+    Page should contain    Note: Only the placeholder color(s) selected will be deleted, not the real colors or styles.
+    Page should contain button    Delete
+    Page should contain button    Cancel
+
+Thank you page when delete ph
+    Wait until page contains    ThankYou    10
+    Page should contain    All selected placeholder styles have been deleted.
+
+Select PH colors by style
+    [Arguments]    @{styles}
+    : FOR    ${style}    IN    @{styles}
+    \    Select checkbox    //td[b[text()='${style}']]/preceding-sibling::td/input[@name='styleidforphcolor']
+    \    Wait until page contains element    //td[b[text()='${style}']]/parent::tr[@class='checkedrowcolor']
+
+Select PH colors by color
+    [Arguments]    @{styles_colors}
+    : FOR    ${style_color}    IN    @{styles_colors}
+    \    ${style_num}    Get from dictionary    ${style_color}    stylenum
+    \    ${color_name}    Get from dictionary    ${style_color}    colorname
+    \    Select checkbox    //td[b[contains(text(),'${style_num}')]]/parent::tr/following-sibling::tr//td[contains(text(),'${color_name}')]/preceding-sibling::td/input[@name='colorid']
+    \    Wait until page contains element    //td[b[contains(text(),'${style_num}')]]/parent::tr/following-sibling::tr//td[contains(text(),'${color_name}')]/parent::tr
+
+Get PH colors for a PH Style
+    [Arguments]    ${ph_style}
+    ${ph_style_id}    Get value    //td[b[text()='${ph_style}']]/preceding-sibling::td[1]/input
+    ${ph_style_colors}    Create List
+    : FOR    ${ph_color_index}    IN RANGE    1    100
+    \    ${ph_color_tr_path}    Set variable    //tr[td[input[@value='${ph_style_id}']]]/following-sibling::tr[${ph_color_index}]
+    \    ${ph_color_exist}    Run keyword and return status    Page should contain element    ${ph_color_tr_path}//input[@name='colorid']
+    \    Exit for loop if    ${ph_color_exist}==${False}
+    \    ${ph_color_code}    Get text    ${ph_color_tr_path}/td[2]
+    \    ${ph_color_code}    Strip string    ${ph_color_code}
+    \    ${ph_color_name}    Get text    ${ph_color_tr_path}/td[3]
+    \    ${ph_color_name}    Strip string    ${ph_color_name}
+    \    ${ph_style_colors_dic}    Create dictionary    stylenum=${ph_style}    colorcode=${ph_color_code}    colorname=${ph_color_name}
+    \    Append to list    ${ph_style_colors}    ${ph_style_colors_dic}
+    Log    ${ph_style_colors}
+    [Return]    ${ph_style_colors}

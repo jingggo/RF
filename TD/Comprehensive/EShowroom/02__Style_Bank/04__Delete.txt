@@ -1,0 +1,299 @@
+*** Settings ***
+Suite Setup       Suite to upload linesheet    ('ATD-00001','ATD-00002','ATD-00003','ATD-00004','ATD-00005','ATD-00006','ATD-00007','ATD-00008','ATD-00009')    #Login7thonline | ${URL} | ff | ${USER} | ${COMPANY} | ${EMPTY} | # ${browser_profile_ff_1}
+Default Tags      SB_DEL
+Resource          ../../../td_page_actions/style_bank_actions_res.txt
+Resource          ../style_bank_test_data_ef.txt
+Variables         ../style_bank_test_variables_ef.py
+Resource          ../../../td_page_actions/ph_styles_actions_res.txt
+Resource          ../PH_style_bank_keywords.txt
+Resource          ../../File_Uploads/Upload_Linesheet/upload_linesheet_action_res.txt
+Resource          ../style_bank_keywords.txt
+
+*** Test Cases ***
+No Style selected
+    [Documentation]    [ER-30106] Please select the styles you would like to remove.
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Page should contain button    Remove Style
+    Click button    Remove Style
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30106] Please select the styles you would like to remove.
+    Click button    Back
+    Wait until page contains    StyleBank
+
+Style
+    ${style_infos_a}    Create dictionary    stylenum=ATD-00001
+    ${styles_infos}    Create list    ${style_infos_a}
+    Del styles and verify    ${styles_infos}
+
+Styles
+    ${style_infos_a}    Create dictionary    stylenum=ATD-00002
+    ${style_infos_b}    Create dictionary    stylenum=ATD-00003
+    ${styles_infos}    Create list    ${style_infos_a}    ${style_infos_b}
+    Del styles and verify    ${styles_infos}
+    Comment     clear data
+    ${style_infos_a}    Create dictionary    stylenum=AT-00011
+    ${style_infos_b}    Create dictionary    stylenum=AT-00012
+    ${style_infos_c}    Create dictionary    stylenum=AT-00013
+    ${styles_infos}    Create list    ${style_infos_a}    ${style_infos_b}    ${style_infos_c}
+    Del styles and verify    ${styles_infos}
+
+Color
+    ${style_infos}    Create dictionary    stylenum=ATD-00004
+    ${color_infos_a}    Create dictionary    color_name=BLACK
+    ${colors_infos}    Create list    ${color_infos_a}
+    Del colors and verify    ${style_infos['stylenum']}    @{colors_infos}
+    Comment    Remove the testing style
+    ${styles_infos}    Create list    ${style_infos}
+    Del styles and verify    ${styles_infos}
+
+All Colors
+    [Documentation]    [ER-10527] The system will not allow a colorless Style. Please make sure there is at least one color.
+    ${style_infos}    Create dictionary    stylenum=ATD-00005
+    ${color_infos_a}    Create dictionary    color_name=BLACK
+    ${color_infos_b}    Create dictionary    color_name=WHITE
+    ${colors_infos}    Create list    ${color_infos_a}    ${color_infos_b}
+    Del colors and verify    ${style_infos['stylenum']}    @{colors_infos}
+    Comment    Remove the testing style
+    ${styles_infos}    Create list    ${style_infos}
+    Del styles and verify    ${styles_infos}
+
+Part Colors
+    ${style_infos}    Create dictionary    stylenum=ATD-00006
+    ${color_infos_a}    Create dictionary    color_name=BLACK
+    ${color_infos_b}    Create dictionary    color_name=WHITE
+    ${colors_infos}    Create list    ${color_infos_a}    ${color_infos_b}
+    Del colors and verify    ${style_infos['stylenum']}    @{colors_infos}
+    Comment    Remove the testing style
+    ${styles_infos}    Create list    ${style_infos}
+    Del styles and verify    ${styles_infos}
+
+Size
+    ${style_infos}    Create dictionary    stylenum=ATD-00007
+    ${size_infos_b}    Create dictionary    size_name=S
+    ${sizes_infos}    Create list    ${size_infos_b}
+    Del sizes and verify    ${style_infos['stylenum']}    @{sizes_infos}
+    Comment    Remove the testing style
+    ${styles_infos}    Create list    ${style_infos}
+    Del styles and verify    ${styles_infos}
+
+All Sizes
+    ${style_infos}    Create dictionary    stylenum=ATD-00008
+    ${size_infos_a}    Create dictionary    size_name=PROJ
+    ${size_infos_b}    Create dictionary    size_name=S
+    ${size_infos_c}    Create dictionary    size_name=M
+    ${size_infos_d}    Create dictionary    size_name=L
+    ${size_infos_e}    Create dictionary    size_name=XL
+    ${size_infos_f}    Create dictionary    size_name=XXS
+    ${size_infos_g}    Create dictionary    size_name=XS
+    ${sizes_infos}    Create list    ${size_infos_a}    ${size_infos_b}
+    ...    ${size_infos_c}    ${size_infos_d}    ${size_infos_e}    ${size_infos_f}    ${size_infos_g}
+    Del sizes and verify    ${style_infos['stylenum']}    @{sizes_infos}
+    Comment    Remove the testing style
+    ${styles_infos}    Create list    ${style_infos}
+    Del styles and verify    ${styles_infos}
+
+Part Sizes
+    ${style_infos}    Create dictionary    stylenum=ATD-00009
+    ${size_infos_a}    Create dictionary    size_name=PROJ
+    ${size_infos_b}    Create dictionary    size_name=S
+    ${sizes_infos}    Create list    ${size_infos_a}    ${size_infos_b}
+    Del sizes and verify    ${style_infos['stylenum']}    @{sizes_infos}
+    Comment    Remove the testing style
+    ${styles_infos}    Create list    ${style_infos}
+    Del styles and verify    ${styles_infos}
+
+Reactive del style
+    ${style_infos}    Create dictionary    stylenum=ATD-00001    seasonid=RESORT    year=2017    class=J - JACKETS    department=MISSY
+    ...    division=WOMENSWEAR
+    ${color_infos_a}    Create dictionary    color_code=001    color_name=BLACK
+    ${color_infos_b}    Create dictionary    color_code=002    color_name=WHITE
+    @{colors_infos}    Create list    ${color_infos_a}    ${color_infos_b}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Select from season and year dropdown    ${style_infos['seasonid']}-${style_infos['year']}
+    Page should contain button    Add New Style
+    Click button    Add New Style
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleInfo
+    Add style infos when create new style    &{style_infos}
+    Click button    Add Color(s)    #save
+    Sleep    1
+    Wait until page does not contain element    ${please_wait_button}    15
+    Wait until page contains    Thank
+    Wait until page contains    You
+    Run keyword and continue on failure    Page should contain    You have reactivated the following style color(s):
+    Run keyword and continue on failure    Page should contain    ${style_infos['stylenum']} ${color_infos_a['color_code']} ${color_infos_a['color_name']}
+    Run keyword and continue on failure    Page should contain    ${style_infos['stylenum']} ${color_infos_b['color_code']} ${color_infos_b['color_name']}
+    Comment    clear data
+    ${styles_infos}    Create list    ${style_infos}
+    Del styles and verify    ${styles_infos}
+
+*** Keywords ***
+Select PH styles
+    [Arguments]    @{styles}
+    : FOR    ${style}    IN    @{styles}
+    \    Select checkbox    //td[contains(text(),'${style}')]/preceding-sibling::td/input[@name='placeholderstyleid']
+    \    Wait until page contains element    //td[contains(text(),'${style}')]/parent::tr[@class='checkedrowcolor']
+
+Are you sure page when delete ph
+    Wait until page contains    AreYouSure?
+    Page should contain    You have chosen to delete placeholder style(s)/color(s). If this is correct, please click the Delete button.
+    Page should contain    If this is not correct, please click the Cancel button.
+    Page should contain    Note: Only the placeholder color(s) selected will be deleted, not the real colors or styles.
+    Page should contain button    Delete
+    Page should contain button    Cancel
+
+Select PH colors by style
+    [Arguments]    @{styles}
+    : FOR    ${style}    IN    @{styles}
+    \    Select checkbox    //td[b[text()='${style}']]/preceding-sibling::td/input[@name='styleidforphcolor']
+    \    Wait until page contains element    //td[b[text()='${style}']]/parent::tr[@class='checkedrowcolor']
+
+Select PH colors by color
+    [Arguments]    @{styles_colors}
+    : FOR    ${style_color}    IN    @{styles_colors}
+    \    ${style_num}    Get from dictionary    ${style_color}    stylenum
+    \    ${color_name}    Get from dictionary    ${style_color}    colorname
+    \    Select checkbox    //td[b[contains(text(),'${style_num}')]]/parent::tr/following-sibling::tr//td[contains(text(),'${color_name}')]/preceding-sibling::td/input[@name='colorid']
+    \    Wait until page contains element    //td[b[contains(text(),'${style_num}')]]/parent::tr/following-sibling::tr//td[contains(text(),'${color_name}')]/parent::tr
+
+Get PH colors for a PH Style
+    [Arguments]    ${ph_style}
+    ${ph_style_id}    Get value    //td[b[text()='${ph_style}']]/preceding-sibling::td[1]/input
+    ${ph_style_colors}    Create List
+    : FOR    ${ph_color_index}    IN RANGE    1    100
+    \    ${ph_color_tr_path}    Set variable    //tr[td[input[@value='${ph_style_id}']]]/following-sibling::tr[${ph_color_index}]
+    \    ${ph_color_exist}    Run keyword and return status    Page should contain element    ${ph_color_tr_path}//input[@name='colorid']
+    \    Exit for loop if    ${ph_color_exist}==${False}
+    \    ${ph_color_code}    Get text    ${ph_color_tr_path}/td[2]
+    \    ${ph_color_code}    Strip string    ${ph_color_code}
+    \    ${ph_color_name}    Get text    ${ph_color_tr_path}/td[3]
+    \    ${ph_color_name}    Strip string    ${ph_color_name}
+    \    ${ph_style_colors_dic}    Create dictionary    stylenum=${ph_style}    colorcode=${ph_color_code}    colorname=${ph_color_name}
+    \    Append to list    ${ph_style_colors}    ${ph_style_colors_dic}
+    Log    ${ph_style_colors}
+    [Return]    ${ph_style_colors}
+
+Del styles and verify
+    [Arguments]    ${styles_infos}
+    ${styles_infos_len}    Get length    ${styles_infos}
+    @{del_styles}    Evaluate    [i['stylenum'] for i in ${styles_infos}]
+    ${tuple_del_styles}    Evaluate    tuple(${del_styles})
+    ${styles_}    Evaluate    '_'.join([i['stylenum'] for i in ${styles_infos}])    #linesheet_${style_infos['stylenum']}.txt
+    ${linesheet_name}    Catenate    SEPARATOR=_    linesheet    ${styles_}.txt
+    Connect to database using custom params    cx_Oracle    ${APPBETA}
+    ${check_style_in_db_query}    Set variable if    ${styles_infos_len}==${1}    select * from style s where s.style_number='${del_styles[0]}'    select * from style s where s.style_number in ${tuple_del_styles}
+    ${is_exist_in_sb}    Run keyword and return status    Check if exists in database    ${check_style_in_db_query}
+    Run keyword if    ${is_exist_in_sb}==${False}    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    Run keyword if    ${is_exist_in_sb}==${False}    Upload Linesheet    ${EXECDIR}${/}02__Style_Bank${/}${linesheet_name}
+    Run keyword if    ${is_exist_in_sb}==${False}    Close window
+    Run keyword if    ${is_exist_in_sb}==${False}    Select window    main
+    Comment    Start
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Page should contain button    ${remove_style_button}
+    Advanced Search on style bank by style    @{del_styles}
+    ${searched_styles_count}    Get matching xpath count    //table[@class='table1']//tbody//tr
+    ${searched_styles_count}    Evaluate    ${searched_styles_count}-1    #remove th
+    Should be equal as integers    ${searched_styles_count}    ${styles_infos_len}    Search styles count is not equal to default searched styles count.
+    Click link    id=check
+    Wait until page contains element    //tr[@class='checkedrowcolor']
+    Click button    ${remove_style_button}
+    Are you sure page when delete style
+    Click button    Delete
+    Thank you page when delete style
+
+Del colors and verify
+    [Arguments]    ${stylenum}    @{colors_infos}
+    ${linesheet_name}    Catenate    SEPARATOR=_    linesheet    ${stylenum}.txt
+    Connect to database using custom params    cx_Oracle    ${APPBETA}
+    ${needed_style_ids}    Set variable    select s.style_id from style s where s.style_number='${stylenum}'
+    ${is_exist_in_sb}    Run keyword and return status    Check if exists in database    select ss.status from style_season ss where ss.style_id in (${needed_style_ids})
+    ${status_in_db}    Run keyword if    ${is_exist_in_sb}    query    select ss.status from style_season ss where ss.style_id in (${needed_style_ids})
+    ${status_in_db}    Get from list    ${status_in_db}    0
+    ${status_in_db}    Get from list    ${status_in_db}    0
+    Run keyword if    ${is_exist_in_sb}==${False} or '${status_in_db}'=='-1'    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    Run keyword if    ${is_exist_in_sb}==${False} or '${status_in_db}'=='-1'    Upload Linesheet    ${EXECDIR}${/}02__Style_Bank${/}${linesheet_name}
+    Run keyword if    ${is_exist_in_sb}==${False} or '${status_in_db}'=='-1'    Close window
+    Run keyword if    ${is_exist_in_sb}==${False} or '${status_in_db}'=='-1'    Select window    main
+    Comment    Start
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Advanced Search on style bank by style    ${stylenum}
+    ${del_style_color_info_path}    Set variable    //td[a[text()='${stylenum}']]/following-sibling::td/a[text()='Colors']
+    Click element    ${del_style_color_info_path}
+    Wait until page contains    ColorInfo
+    ${existing_color_names}    Get color names on color info page
+    ${existing_color_names_len}    Get length    ${existing_color_names}
+    ${del_colors_len}    Get length    ${colors_infos}
+    ${is_sel_all}    Run keyword and return status    Should be equal as integers    ${existing_color_names_len}    ${del_colors_len}
+    ${expected_existing_color_names}    Set variable    ${existing_color_names}
+    : FOR    ${color}    IN    @{colors_infos}
+    \    ${del_color_name}    Get from dictionary    ${color}    color_name
+    \    Remove values from list    ${expected_existing_color_names}    ${del_color_name}
+    \    ${del_style_color_id}    Get value    //input[@value='${del_color_name}' and @name='color_name']/following-sibling::input[1]
+    \    Select checkbox    //input[@value='${del_style_color_id}' and @name='del_color']
+    Click button    ${save_color_info_button}
+    Sleep    0.2
+    Wait until page does not contain element    ${please_wait_button}
+    Sleep    0.2
+    Comment    Verify
+    Run keyword if    ${is_sel_all}    Run keyword and continue on failure    Page should contain    ErrorMessage
+    Run keyword if    ${is_sel_all}    Run keyword and continue on failure    Page should contain    [ER-10527] The system will not allow a colorless Style. Please make sure there is at least one color.
+    Run keyword if    ${is_sel_all}    Run keyword and continue on failure    Click button    Back
+    Return from keyword if    ${is_sel_all}
+    Wait until page contains    StyleBank
+    Click element    ${del_style_color_info_path}
+    Wait until page contains    ColorInfo
+    ${existing_color_names_after_del}    Get color names on color info page
+    Log    ${expected_existing_color_names}
+    Run keyword and continue on failure    Lists should be equal    ${existing_color_names_after_del}    ${expected_existing_color_names}
+
+Del sizes and verify
+    [Arguments]    ${stylenum}    @{sizes_infos}
+    ${linesheet_name}    Catenate    SEPARATOR=_    linesheet    ${stylenum}.txt
+    Connect to database using custom params    cx_Oracle    ${APPBETA}
+    ${needed_style_ids}    Set variable    select s.style_id from style s where s.style_number='${stylenum}'
+    ${is_exist_in_sb}    Run keyword and return status    Check if exists in database    select ss.status from style_season ss where ss.style_id in (${needed_style_ids})
+    ${status_in_db}    Run keyword if    ${is_exist_in_sb}    query    select ss.status from style_season ss where ss.style_id in (${needed_style_ids})
+    ${status_in_db}    Run keyword if    ${is_exist_in_sb}    Get from list    ${status_in_db}    0
+    ${status_in_db}    Run keyword if    ${is_exist_in_sb}    Get from list    ${status_in_db}    0
+    Run keyword if    ${is_exist_in_sb}==${False} or '${status_in_db}'=='-1'    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    Run keyword if    ${is_exist_in_sb}==${False} or '${status_in_db}'=='-1'    Upload Linesheet    ${EXECDIR}${/}02__Style_Bank${/}${linesheet_name}
+    Run keyword if    ${is_exist_in_sb}==${False} or '${status_in_db}'=='-1'    Close window
+    Run keyword if    ${is_exist_in_sb}==${False} or '${status_in_db}'=='-1'    Select window    main
+    Comment    Start
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Page should contain    StyleBank
+    Advanced Search on style bank by style    ${stylenum}
+    ${del_style_sizes_path}    Set variable    //td[a[text()='${stylenum}']]/following-sibling::td/a[text()='Sizes']
+    Click element    ${del_style_sizes_path}
+    Wait until page contains    SizingInfo
+    ${existing_size_names}    Get size names on sizing info page
+    ${expected_size_names_after_del}    Set variable    ${existing_size_names}
+    :FOR    ${size}    IN    @{sizes_infos}
+    \    ${del_size_name}    Get from dictionary    ${size}    size_name
+    \    Remove values from list    ${expected_size_names_after_del}    ${del_size_name}
+    \    ${del_size_id}    Get value    //input[@name='size_name' and @value='${del_size_name}']/following-sibling::input[@name='style_size_id']
+    \    Select checkbox    //input[@name='del_size' and @value='${del_size_id}']
+    Click button    ${save_size_info_button}
+    Sleep    0.2
+    Wait until page does not contain element    ${please_wait_button}
+    Sleep    0.2
+    Comment    Verify
+    Wait until page contains    StyleBank
+    Click element    ${del_style_sizes_path}
+    Wait until page contains    SizingInfo
+    ${existing_size_names_after_del}    Get size names on sizing info page
+    Log    ${expected_size_names_after_del}
+    Run keyword and continue on failure    Lists should be equal    ${existing_size_names_after_del}    ${expected_size_names_after_del}
+
+suite to upload linesheet
+    [Arguments]    ${styles_tuple_string}
+    ${linesheet_name}    Set variable    linesheet_ATD.txt
+    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    Upload Linesheet    ${EXECDIR}${/}02__Style_Bank${/}${linesheet_name}
+    Close window
+    Select window    main

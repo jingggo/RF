@@ -4,7 +4,7 @@ ${USER}           efparent
 ${COMPANY}        Eileen Fisher
 ${no-style-found}    No styles found.
 ${REPORT_STORE_PATH}    Z:${/}Temp${/}jyang${/}Style Bank Comprehensive Result
-${PARENT_COMPANY_ID}    100020
+${PARENT_COMPANY_ID}    100100
 ${APPBETA}        'appbeta','sol','10.125.2.221/auto1app'
 ${POSBETA}        'appbeta','sol','10.125.2.221/auto1pos'
 @{COLOR_INFO_SCROLL_BODY_INPUT_NAMES}    vendor_color_code    nrf_color_code    color_group    pattern_number    start_ship_date    product_stop_date    standardcost
@@ -21,3 +21,9 @@ ${POSBETA}        'appbeta','sol','10.125.2.221/auto1pos'
 ...               zReserve37    Estimated Cost    zReserve41    Wholesale Price    Low Cost    Retail Price    Low Retail
 ...               Customer Account Code    Delivery    Main Sew venue    COO    zReserve43    Share to Child
 @{EXPECTED_COLORINFO_STYLEATTRIBUTES}    *Existing EF Style:    *Fashion Season:    *Year:
+${STYLET}         EF Style
+${FULL_USER}      Eileen Fisher Parent
+@{COLOR_ATTRIBUTES_NEW_STYLE_PAGE}    Fashion Season-Year:    EF Style:    Fashion Season:    Year:    Wholesale Price:    Local WHSL:    Low Cost:
+...               Retail Price:    Local MSRP:    Low Retail:    Main Material:    zReserve13:    zReserve33:
+${CO_CORPORATE_DIVISION}    EILEENFISHER
+${PCMID}          100100

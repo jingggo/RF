@@ -42,14 +42,15 @@ query from db
     [Arguments]    ${sql}
     Comment    ${DB_APP}    get cell value    ${fuserPath}    ${sheetTab}    0    3
     Comment    ${DB_APP}    remove string    ${DB_APP}    \\
-    log    ${DB_APP}
-    connect to database using custom params    cx_Oracle    ${DB_APP}
+    log    ${APPBETA}    #${DB_APP}
+    connect to database using custom params    cx_Oracle    ${APPBETA}    #${DB_APP}
     @{result}    query    ${sql}
     disconnect from database
     [Return]    @{result}
 
 get rename dictionary
-    ${queryOf_renamedAttr}    set variable    select cd.default_name, cd.defined_name from cmm_define_attribute cd where cd.company_id=${PCMID}
+    Comment    ${queryOf_renamedAttr}    set variable    select cd.default_name, cd.defined_name from cmm_define_attribute cd where cd.company_id=${PCMID}
+    ${queryOf_renamedAttr}    set variable    select cd.default_name, cd.defined_name from company_specific_attr_name cd where cd.company_id=${PCMID}
     ${rename_list}    query from db    ${queryOf_renamedAttr}
     &{rename_dictionary}    evaluate    dict(${rename_list})
     log many    &{rename_dictionary}
@@ -139,6 +140,7 @@ entry page via navimenu
     wait until keyword succeeds    10 s    3 s    Click element    ${page_link}    #${DoonInfoLink_path}
     wait until keyword succeeds    1 min    6 sec    page should not contain element    ${z_enter_processing_path}    #${z_apply_processing_path}
     Comment    Wait Until Page Contains Element    ${Confirm_element}    100    The page failed to open because the confirm element is not appear.
+    Sleep    0.2
 
 select criteria to work with by list
     [Arguments]    ${criteria_values}    ${currency}=USD
@@ -357,7 +359,21 @@ Close Other Windows
     ${nwindows}    Get length    ${windows}
     Return from keyword if    ${nwindows}==${1}
     ${windows}    Get slice from list    ${windows}    1
-    :FOR    ${window_index}    ${window}    IN ENUMERATE    @{windows}
+    : FOR    ${window_index}    ${window}    IN ENUMERATE    @{windows}
     \    Select window    new
     \    Close window
     Select window    main
+
+Get company specific attr names
+    [Arguments]    ${PCMID}
+    ${queryOf_renamedAttr}    set variable    select cd.company_specific_attr_name, cd.system_default_attr_name from company_specific_attr_name cd where cd.company_id=${PCMID}    #select cd.system_default_attr_name, cd.company_specific_attr_name from company_specific_attr_name cd where cd.company_id=100020    select cd.system_default_attr_name, cd.company_specific_attr_name from company_specific_attr_name cd where cd.company_id=${PCMID}
+    ${rename_list}    query from db    ${queryOf_renamedAttr}
+    &{rename_dictionary}    evaluate    dict(${rename_list})
+    log many    &{rename_dictionary}
+    ${len1}    get length    ${rename_dictionary}
+    Comment    ${items}    get dictionary items    ${rename_dictionary}
+    Comment    : FOR    ${key}    ${value}    IN    @{items}
+    Comment    \    run keyword if    '${value}'=='${None}'    remove from dictionary    ${rename_dictionary}    ${key}
+    Comment    log many    &{rename_dictionary}
+    Comment    ${len2}    get length    ${rename_dictionary}
+    [Return]    &{rename_dictionary}

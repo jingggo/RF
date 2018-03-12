@@ -1,0 +1,563 @@
+*** Settings ***
+Documentation     Require attributes on Style Info Page are from Hierarchy Production Attributes.
+Suite Setup       #Login7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${browser_profile_ff_1}
+Default Tags      SB-EDIT
+Resource          ../../../td_page_actions/style_bank_actions_res.txt
+Resource          ../style_bank_test_data_ef.txt
+Variables         ../style_bank_test_variables_ef.py
+Resource          ../../../td_page_actions/ph_styles_actions_res.txt
+Resource          ../../File_Uploads/Upload_Linesheet/upload_linesheet_action_res.txt
+Resource          ../style_bank_keywords.txt
+
+*** Test Cases ***
+Edit-Style Info-Directly modify
+    ${style_infos}    Create dictionary    stylenum=ATE-00001
+    ${searched_style}    Get from dictionary    ${style_infos}    stylenum
+    &{edit_style_infos}    Create dictionary    descript=BALLET NECK TOP W/ 3/4 SLVS
+    Connect to database using custom params    cx_Oracle    ${APPBETA}
+    ${is_exist_in_sb}    Run keyword and return status    Check if exists in database    select * from style s where s.style_number='${searched_style}'
+    Run keyword if    ${is_exist_in_sb}==${False}    Entry page via navimenu    ${admin_fileupload}    FileUploads
+    Run keyword if    ${is_exist_in_sb}==${False}    Upload Linesheet    ${EXECDIR}${/}02__Style_Bank${/}linesheet_${searched_style}.txt
+    Run keyword if    ${is_exist_in_sb}==${False}    Close window
+    Run keyword if    ${is_exist_in_sb}==${False}    Select window    main
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_info_path}    Set variable    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[4]/a
+    Comment    Go to style info page    ${style_info_path}
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[4]/a    #Style info
+    Wait until page contains    StyleInfo
+    Edit style infos in style bank    &{edit_style_infos}
+    ${last modified time}    Get last modified time
+    Log    ${last modified time}
+    Set to dictionary    ${edit_style_infos}    last_modified=${last modified time}
+    Click button    Save Style Info
+    Wait until page contains    StyleBank
+    Comment    Verify
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[4]/a    #Style info
+    Wait until page contains    StyleInfo
+    Verify style infos in style bank    &{edit_style_infos}
+
+Edit-Style Info-Change Dropdown
+    [Documentation]    Change all dropdown, then click save style info button. Save successfully.
+    ${style_infos}    Create dictionary    stylenum=ATE-00001
+    &{edit_style_infos}    Create dictionary
+    ${searched_style}    Get from dictionary    ${style_infos}    stylenum
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_info_path}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_info_path}    Get from list    ${style_info_path}    0
+    Go to style info page    //a[contains(@href, '${style_info_path}') and contains(text(), 'Style')]
+    ${all_dropdown_counts}    Get matching xpath count    //div[@class='maincontent']//select
+    ${all_dropdown_counts}    Convert to integer    ${all_dropdown_counts}
+    ${sel_attributes}    Create list    hangfold    styleprepack    category    department    sizerangeid
+    ...    categorydetail    categorydetail1    categorydetail2    fabricMaterial    design
+    : FOR    ${sel_attribute}    IN    @{sel_attributes}
+    \    ${labels}    Get list items    ${sel_attribute}
+    \    ${selected_label}    Get selected list label    ${sel_attribute}
+    \    Remove values from list    ${labels}    ${selected_label}    ${SPACE}
+    \    ${labels_count}    Get length    ${labels}
+    \    Continue for loop if    ${labels_count}==${0}
+    \    ${random_label}    Evaluate    random.sample(${labels},1)    random
+    \    Select from list by label    ${sel_attribute}    ${random_label[0]}
+    \    Set to dictionary    ${edit_style_infos}    ${sel_attribute}=${random_label[0]}
+    Log many    ${edit_style_infos}
+    ${last_modified}    Get last modified time
+    Set to dictionary    ${edit_style_infos}    last_modified=${last_modified}
+    Click Button    Save Style Info
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleBank    20
+    Page should not contain    ErrorMessage
+    Comment    Verify
+    Click element    //a[text()='${style_infos['stylenum']}']/parent::td/following-sibling::td[4]/a    #Style info
+    Wait until page contains    StyleInfo
+    Verify style infos in style bank    &{edit_style_infos}
+
+Edit-Style Info-Upload Image
+    ${searched_style}    Set variable    ATE-00001
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_info_path}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_info_path}    Get from list    ${style_info_path}    0
+    Go to style info page    //a[contains(@href, '${style_info_path}') and contains(text(), 'Style')]
+    ${file_inputs}    Create list    previewfile    zoominfile    detailfile    backviewfile
+    Comment    ${EXECDIR} = D:\learngitt\RFProject\TD\Comprehensive\EShowroom
+    Log variables
+    Log    ${EXECDIR}${/}style_bank_upload_files
+    ${file_dir}    Set variable    ${EXECDIR}${/}style_bank_upload_files    #    D:${/}learngitt${/}RFProject${/}TD${/}Comprehensive${/}EShowroom${/}style_bank_upload_files
+    : FOR    ${file_input}    IN    @{file_inputs}
+    \    Choose File    ${file_input}    ${file_dir}${/}${file_input}.jpg
+    Click Button    Save Style Info
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleBank    20
+    Page should not contain    ErrorMessage
+
+Edit-Style Info-Remove back view image
+    ${searched_style}    Set variable    ATE-00001
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_info_path}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_info_path}    Get from list    ${style_info_path}    0
+    Go to style info page    //a[contains(@href, '${style_info_path}') and contains(text(), 'Style')]
+    ${remove_images_name}    Create list    deletesmallimage    deletelargeimage    delete_detail    delete_backview
+    : FOR    ${remove_image_name}    IN    @{remove_images_name}
+    \    Select checkbox    ${remove_image_name}
+    Click Button    Save Style Info
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleBank    20
+    Page should not contain    ErrorMessage
+
+Edit-Colors-Upload Color Swatch
+    ${searched_style}    Set variable    ATE-00001
+    ${swatchfile_file_path}    Set variable    ${EXECDIR}${/}style_bank_upload_files${/}swatchfile.jpg
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_id}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_id}    Get from list    ${style_id}    0
+    Go to colors info page    //a[contains(@href, '${style_id}') and text()='Colors']
+    ${existed_color_name_count}    Get matching xpath count    //input[@name='color_name' and not(@value='')]    #${existed_color_name_count_path}
+    ${existed_color_name_count}    Convert to integer    ${existed_color_name_count}
+    Run keyword if    ${existed_color_name_count}<1    Fail    Style Number: '${searched_style}' does not have color.
+    ${random_existed_color_row}    Evaluate    random.randint(1,${existed_color_name_count})    random
+    ${color_info_scroll_tr_path}    Catenate    SEPARATOR=    ${color_info_scroll_table_path}    /tbody/tr[${random_existed_color_row}]
+    Choose file    ${color_info_scroll_tr_path}//input[@name='swatchfile']    ${swatchfile_file_path}
+    Click button    Save Color Info
+    Sleep    2
+    Wait until page contains    StyleBank
+
+Edit-Colors-View Color Swatch
+    ${searched_style}    Set variable    ATE-00001
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_id}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_id}    Get from list    ${style_id}    0
+    Go to colors info page    //a[contains(@href, '${style_id}') and text()='Colors']
+    Click button    View Color Swatch
+    Sleep    2
+    Wait until page contains    SwatchSheet    10
+    Click button    Back
+    Wait until page contains    ColorInfo    10
+
+Edit-Colors-More Colors
+    ${searched_style}    Set variable    ATE-00001
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_id}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_id}    Get from list    ${style_id}    0
+    Go to colors info page    //a[contains(@href, '${style_id}') and text()='Colors']
+    ${default_color_nrows}    Get matching xpath count    ${color_info_left_body_table_path}/tbody/tr
+    ${default_color_nrows}    Convert to integer    ${default_color_nrows}    #8
+    Click button    name=more colors
+    Sleep    2
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains element    ${color_info_left_body_table_path}/tbody/tr
+    ${update_color_nrows}    Get matching xpath count    ${color_info_left_body_table_path}/tbody/tr
+    ${update_color_nrows}    Convert to integer    ${update_color_nrows}    #16
+    ${expected}    Evaluate    ${default_color_nrows}*2
+    Should be equal as integers    ${expected}    ${update_color_nrows}
+
+Edit-Sizes-Modify size name-exist in company size not in the testing style
+    [Documentation]    [ER-30026] If you wish to delete a size, place a check mark in the box next to the size you wish to delete, and click on the Save Size Info button.
+    ${searched_style}    Set variable    ATE-00001
+    Comment    ${update_size_desc}    Set variable    XXS
+    ${update_size_code}    Set variable    ${EMPTY}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_id}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_id}    Get from list    ${style_id}    0
+    Go to size info page    //a[contains(@href, '${style_id}') and text()='Sizes']
+    ${size_names}    Execute Javascript    var result=[];$("input[name='size_name']").each(function(){result.push($(this).val()); });return result;
+    Remove values from list    ${size_names}    ${EMPTY}
+    Log    ${size_names}
+    Comment    Get need size name from db
+    ${company_sizes}    query from db    select distinct z1.name, z1.sequence from company_size_dimension1 z1 where z1.company_id=${PCMID} order by z1.sequence
+    : FOR    ${update_size_desc}    IN    @{company_sizes}
+    \    ${update_size_desc}    Get from list    ${update_size_desc}    0
+    \    ${is_not_contain}    Run keyword and return status    List should not contain value    ${size_names}    ${update_size_desc}
+    \    Exit for loop if    ${is_not_contain}
+    ${size_names_len}    Get length    ${size_names}
+    ${existed_size_name_nrows}    Get matching xpath count    //table[@class='table4']/tbody/tr[1]/following-sibling::tr/td[1]/input[@name='size_name' and not(@value='')]    #1
+    ${existed_size_name_nrows}    Convert to integer    ${existed_size_name_nrows}
+    Run keyword if    ${size_names_len}==${0}    Fail    No Size for style: '${searched_style}'.So this case was not executed.
+    ${random_existed_size_name_rowx}    Evaluate    random.sample(${size_names},1)    random
+    ${random_existed_size_name_rowx}    Get from list    ${random_existed_size_name_rowx}    0
+    ${edit_size_name_path}    Set variable    //input[@value='${random_existed_size_name_rowx}' and @name='size_name']
+    ${edit_size_code_path}    Set variable    //input[@value='${random_existed_size_name_rowx}' and @name='size_name']/parent::td/following-sibling::td[1]/input[@name='size_code']
+    Input Text    ${edit_size_name_path}    ${update_size_desc}
+    Input Text    ${edit_size_code_path}    ${update_size_code}
+    Click button    ${save_size_info_button}    #Save Size Info
+    Wait until page does not contain element    ${please_wait_button}
+    Run keyword and continue on failure    Page should contain    ErrorMessage
+    Run keyword and continue on failure    Page should contain    [ER-30026] If you wish to delete a size, place a check mark in the box next to the size you wish to delete, and click on the Save Size Info button.
+    Click button    Back
+
+Edit-Sizes-Modify size name to empty
+    [Documentation]    [ER-30026] If you wish to delete a size, place a check mark in the box next to the size you wish to delete, and click on the Save Size Info button.
+    ${searched_style}    Set variable    ATE-00001
+    ${update_size_desc}    Set variable    ${EMPTY}
+    ${update_size_code}    Set variable    ${EMPTY}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_id}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_id}    Get from list    ${style_id}    0
+    Go to size info page    //a[contains(@href, '${style_id}') and text()='Sizes']
+    ${size_names}    Execute Javascript    var result=[];$("input[name='size_name']").each(function(){result.push($(this).val()); });return result;
+    Remove values from list    ${size_names}    ${EMPTY}
+    Log    ${size_names}
+    ${size_names_len}    Get length    ${size_names}
+    ${existed_size_name_nrows}    Get matching xpath count    //table[@class='table4']/tbody/tr[1]/following-sibling::tr/td[1]/input[@name='size_name' and not(@value='')]    #1
+    ${existed_size_name_nrows}    Convert to integer    ${existed_size_name_nrows}
+    Run keyword if    ${size_names_len}==${0}    Fail    No Size for style: '${searched_style}'.So this case was not executed.
+    ${random_existed_size_name_rowx}    Evaluate    random.sample(${size_names},1)    random
+    ${random_existed_size_name_rowx}    Get from list    ${random_existed_size_name_rowx}    0
+    ${edit_size_name_path}    Set variable    //input[@value='${random_existed_size_name_rowx}' and @name='size_name']
+    ${edit_size_code_path}    Set variable    //input[@value='${random_existed_size_name_rowx}' and @name='size_name']/parent::td/following-sibling::td[1]/input[@name='size_code']
+    Input Text    ${edit_size_name_path}    ${update_size_desc}
+    Input Text    ${edit_size_code_path}    ${update_size_code}
+    Click button    ${save_size_info_button}    #Save Size Info
+    Wait until page does not contain element    ${please_wait_button}
+    Run keyword and continue on failure    Page should contain    ErrorMessage
+    Run keyword and continue on failure    Page should contain    [ER-30026] If you wish to delete a size, place a check mark in the box next to the size you wish to delete, and click on the Save Size Info button.
+    Click button    Back
+
+Edit-Sizes-Modify size name-duplicate
+    [Documentation]    [ER-30233] The Size Code(s) and Size(s) for a style must be unique. Size Code(s) and Size(s) are not case sensitive. Please change them so they are all different.
+    ${searched_style}    Set variable    ATE-00001
+    Comment    ${update_size_desc}    Set variable    XXS
+    ${update_size_code}    Set variable    ${EMPTY}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_id}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_id}    Get from list    ${style_id}    0
+    Go to size info page    //a[contains(@href, '${style_id}') and text()='Sizes']
+    ${size_names}    Execute Javascript    var result=[];$("input[name='size_name']").each(function(){result.push($(this).val()); });return result;
+    Remove values from list    ${size_names}    ${EMPTY}
+    Log    ${size_names}
+    ${size_names_len}    Get length    ${size_names}
+    ${existed_size_name_nrows}    Get matching xpath count    //table[@class='table4']/tbody/tr[1]/following-sibling::tr/td[1]/input[@name='size_name' and not(@value='')]    #1
+    ${existed_size_name_nrows}    Convert to integer    ${existed_size_name_nrows}
+    Run keyword if    ${size_names_len}==${0}    Fail    No Size for style: '${searched_style}'.So this case was not executed.
+    ${random_existed_size_name_rowxs}    Evaluate    random.sample(${size_names},2)    random
+    ${random_existed_size_name_rowx}    Get from list    ${random_existed_size_name_rowxs}    0
+    ${update_size_desc}    Get from list    ${random_existed_size_name_rowxs}    1
+    ${edit_size_name_path}    Set variable    //input[@value='${random_existed_size_name_rowx}' and @name='size_name']
+    ${edit_size_code_path}    Set variable    //input[@value='${random_existed_size_name_rowx}' and @name='size_name']/parent::td/following-sibling::td[1]/input[@name='size_code']
+    Input Text    ${edit_size_name_path}    ${update_size_desc}
+    Input Text    ${edit_size_code_path}    ${update_size_code}
+    Click button    ${save_size_info_button}    #Save Size Info
+    Wait until page does not contain element    ${please_wait_button}
+    Run keyword and continue on failure    Page should contain    ErrorMessage
+    Run keyword and continue on failure    Page should contain    [ER-30233] The Size Code(s) and Size(s) for a style must be unique.${SPACE}${SPACE}Size Code(s) and Size(s) are not case sensitive.${SPACE}${SPACE}Please change them so they are all different.
+    Click button    Back
+
+Edit-Sizes-Modify size name-unexist in company size
+    [Documentation]    [ER-30061] The size "R" does not exist in the company size profile. Please add the size into company size profile first by linesheet upload.
+    ${searched_style}    Set variable    ATE-00001
+    Comment    ${update_size_desc}    Set variable    XXS
+    ${update_size_code}    Set variable    ${EMPTY}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_id}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_id}    Get from list    ${style_id}    0
+    Go to size info page    //a[contains(@href, '${style_id}') and text()='Sizes']
+    ${size_names}    Execute Javascript    var result=[];$("input[name='size_name']").each(function(){result.push($(this).val()); });return result;
+    Remove values from list    ${size_names}    ${EMPTY}
+    Log    ${size_names}
+    Comment    Get need size name from db
+    ${company_sizes}    query from db    select distinct z1.name from company_size_dimension1 z1 where z1.company_id=${PCMID}
+    : FOR    ${i}    IN RANGE    100
+    \    ${update_size_desc}    Generate random string    1    [UPPER]
+    \    ${is_not_contain}    Run keyword and return status    List should not contain value    ${company_sizes}    ${update_size_desc}
+    \    Exit for loop if    ${is_not_contain}
+    ${size_names_len}    Get length    ${size_names}
+    ${existed_size_name_nrows}    Get matching xpath count    //table[@class='table4']/tbody/tr[1]/following-sibling::tr/td[1]/input[@name='size_name' and not(@value='')]    #1
+    ${existed_size_name_nrows}    Convert to integer    ${existed_size_name_nrows}
+    Run keyword if    ${size_names_len}==${0}    Fail    No Size for style: '${searched_style}'.So this case was not executed.
+    ${random_existed_size_name_rowx}    Evaluate    random.sample(${size_names},1)    random
+    ${random_existed_size_name_rowx}    Get from list    ${random_existed_size_name_rowx}    0
+    ${edit_size_name_path}    Set variable    //input[@value='${random_existed_size_name_rowx}' and @name='size_name']
+    ${edit_size_code_path}    Set variable    //input[@value='${random_existed_size_name_rowx}' and @name='size_name']/parent::td/following-sibling::td[1]/input[@name='size_code']
+    Input Text    ${edit_size_name_path}    ${update_size_desc}
+    Input Text    ${edit_size_code_path}    ${update_size_code}
+    Click button    ${save_size_info_button}    #Save Size Info
+    Wait until page does not contain element    ${please_wait_button}
+    Run keyword and continue on failure    Page should contain    ErrorMessage
+    Run keyword and continue on failure    Page should contain    [ER-30061] The size "${update_size_desc}" does not exist in the company size profile. Please add the size into company size profile first by linesheet upload.
+    Click button    Back
+
+Edit-Sizes-Edit size code
+    ${searched_style}    Set variable    ATE-00001
+    ${update_size_code}    Generate random string    6
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_id}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_id}    Get from list    ${style_id}    0
+    Go to size info page    //a[contains(@href, '${style_id}') and text()='Sizes']
+    ${existed_size_name_nrows}    Get matching xpath count    //table[@class='table4']/tbody/tr[1]/following-sibling::tr/td[1]/input[@name='size_name' and not(@value='')]    #1
+    ${existed_size_name_nrows}    Convert to integer    ${existed_size_name_nrows}
+    Run keyword if    ${existed_size_name_nrows}==${0}    Fail    No Size for style: '${searched_style}'.
+    ${random_existed_size_name_rowx}    Evaluate    random.randint(1,${existed_size_name_nrows})    random
+    Comment    ${existed_size_name}    Get element attribute    //table[@class='table4']/tbody/tr[1]/following-sibling::tr[${random_existed_size_name_rowx}]//input[@name='size_name']@value
+    Comment    Input Text    //table[@class='table4']/tbody/tr[1]/following-sibling::tr[${random_existed_size_name_rowx}]//input[@name='size_name']    ${existed_size_name}
+    Input Text    //table[@class='table4']/tbody/tr[1]/following-sibling::tr[${random_existed_size_name_rowx}]//input[@name='size_code']    ${update_size_code}
+    Click button    Save Size Info
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleBank
+
+Edit-Sizes-Del size
+    ${searched_style}    Set variable    ATE-00001
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_id}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_id}    Get from list    ${style_id}    0
+    Go to size info page    //a[contains(@href, '${style_id}') and text()='Sizes']
+    ${existed_size_name_nrows}    Get matching xpath count    //table[@class='table4']/tbody/tr[1]/following-sibling::tr/td[1]/input[@name='size_name' and not(@value='')]    #1
+    ${existed_size_name_nrows}    Convert to integer    ${existed_size_name_nrows}
+    Run keyword if    ${existed_size_name_nrows}==${0}    Fail    No Size for style: '${searched_style}'.
+    ${random_existed_size_name_rowx}    Evaluate    random.randint(1,${existed_size_name_nrows})    random
+    ${size_id}    Get element attribute    //table[@class='table4']/tbody/tr[1]/following-sibling::tr[${random_existed_size_name_rowx}]//input[@name='style_size_id']@value
+    Select checkbox    //input[@value='${size_id}' and @name='del_size']
+    Click button    Save Size Info
+    Wait until page does not contain element    ${please_wait_button}
+    Wait until page contains    StyleBank
+
+Edit-UPC-Edit DIM
+    [Tags]    temp
+
+Edit-UPC-Add an exist UPC
+    [Documentation]    [ER-30203] UPC code, 036182347312, already exists in our system.
+    ${searched_style}    Set variable    ATE-00001
+    ${color_desc}    Set variable    BLACK
+    ${existed_upc}    Set variable    62000001    #need an existing upc
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_id}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_id}    Get from list    ${style_id}    0
+    Go to upc page    ${searched_style}
+    Page should not contain    No UPC Available
+    ${colors_count}    Get matching xpath count    //table[@class='table4']/tbody/tr[1]/following-sibling::tr
+    ${colors_count}    Convert to integer    ${colors_count}
+    Run keyword if    ${colors_count}==${0}    Fail    No UPC for style: '${searched_style}'.
+    ${random_upc_rowx}    Evaluate    random.randint(1,${colors_count})    random
+    ${color_desc}    Get text    //table[@class='table4']/tbody/tr[1]/following-sibling::tr[${random_upc_rowx}]/td[1]
+    ${color_desc}    Strip string    ${color_desc}
+    Page should contain button    Edit
+    Click button    Edit
+    Wait until page contains element    //td[text()='${color_desc}']/following-sibling::td/input[@name='upc']
+    Input text    //td[text()='${color_desc}']/following-sibling::td/input[@name='upc']    ${existed_upc}
+    Click Button    Update
+    Wait until page does not contain element    ${wait_button}
+    Wait until page contains    ErrorMessage
+    Page should contain    [ER-30203] UPC code, ${existed_upc}, already exists in our system.
+
+Edit-UPC-Del UPC
+    ${searched_style}    Set variable    ATE-00001
+    ${color_desc}    Set variable    SBCOLD001
+    ${update_upc}    Set variable    ${EMPTY}
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${style_href}    Get element attribute    //a[text()='${searched_style}']@href    #/bin-java/efsnPackage.do_vendorStyleBankDetailImages?styleid=10014502&seasonid=2&year=2017
+    ${style_id}    Get regexp matches    ${style_href}    styleid=(.*?)&seasonid    1
+    ${style_id}    Get from list    ${style_id}    0
+    Go to upc page    ${searched_style}
+    Page should not contain    No UPC Available
+    ${colors_count}    Get matching xpath count    //table[@class='table4']/tbody/tr[1]/following-sibling::tr
+    ${colors_count}    Convert to integer    ${colors_count}
+    Run keyword if    ${colors_count}==${0}    Fail    No UPC for style: '${searched_style}'.
+    ${random_upc_rowx}    Evaluate    random.randint(1,${colors_count})    random
+    ${color_desc}    Get text    //table[@class='table4']/tbody/tr[1]/following-sibling::tr[${random_upc_rowx}]/td[1]
+    ${color_desc}    Strip string    ${color_desc}
+    Page should contain button    Edit
+    Click button    Edit
+    Wait until page contains element    //td[text()='${color_desc}']/following-sibling::td/input[@name='upc']
+    Input text    //td[text()='${color_desc}']/following-sibling::td/input[@name='upc']    ${update_upc}
+    Click Button    Update
+    Wait until page does not contain element    ${wait_button}
+    Wait until page contains    StyleBank
+
+Copy Style
+    ${searched_style}    Set variable    ATE-00001
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${searched_style_copy_xpath}    Set variable    //a[text()='${searched_style}']/parent::td//following-sibling::td/a[text()='Copy']
+    Page should contain element    ${searched_style_copy_xpath}
+    Click element    ${searched_style_copy_xpath}
+    Wait until page contains    Copy of ${searched_style}    #Whether images would be copied.
+    Comment    Delete the copied style
+    Select checkbox    //a[text()='Copy of ${searched_style}']/parent::td/preceding-sibling::td/input[@name='selected']
+    Wait until page contains element    //a[text()='Copy of ${searched_style}']/parent::td/parent::tr[@class='checkedrowcolor']
+    Click button    ${remove_style_button}
+    Are you sure page when delete style
+    Click button    Delete
+    Thank you page when delete style
+
+Copy to PH Style-Only save
+    ${searched_style}    Set variable    ATE-00001
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${searched_style_copy_ph_xpath}    Set variable    //a[text()='${searched_style}']/parent::td//following-sibling::td/a[contains(text(), 'PH')]
+    Page should contain element    ${searched_style_copy_ph_xpath}
+    Click element    ${searched_style_copy_ph_xpath}
+    Sleep    2
+    Wait until page contains    CopyToPlaceHolder
+    ${style_title}    Get text    //form[@id='placeholderstyleform']/table/tbody/tr/td[1]/table/tbody/tr[1]/td/b[@class='required']
+    ${style_title}    Strip string    ${style_title}
+    ${style_title}    Fetch from right    ${style_title}    *
+    ${style_title}    Fetch from left    ${style_title}    :
+    ${season}    Get selected list label    seasonid
+    ${year}    Get selected list label    year
+    ${season}    Strip string    ${season}
+    ${year}    Strip string    ${year}
+    Page should contain button    Save Style Info
+    Click button    Save Style Info
+    ${error}    Run keyword and return status    Wait until page contains    ErrorMessage    5
+    Run keyword if    ${error}    Page should contain    [ER-30359] This ${style_title} already exists in the system for ${season} - ${year}. Please check your information and re-enter.
+    Run keyword unless    ${error}    Page should contain    PlaceHolderStyles
+    #check ph style
+    Comment    Del
+    ${upper_ph_style_name}    Convert to uppercase    ${searched_style}
+    ${upper_ph_style_name}    Set variable    Copy of ${upper_ph_style_name}
+    ${ph_style_checkbox_xpath}    Set variable    //td[contains(text(),'${upper_ph_style_name}')]/preceding-sibling::td/input[@name='placeholderstyleid']
+    ${is_copied_style_displayed}    Run keyword and return status    Page should contain    ${upper_ph_style_name}
+    Run keyword unless    ${is_copied_style_displayed}    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolder
+    Run keyword unless    ${is_copied_style_displayed}    Advanced search on style bank by style    ${upper_ph_style_name}
+    Delete selected ph styles    ${ph_style_checkbox_xpath}
+
+Copy to PH Style-Edit color
+    ${searched_style}    Set variable    ATE-00001
+    ${ph_style_name}    Set variable    AT-PH-${searched_style}-color
+    ${update_color_code}    Set variable    UP_001
+    ${update_color_desc}    Set variable    UP_BLANK
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${searched_style_copy_ph_xpath}    Set variable    //a[text()='${searched_style}']/parent::td//following-sibling::td/a[contains(text(), 'PH')]
+    Page should contain element    ${searched_style_copy_ph_xpath}
+    Click element    ${searched_style_copy_ph_xpath}
+    Sleep    2
+    Wait until page contains    CopyToPlaceHolder
+    ${style_title}    Get text    //form[@id='placeholderstyleform']/table/tbody/tr/td[1]/table/tbody/tr[1]/td/b[@class='required']
+    ${style_title}    Strip string    ${style_title}
+    ${style_title}    Fetch from right    ${style_title}    *
+    ${style_title}    Fetch from left    ${style_title}    :
+    ${season}    Get selected list label    seasonid
+    ${year}    Get selected list label    year
+    ${season}    Strip string    ${season}
+    ${year}    Strip string    ${year}
+    ${ph_style_id}    Get value    name=style_id
+    Comment    get a random color to update
+    ${style_colors_descs}    Execute javascript    ${style_colors_descs_jquery}    #return array type    ${style_colors_descs_jquery}
+    Log    ${style_colors_descs}
+    Remove values from list    ${style_colors_descs}    ${SPACE}    ${EMPTY}
+    Log    ${style_colors_descs}
+    ${random_color_desc}    Evaluate    random.sample(${style_colors_descs},1)    random
+    ${random_color_desc}    Get from list    ${random_color_desc}    0
+    ${random_color_id}    Get value    //input[@value='${random_color_desc}']/parent::td/preceding-sibling::td/input[@name='deletecolorid']
+    Input text    name=stylenum    ${ph_style_name}
+    ${share_to_child_xpath}    Set variable    //input[@value='${random_color_id}' and @name='colorid']/parent::td/preceding-sibling::td/input[@name='issharetochild']
+    ${uplade_color_code_xpath}    Set variable    //input[@value='${random_color_id}' and @name='deletecolorid']/parent::td/following-sibling::td/input[@name='colorcode']
+    ${update_color_desc_xpath}    Set variable    //input[@value='${random_color_id}' and @name='deletecolorid']/parent::td/following-sibling::td/input[@name='colorname']
+    Select checkbox    ${share_to_child_xpath}    #share to child
+    Input text    ${uplade_color_code_xpath}    ${update_color_code}
+    Input text    ${update_color_desc_xpath}    ${update_color_desc}
+    Page should contain button    Save Style Info
+    Click button    Save Style Info
+    ${error}    Run keyword and return status    Wait until page contains    ErrorMessage    5
+    Run keyword if    ${error}    Page should contain    [ER-30359] This ${style_title} already exists in the system for ${season} - ${year}. Please check your information and re-enter.
+    Run keyword unless    ${error}    Page should contain    PlaceHolderStyles
+    Comment    Check saved result
+    ${expected_style_num}    Convert to uppercase    ${searched_style}
+    ${expected_result_color_code}    Get substring    ${update_color_code}    0    4
+    ${expected_result_color_code}    Convert to uppercase    ${expected_result_color_code}
+    ${expected_result_color_desc}    Convert to uppercase    ${update_color_desc}
+    ${is_displayed}    Run keyword and return status    Page should contain    ${ph_style_name}
+    Run keyword unless    ${is_displayed}    Advanced search on style bank by style    ${ph_style_name}
+    ${is_new_ph}    Run keyword and return status    Page should contain element    //a[contains(@href,'${ph_style_id}') and text()='Edit']    #if style id not exist, then this ph style is a deleted ph style.
+    Run keyword if    ${is_new_ph}    Click element    //a[contains(@href,'${ph_style_id}') and text()='Edit']    #Edit
+    Run keyword unless    ${is_new_ph}    Click element    //td[contains(text(),'${expected_style_num}')]/following-sibling::td//a[text()='Edit']
+    Wait until page contains    PlaceHolderInfo    5
+    ${result_color_codes}    Execute javascript    ${style_colors_codes_jquery}
+    ${result_color_descs}    Execute javascript    ${style_colors_descs_jquery}
+    Run keyword and continue on failure    List should contain value    ${result_color_codes}    ${expected_result_color_code}
+    Run keyword and continue on failure    List should contain value    ${result_color_descs}    ${expected_result_color_desc}
+    Comment    Del
+    go back
+    Wait until page contains    PlaceHolderStyles
+    ${upper_ph_style_name}    Convert to uppercase    ${ph_style_name}
+    ${ph_style_checkbox_xpath}    Set variable    //td[contains(text(),'${upper_ph_style_name}')]/preceding-sibling::td/input[@name='placeholderstyleid']
+    Delete selected ph styles    ${ph_style_checkbox_xpath}
+
+Copy to PH Style-Edit style info
+    ${searched_style}    Set variable    ATE-00001
+    ${ph_style_name}    Set variable    AT-PH-${searched_style}-styleinfo
+    Entry page via navimenu    ${navi_style_bank_path}    StyleBank
+    Advanced search on style bank by style    ${searched_style}
+    ${searched_style_copy_ph_xpath}    Set variable    //a[text()='${searched_style}']/parent::td//following-sibling::td/a[contains(text(), 'PH')]
+    Page should contain element    ${searched_style_copy_ph_xpath}
+    Click element    ${searched_style_copy_ph_xpath}
+    Sleep    2
+    Wait until page contains    CopyToPlaceHolder
+    ${style_title}    Get text    //form[@id='placeholderstyleform']/table/tbody/tr/td[1]/table/tbody/tr[1]/td/b[@class='required']
+    ${style_title}    Strip string    ${style_title}
+    ${style_title}    Fetch from right    ${style_title}    *
+    ${style_title}    Fetch from left    ${style_title}    :
+    ${season}    Get selected list label    seasonid
+    ${year}    Get selected list label    year
+    ${season}    Strip string    ${season}
+    ${year}    Strip string    ${year}
+    ${element_names}    Create list    stylenum    descript    additionalinfo
+    ${element_txts}    Create list    ${ph_style_name}    ttt    ddd
+    : FOR    ${ele_name}    ${ele_txt}    IN ZIP    ${element_names}    ${element_txts}
+    \    Input text    name=${ele_name}    ${ele_txt}
+    Comment    Select from list which not required
+    ${ele_sel_names}    Create list    stylename    fabrication    hangfold    delivery    groupcategory
+    ...    productgroup    category    sizerangeid    fibercontent    productiontype    agegroup
+    ...    gearline    countrycode    seasoncode    stylefabric
+    : FOR    ${ele_sel_name}    IN    @{ele_sel_names}
+    \    ${items}    Get list items    name=${ele_sel_name}
+    \    ${selected_item}    Get selected list label    name=${ele_sel_name}
+    \    Remove values from list    ${items}    ${selected_item}
+    \    ${items_len}    Get length    ${items}
+    \    Continue for loop if    ${items_len}==${0}
+    \    ${random_string}    Generate random string
+    \    ${random_item}    Evaluate    random.sample(${items},1)    random
+    \    ${random_item}    Get from list    ${random_item}    0
+    \    Run keyword if    '${random_item}'=='<NEW>'    Select from list by label    name=${ele_sel_name}    ${random_item}
+    \    ${ele_sel_name_out_id}    Fetch from left    ${ele_sel_name}    id
+    \    Run keyword if    '${random_item}'=='<NEW>'    Input text    name=${ele_sel_name_out_id}text    ${random_string}
+    \    Select from list by label    name=${ele_sel_name}    ${random_item}
+    Comment    Select from list which required
+    : FOR    ${ele_requirel_name}    IN    @{PRODUCT_REQUIRED_ATTRIBUTES_NAMES}
+    \    ${is_select_ele}    Run keyword and return status    Page should contain list    ${ele_requirel_name}
+    \    Run keyword if    ${is_select_ele}==${False}    Input text    name=${ele_requirel_name}    ${ph_style_name}
+    \    Continue for loop if    ${is_select_ele}==${False}
+    \    ${items}    Get list items    ${ele_requirel_name}
+    \    ${selected_item}    Get selected list label    ${ele_requirel_name}
+    \    Remove values from list    ${items}    ${selected_item}    ${SPACE}
+    \    ${items_len}    Get length    ${items}
+    \    Continue for loop if    ${items_len}==${0}
+    \    ${random_item}    Evaluate    random.sample(${items},1)    random
+    \    ${random_item}    Get from list    ${random_item}    0
+    \    Select from list by label    ${ele_requirel_name}    ${random_item}
+    \    ${random_string}    Generate random string
+    \    Run keyword if    '${random_item}'=='<NEW>'    Input text    name=${ele_requirel_name}text    ${random_string}
+    Page should contain button    Save Style Info
+    Click button    Save Style Info
+    ${error}    Run keyword and return status    Wait until page contains    ErrorMessage    5
+    Run keyword if    ${error}    Page should contain    [ER-30359] This ${style_title} already exists in the system for ${season} - ${year}. Please check your information and re-enter.
+    Run keyword unless    ${error}    Wait until page contains    PlaceHolderStyles
+    Comment    Del
+    ${upper_ph_style_name}    Convert to uppercase    ${ph_style_name}
+    ${ph_style_checkbox_xpath}    Set variable    //td[contains(text(),'${upper_ph_style_name}')]/preceding-sibling::td/input[@name='placeholderstyleid']
+    Delete selected ph styles    ${ph_style_checkbox_xpath}

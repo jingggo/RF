@@ -120,3 +120,14 @@ PH_AT_VE_035 = [{'color_code': '004','color_name': 'BLUE','season': 'SPRING','ye
                 {'color_code': '003', 'color_name': 'RED', 'season': 'SPRING', 'year': '2018'},
                 {'color_code': '002', 'color_name': 'WHITE', 'season': 'SPRING', 'year': '2018'},]
 
+PH_AT_MA_036_1 = [{'color_code': '001','color_name': 'BLACK', 'season': 'SPRING', 'year': '2018'}]
+PH_AT_VE_036_1 = [{'color_code': '004','color_name': 'BLUE','season': 'SPRING','year': '2018'},
+                {'color_code': '003', 'color_name': 'RED', 'season': 'SPRING', 'year': '2018'},
+                {'color_code': '002', 'color_name': 'WHITE', 'season': 'SPRING', 'year': '2018'},]
+
+PH_AT_MA_036_2 = [{'color_code': '001','color_name': 'BLACK', 'season': 'SPRING', 'year': '2018'}]
+PH_AT_VE_036_2 = [{'color_code': '001','color_name': 'BLACK', 'season': 'SPRING', 'year': '2018'}]
+
+PH_AT_MA_036_3 = [{'color_code': '001','color_name': 'BLACK', 'season': 'SPRING', 'year': '2018'}]
+PH_AT_VE_036_3 = [{'color_code': '002','color_name': 'WHITE', 'season': 'SPRING', 'year': '2018'}]
+

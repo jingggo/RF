@@ -68,3 +68,15 @@ Get PH Info Vals
     \    append to list    ${color_info_vals}    ${color_info_val}
     log many    ${color_info_vals}
     [Return]    ${color_info_vals}
+
+Get color names on color info page
+    ${color_names}    Execute Javascript    var result=[];$("input[name='color_name']").each(function(){result.push($(this).val()); });return result;
+    Remove values from list    ${color_names}    ${EMPTY}
+    Log    ${color_names}
+    [Return]    ${color_names}
+
+Get size names on sizing info page
+    ${size_names}    Execute Javascript    var result=[];$("input[name='size_name']").each(function(){result.push($(this).val()); });return result;
+    Remove values from list    ${size_names}    ${EMPTY}
+    Log    ${size_names}
+    [Return]    ${size_names}

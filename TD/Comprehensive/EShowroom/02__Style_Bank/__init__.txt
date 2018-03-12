@@ -1,0 +1,7 @@
+*** Settings ***
+Suite Setup       Login7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${browser_profile_ff_1}    # ${browser_profile_ff_1} ${EMPTY}
+Suite Teardown    #Close All Browsers
+Force Tags        SB
+Library           Selenium2Library
+Resource          ../../td_company_res.txt
+Resource          ../style_bank_test_data_ef.txt

@@ -1,0 +1,133 @@
+*** Settings ***
+Suite Setup       #Login7thonline    ${URL}    ff    ${USER}    ${COMPANY}    ${browser_profile_ff_1}
+Default Tags      PH-R
+Resource          ../../../td_page_actions/style_bank_actions_res.txt
+Resource          ../../../td_page_src/eshowroom/src_size_profile.txt
+Resource          ../style_bank_test_data_ef.txt
+Variables         ../style_bank_test_variables_ef.py
+
+*** Test Cases ***
+StyleColor-Not Filter
+    [Documentation]    successful：all styles satisfied criteria selected and display color level
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    ${report_types}    Get list items    id=sl1
+    ${expected_report_types}    Create list    Style/Color Linesheet Format    Style Linesheet Format
+    Run keyword and continue on failure    Lists should be equal    ${report_types}    ${expected_report_types}
+    Comment    ${report_pfile}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${REPORT_STORE_PATH}    ${EMPTY}    ${EMPTY}
+
+StyleColor-Not Filter with existing style
+    [Documentation]    display style#，but there is a bug, some year-seasons which the style satisfied the filter criteria does not have still display
+    ${searched_style}    Set variable    ${PHEXISTINGSTYLE}
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    ${report_pfile}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${REPORT_STORE_PATH}    ${searched_style}    ${EMPTY}
+
+StyleColor-Not Filter with non-existing style
+    [Documentation]    No styles found
+    ${searched_style}    Set variable    ${PHNOTEXISTINGSTYLE}
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    Generate Style Bank Report By Style With Error    Style/Color Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.
+
+StyleColor-Filter and input matched style
+    [Documentation]    successful：the style with all color will display
+    ${dic}    Copy dictionary    ${PHFILTERMATCHED}
+    ${searched_style}    Get from dictionary    ${dic}    searched_style
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    ${report_pfile}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${REPORT_STORE_PATH}    ${searched_style}    ${EMPTY}    &{dic}
+
+StyleColor-Filter and input mis-matched style
+    [Documentation]    [ER-10141] Your search returned no results. Please try again
+    ${dic}    Copy dictionary    ${PHFILTERMISMATCHED}
+    ${searched_style}    Get from dictionary    ${dic}    searched_style
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    Generate Style Bank Report By Style With Error    Style/Color Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}
+
+StyleColor-Filter without style
+    [Documentation]    successful：all styles satisfied criteria selected
+    ${dic}    Copy dictionary    ${PHONLYFILTER}
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    ${report_pfile}    Generate Style Bank Report By Style    Style/Color Linesheet Format    ${REPORT_STORE_PATH}    ${EMPTY}    ${EMPTY}    &{dic}
+
+StyleColor-Filter with un-existing style
+    [Documentation]    [ER-10141] Your search returned no results. Please try again
+    ${dic}    Copy dictionary    ${PHFILTERUNEXISTINGSTYLE}
+    ${searched_style}    Get from dictionary    ${dic}    searched_style
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    Generate Style Bank Report By Style With Error    Style/Color Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}
+
+Style-Not Filter
+    [Documentation]    successful：all styles satisfied criteria selected and display color level
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    ${report_pfile}    Generate Style Bank Report By Style    Style Linesheet Format    ${REPORT_STORE_PATH}    ${EMPTY}    ${EMPTY}
+
+Style-Not Filter with existing style
+    [Documentation]    display style#，but there is a bug, some year-seasons which the style satisfied the filter criteria does not have still display
+    ${searched_style}    Set variable    ${PHEXISTINGSTYLE}
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    ${report_pfile}    Generate Style Bank Report By Style    Style Linesheet Format    ${REPORT_STORE_PATH}    ${searched_style}    ${EMPTY}
+
+Style-Not Filter with non-existing style
+    [Documentation]    No styles found
+    ${searched_style}    Set variable    ${PHNOTEXISTINGSTYLE}
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    Generate Style Bank Report By Style With Error    Style Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.
+
+Style-Filter and input matched style
+    [Documentation]    successful：the style with all color will display
+    ${dic}    Copy dictionary    ${PHFILTERMATCHED}
+    ${searched_style}    Get from dictionary    ${dic}    searched_style
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    ${report_pfile}    Generate Style Bank Report By Style    Style Linesheet Format    ${REPORT_STORE_PATH}    ${searched_style}    ${EMPTY}    &{dic}
+
+Style-Filter and input mis-matched style
+    [Documentation]    [ER-10141] Your search returned no results. Please try again
+    ${dic}    Copy dictionary    ${PHFILTERMISMATCHED}
+    ${searched_style}    Get from dictionary    ${dic}    searched_style
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    Generate Style Bank Report By Style With Error    Style Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}
+
+Style-Filter without style
+    [Documentation]    successful：all styles satisfied criteria selected
+    ${dic}    Copy dictionary    ${PHONLYFILTER}
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    ${report_pfile}    Generate Style Bank Report By Style    Style Linesheet Format    ${REPORT_STORE_PATH}    ${EMPTY}    ${EMPTY}    &{dic}
+
+Style-Filter with un-existing style
+    [Documentation]    [ER-10141] Your search returned no results. Please try again
+    ${dic}    Copy dictionary    ${PHFILTERUNEXISTINGSTYLE}
+    ${searched_style}    Get from dictionary    ${dic}    searched_style
+    Remove from dictionary    ${dic}    searched_style
+    Entry page via navimenu    ${navi_ph_styles_path}    PlaceHolderStyles
+    Page should contain    PlaceHolderStyles
+    Go to Advanced Search page
+    Generate Style Bank Report By Style With Error    Style Linesheet Format    ${searched_style}    ${EMPTY}    [ER-10141] Your search returned no results. Please try again.    &{dic}
